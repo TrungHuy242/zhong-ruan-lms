@@ -12,4 +12,11 @@ router.get(
   userController.getAllUsers
 );
 
+router.post(
+  "/",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  userController.createUser
+);
+
 module.exports = router;

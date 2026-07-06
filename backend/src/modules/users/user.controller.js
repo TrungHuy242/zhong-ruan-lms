@@ -17,6 +17,24 @@ async function getAllUsers(req, res) {
   }
 }
 
+async function createUser(req, res) {
+  try {
+    const user = await userService.createUser(req.body);
+
+    res.status(201).json({
+      message: "Tạo người dùng thành công",
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 module.exports = {
   getAllUsers,
+  createUser,
 };
