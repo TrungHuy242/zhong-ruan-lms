@@ -18,9 +18,12 @@ async function login(req, res) {
 }
 
 async function me(req, res) {
-  res.json({
-    message: "Thông tin người dùng hiện tại",
-  });
+    res.json({
+      message: "Lấy thông tin người dùng thành công",
+      data: {
+        user: req.user,
+      },
+    });
 }
 
 module.exports = {
