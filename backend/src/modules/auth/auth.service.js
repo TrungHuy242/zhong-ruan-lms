@@ -1,50 +1,45 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const prisma = require("../../config/database");
-const { signToken } = require("../../utils/jwt");
 
-async function login({ email, password }) {
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    const err = new Error("Email hoặc mật khẩu không đúng");
-    err.statusCode = 401;
-    throw err;
-  }
-
-  const isMatch = await bcrypt.compare(password, user.passwordHash);
-  if (!isMatch) {
-    const err = new Error("Email hoặc mật khẩu không đúng");
-    err.statusCode = 401;
-    throw err;
-  }
-
-  const token = signToken({ id: user.id, role: user.role });
-  const { passwordHash, ...safeUser } = user;
-
-  return { token, user: safeUser };
-}
-
-async function getMe(userId) {
+async function login(email, password) {
   const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      phone: true,
-      role: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    where: { email },
   });
 
   if (!user) {
-    const err = new Error("Không tìm thấy user");
-    err.statusCode = 404;
-    throw err;
+    throw new Error("Email hoặc mật khẩu không đúng");
   }
 
-  return user;
+  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+  if (!isPasswordValid) {
+    throw new Error("Email hoặc mật khẩu không đúng");
+  }
+
+  const token = jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    }
+  );
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    },
+  };
 }
 
-module.exports = { login, getMe };
+module.exports = {
+  login,
+};
