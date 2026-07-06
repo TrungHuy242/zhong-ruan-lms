@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const { Role } = require("@prisma/client");
 const userRepository = require("./user.repository");
 
 async function getAllUsers() {
@@ -12,7 +13,7 @@ async function createUser(payload) {
     throw new Error("Vui lòng nhập đầy đủ họ tên, email, mật khẩu và vai trò");
   }
 
-  const allowedRoles = ["ADMIN", "TEACHER", "STUDENT"];
+  const allowedRoles = Object.values(Role);
 
   if (!allowedRoles.includes(role)) {
     throw new Error("Vai trò không hợp lệ");
@@ -29,9 +30,9 @@ async function createUser(payload) {
   return userRepository.createUser({
     fullName,
     email,
-    phone,
+    phone: phone || null,
     passwordHash,
-    role,
+    role: Role[role],
     status: "active",
   });
 }
