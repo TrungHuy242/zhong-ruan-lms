@@ -37,7 +37,57 @@ async function createUser(payload) {
   });
 }
 
+async function getUserById(id) {
+  const user = await userRepository.findUserById(id);
+
+  if (!user) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  return user;
+}
+
+async function updateUser(id, payload) {
+  const { fullName, email, phone, role, status } = payload;
+
+  const currentUser = await userRepository.findUserById(id);
+
+  if (!currentUser) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  const allowedRoles = Object.values(Role);
+
+  if (role && !allowedRoles.includes(role)) {
+    throw new Error("Vai trò không hợp lệ");
+  }
+
+  const allowedStatuses = ["active", "inactive", "locked"];
+
+  if (status && !allowedStatuses.includes(status)) {
+    throw new Error("Trạng thái không hợp lệ");
+  }
+
+  if (email && email !== currentUser.email) {
+    const existedUser = await userRepository.findUserByEmail(email);
+
+    if (existedUser) {
+      throw new Error("Email đã tồn tại");
+    }
+  }
+
+  return userRepository.updateUser(id, {
+    fullName,
+    email,
+    phone,
+    role: role ? Role[role] : undefined,
+    status,
+  });
+}
+
 module.exports = {
   getAllUsers,
   createUser,
+  getUserById,
+  updateUser,
 };

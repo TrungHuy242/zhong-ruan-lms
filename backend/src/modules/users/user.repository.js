@@ -23,6 +23,22 @@ async function findUserByEmail(email) {
   });
 }
 
+async function findUserById(id) {
+  return prisma.user.findUnique({
+    where: { id: Number(id) },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
+
 async function createUser(data) {
   return prisma.user.create({
     data,
@@ -38,8 +54,26 @@ async function createUser(data) {
   });
 }
 
+async function updateUser(id, data) {
+  return prisma.user.update({
+    where: { id: Number(id) },
+    data,
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      status: true,
+      updatedAt: true,
+    },
+  });
+}
+
 module.exports = {
   findAllUsers,
   findUserByEmail,
+  findUserById,
   createUser,
+  updateUser,
 };

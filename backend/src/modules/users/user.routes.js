@@ -19,4 +19,18 @@ router.post(
   userController.createUser
 );
 
+router.get(
+  "/:id",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  userController.getUserById
+);
+
+router.put(
+  "/:id",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  userController.updateUser
+);
+
 module.exports = router;
