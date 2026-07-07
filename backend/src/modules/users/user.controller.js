@@ -74,9 +74,24 @@ async function updateUser(req, res) {
   }
 }
 
+async function deleteUser(req, res) {
+  try {
+    await userService.deleteUser(req.params.id, req.user.id);
+
+    res.json({
+      message: "Xóa người dùng thành công",
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 module.exports = {
   getAllUsers,
   createUser,
   getUserById,
   updateUser,
+  deleteUser,
 };

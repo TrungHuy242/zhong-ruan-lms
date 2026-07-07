@@ -70,10 +70,17 @@ async function updateUser(id, data) {
   });
 }
 
+async function deleteUser(id) {
+  return prisma.user.delete({
+    where: { id: Number(id) },
+  });
+}
+
 module.exports = {
   findAllUsers,
   findUserByEmail,
   findUserById,
   createUser,
   updateUser,
+  deleteUser,
 };

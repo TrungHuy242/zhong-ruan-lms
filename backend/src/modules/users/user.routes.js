@@ -33,4 +33,11 @@ router.put(
   userController.updateUser
 );
 
+router.delete(
+  "/:id",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  userController.deleteUser
+);
+
 module.exports = router;

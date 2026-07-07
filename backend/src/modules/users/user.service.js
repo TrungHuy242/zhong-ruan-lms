@@ -85,9 +85,24 @@ async function updateUser(id, payload) {
   });
 }
 
+async function deleteUser(id, currentUserId) {
+  const user = await userRepository.findUserById(id);
+
+  if (!user) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  if (Number(id) === currentUserId) {
+    throw new Error("Bạn không thể tự xóa tài khoản của mình");
+  }
+
+  return userRepository.deleteUser(id);
+}
+
 module.exports = {
   getAllUsers,
   createUser,
   getUserById,
   updateUser,
+  deleteUser,
 };
