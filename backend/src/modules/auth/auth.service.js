@@ -149,6 +149,44 @@ async function register(payload) {
   return newUser;
 }
 
+async function changePassword(userId, oldPassword, newPassword) {
+  if (!oldPassword || !newPassword) {
+    throw new Error("Vui lòng nhập mật khẩu cũ và mật khẩu mới");
+  }
+
+  if (newPassword.length < 6) {
+    throw new Error("Mật khẩu mới phải có ít nhất 6 ký tự");
+  }
+
+  if (oldPassword === newPassword) {
+    throw new Error("Mật khẩu mới phải khác mật khẩu cũ");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  const isMatch = await bcrypt.compare(oldPassword, user.passwordHash);
+  if (!isMatch) {
+    throw new Error("Mật khẩu cũ không đúng");
+  }
+
+  const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      passwordHash: newPasswordHash,
+      resetToken: null,
+      resetTokenExpiresAt: null,
+    },
+  });
+}
+
 async function forgotPassword(email) {
   if (!email) {
     throw new Error("Vui lòng cung cấp email");
@@ -199,4 +237,5 @@ module.exports = {
   refreshToken,
   register,
   forgotPassword,
+  changePassword,
 };

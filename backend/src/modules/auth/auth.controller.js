@@ -80,10 +80,26 @@ async function forgotPassword(req, res) {
   }
 }
 
+async function changePassword(req, res) {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    await authService.changePassword(req.user.id, oldPassword, newPassword);
+
+    res.json({
+      message: "Đổi mật khẩu thành công",
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
   me,
   refreshToken,
   forgotPassword,
+  changePassword,
 };
