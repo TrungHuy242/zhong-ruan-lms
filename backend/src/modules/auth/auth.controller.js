@@ -9,6 +9,11 @@ async function register(req, res) {
       data: { user },
     });
   } catch (error) {
+    if (error.code === "DUPLICATE_EMAIL") {
+      return res.status(409).json({
+        message: error.message,
+      });
+    }
     res.status(400).json({
       message: error.message,
     });
@@ -80,6 +85,21 @@ async function forgotPassword(req, res) {
   }
 }
 
+async function resetPassword(req, res) {
+  try {
+    const { token, newPassword } = req.body;
+    await authService.resetPassword(token, newPassword);
+
+    res.json({
+      message: "Đặt lại mật khẩu thành công",
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 async function changePassword(req, res) {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -110,12 +130,28 @@ async function updateMe(req, res) {
   }
 }
 
+async function logout(req, res) {
+  try {
+    await authService.logout(req.user.id);
+
+    res.json({
+      message: "Đăng xuất thành công",
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
   me,
   refreshToken,
   forgotPassword,
+  resetPassword,
   changePassword,
   updateMe,
+  logout,
 };

@@ -1,6 +1,12 @@
 const bcrypt = require("bcrypt");
-const { Role } = require("@prisma/client");
+const { Role, UserStatus } = require("@prisma/client");
 const userRepository = require("./user.repository");
+
+const STATUS_MAP = {
+  active: UserStatus.ACTIVE,
+  inactive: UserStatus.INACTIVE,
+  locked: UserStatus.SUSPENDED,
+};
 
 async function getAllUsers() {
   return userRepository.findAllUsers();
@@ -33,7 +39,7 @@ async function createUser(payload) {
     phone: phone || null,
     passwordHash,
     role: Role[role],
-    status: "active",
+    status: UserStatus.ACTIVE,
   });
 }
 
@@ -62,7 +68,7 @@ async function updateUser(id, payload) {
     throw new Error("Vai trò không hợp lệ");
   }
 
-  const allowedStatuses = ["active", "inactive", "locked"];
+  const allowedStatuses = Object.keys(STATUS_MAP);
 
   if (status && !allowedStatuses.includes(status)) {
     throw new Error("Trạng thái không hợp lệ");
@@ -81,7 +87,7 @@ async function updateUser(id, payload) {
     email,
     phone,
     role: role ? Role[role] : undefined,
-    status,
+    status: status ? STATUS_MAP[status] : undefined,
   });
 }
 

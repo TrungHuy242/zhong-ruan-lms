@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { UserStatus } = require("@prisma/client");
 const prisma = require("../config/database");
 
 async function authenticate(req, res, next) {
@@ -33,7 +34,7 @@ async function authenticate(req, res, next) {
       });
     }
 
-    if (user.status !== "active") {
+    if (user.status !== UserStatus.ACTIVE) {
       return res.status(403).json({
         message: "Tài khoản đã bị khóa",
       });
