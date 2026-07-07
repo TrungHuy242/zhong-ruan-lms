@@ -64,9 +64,26 @@ async function refreshToken(req, res) {
   }
 }
 
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    const result = await authService.forgotPassword(email);
+
+    res.json({
+      message: "Yêu cầu đặt lại mật khẩu đã được xử lý. Vui lòng kiểm tra email của bạn.",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
   me,
   refreshToken,
+  forgotPassword,
 };

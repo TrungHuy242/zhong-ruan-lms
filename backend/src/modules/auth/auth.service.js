@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Role } = require("@prisma/client");
@@ -148,8 +149,54 @@ async function register(payload) {
   return newUser;
 }
 
+async function forgotPassword(email) {
+  if (!email) {
+    throw new Error("Vui lòng cung cấp email");
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new Error("Email không đúng định dạng");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    return { sent: true };
+  }
+
+  if (user.status !== "active") {
+    return { sent: true };
+  }
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(rawToken)
+    .digest("hex");
+
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      resetToken: hashedToken,
+      resetTokenExpiresAt: expiresAt,
+    },
+  });
+
+  return {
+    sent: true,
+    resetToken: rawToken,
+    expiresAt,
+  };
+}
+
 module.exports = {
   login,
   refreshToken,
   register,
+  forgotPassword,
 };
