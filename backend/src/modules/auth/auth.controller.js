@@ -95,6 +95,21 @@ async function changePassword(req, res) {
   }
 }
 
+async function updateMe(req, res) {
+  try {
+    const user = await authService.updateProfile(req.user.id, req.body);
+
+    res.json({
+      message: "Cập nhật hồ sơ thành công",
+      data: { user },
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -102,4 +117,5 @@ module.exports = {
   refreshToken,
   forgotPassword,
   changePassword,
+  updateMe,
 };

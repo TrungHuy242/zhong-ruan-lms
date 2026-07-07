@@ -149,6 +149,33 @@ async function register(payload) {
   return newUser;
 }
 
+async function updateProfile(userId, payload) {
+  const { fullName, phone } = payload;
+
+  if (!fullName || fullName.trim() === "") {
+    throw new Error("Vui lòng nhập họ tên");
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      fullName: fullName.trim(),
+      phone: phone === undefined ? undefined : phone || null,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      status: true,
+      updatedAt: true,
+    },
+  });
+
+  return updated;
+}
+
 async function changePassword(userId, oldPassword, newPassword) {
   if (!oldPassword || !newPassword) {
     throw new Error("Vui lòng nhập mật khẩu cũ và mật khẩu mới");
@@ -238,4 +265,5 @@ module.exports = {
   register,
   forgotPassword,
   changePassword,
+  updateProfile,
 };
