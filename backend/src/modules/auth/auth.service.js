@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { Role } = require("@prisma/client");
 const prisma = require("../../config/database");
 
 function generateAccessToken(user) {
@@ -93,7 +94,62 @@ async function refreshToken(token) {
   }
 }
 
+async function register(payload) {
+  const { fullName, email, phone, password, role } = payload;
+
+  if (!fullName || !email || !password || !role) {
+    throw new Error("Vui lòng nhập đầy đủ họ tên, email, mật khẩu và vai trò");
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new Error("Email không đúng định dạng");
+  }
+
+  if (password.length < 6) {
+    throw new Error("Mật khẩu phải có ít nhất 6 ký tự");
+  }
+
+  const allowedSelfRegisterRoles = [Role.STUDENT, Role.TEACHER];
+  if (!allowedSelfRegisterRoles.includes(role)) {
+    throw new Error("Chỉ được phép đăng ký với vai trò STUDENT hoặc TEACHER");
+  }
+
+  const existedUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (existedUser) {
+    throw new Error("Email đã tồn tại");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const newUser = await prisma.user.create({
+    data: {
+      fullName,
+      email,
+      phone: phone || null,
+      passwordHash,
+      role,
+      status: "active",
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  return newUser;
+}
+
 module.exports = {
   login,
   refreshToken,
+  register,
 };

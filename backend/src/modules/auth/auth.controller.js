@@ -1,5 +1,20 @@
 const authService = require("./auth.service");
 
+async function register(req, res) {
+  try {
+    const user = await authService.register(req.body);
+
+    res.status(201).json({
+      message: "Đăng ký tài khoản thành công",
+      data: { user },
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -50,6 +65,7 @@ async function refreshToken(req, res) {
 }
 
 module.exports = {
+  register,
   login,
   me,
   refreshToken,
