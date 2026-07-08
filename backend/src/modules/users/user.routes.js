@@ -40,4 +40,18 @@ router.delete(
   userController.deleteUser
 );
 
+router.post(
+  "/:id/restore",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  userController.restoreUser
+);
+
+router.delete(
+  "/:id/force",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  userController.forceDeleteUser
+);
+
 module.exports = router;

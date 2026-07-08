@@ -1,7 +1,8 @@
+const repo = require("./upload.repository");
+const { softDelete, restore, forceDelete } = require("../../utils/softDelete");
+const { notDeletedWhere, parseFlags } = require("../../utils/softQuery");
 const fs = require("fs");
 const path = require("path");
-const repo = require("./upload.repository");
-const { UPLOAD_DIR } = require("../../middlewares/upload.middleware");
 
 // Tạo lỗi có gắn .code để controller map status
 function notFound() {
@@ -38,7 +39,8 @@ async function uploadFile(currentUserId, file) {
 }
 
 // GET /files
-async function listFiles(currentUser, query = {}) {
+async function listFiles(currentUser, query) {
+  query = query || {};
   const isAdmin = currentUser && currentUser.role === "ADMIN";
   const uploadedById = isAdmin ? null : currentUser.id;
 
@@ -50,7 +52,12 @@ async function listFiles(currentUser, query = {}) {
     throw badRequest("pageSize phải từ 1 đến 100");
   }
 
-  return repo.findAll({ uploadedById, page, pageSize });
+  const flags = parseFlags(query);
+  const baseWhere = {};
+  if (uploadedById != null) baseWhere.uploadedById = Number(uploadedById);
+  const where = notDeletedWhere(baseWhere, flags);
+
+  return repo.findAll({ where: where, page: page, pageSize: pageSize });
 }
 
 // GET /files/:id
@@ -66,8 +73,8 @@ async function getOneFile(currentUser, id) {
   return file;
 }
 
-// DELETE /files/:id  — xoá cả file vật lý + bản ghi
-async function removeFile(currentUser, id) {
+// DELETE /files/:id  — soft-delete (giữ file vật lý, có thể restore)
+async function removeFile(currentUser, id, req) {
   const file = await repo.findById(id);
   if (!file) throw notFound();
 
@@ -76,21 +83,80 @@ async function removeFile(currentUser, id) {
     throw forbidden();
   }
 
-  // Xoá file vật lý trước (nếu không tồn tại trên disk thì bỏ qua, vẫn xoá DB)
-  try {
-    const absPath = path.isAbsolute(file.path)
-      ? file.path
-      : path.join(UPLOAD_DIR, path.basename(file.path));
-    if (fs.existsSync(absPath)) {
-      fs.unlinkSync(absPath);
-    }
-  } catch (err) {
-    // Không block xoá DB nếu xoá file vật lý lỗi
-    console.warn("[upload.service] không xoá được file vật lý:", err.message);
+  // Soft-delete: KHÔNG xoá file vật lý (giữ để có thể restore hoặc admin xem sau)
+  const deleted = await softDelete(
+    "UploadFile",
+    { id: file.id },
+    { req: req || null, userId: currentUser && currentUser.id }
+  );
+
+  if (!deleted) {
+    return { id: file.id, originalName: file.originalName, alreadyDeleted: true };
   }
 
-  await repo.remove(file.id);
-  return { id: file.id, originalName: file.originalName };
+  return { id: deleted.id, originalName: deleted.originalName, deletedAt: deleted.deletedAt };
+}
+
+/**
+ * Khôi phục file đã bị soft-delete.
+ * - Admin: khôi phục bất kỳ
+ * - User thường: chỉ khôi phục file của chính mình
+ */
+async function restoreFile(currentUser, id, req) {
+  const file = await repo.findByIdIncludeDeleted(id);
+  if (!file) throw notFound();
+
+  const isAdmin = currentUser && currentUser.role === "ADMIN";
+  if (!isAdmin && file.uploadedById !== currentUser.id) {
+    throw forbidden();
+  }
+
+  const restored = await restore(
+    "UploadFile",
+    { id: file.id },
+    { req: req || null, userId: currentUser && currentUser.id }
+  );
+
+  if (!restored) {
+    throw new Error("Không thể khôi phục file");
+  }
+
+  return { id: restored.id, originalName: restored.originalName, deletedAt: restored.deletedAt };
+}
+
+/**
+ * Xóa cứng file: xóa cả bản ghi DB lẫn file vật lý trên disk. Chỉ Admin.
+ */
+async function forceDeleteFile(currentUser, id, req) {
+  const isAdmin = currentUser && currentUser.role === "ADMIN";
+  if (!isAdmin) {
+    throw forbidden();
+  }
+
+  const file = await repo.findByIdIncludeDeleted(id);
+  if (!file) throw notFound();
+
+  await forceDelete(
+    "UploadFile",
+    { id: file.id },
+    { req: req || null, userId: currentUser && currentUser.id }
+  );
+
+  // Cố gắng xóa file vật lý (không rollback nếu lỗi — DB record đã sạch)
+  try {
+    if (file.path) {
+      const absPath = path.isAbsolute(file.path)
+        ? file.path
+        : path.join(process.cwd(), file.path);
+      if (fs.existsSync(absPath)) {
+        fs.unlinkSync(absPath);
+      }
+    }
+  } catch (err) {
+    console.warn("[upload.service] force-delete: không xóa được file vật lý:", err.message);
+  }
+
+  return { id: file.id, originalName: file.originalName, hardDeleted: true, physicalFileRemoved: true };
 }
 
 module.exports = {
@@ -98,4 +164,6 @@ module.exports = {
   listFiles,
   getOneFile,
   removeFile,
+  restoreFile,
+  forceDeleteFile,
 };

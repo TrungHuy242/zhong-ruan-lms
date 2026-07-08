@@ -8,18 +8,24 @@ const authorizeRoles = require("../../middlewares/role.middleware");
 // Tất cả endpoint đều yêu cầu đăng nhập
 router.use(authenticate);
 
-// User thường — xem/sửa/xóa thông báo của chính mình
+// User thường — xem/sửa/xóa/khôi phục thông báo của chính mình
 router.get("/", notificationController.listMyNotifications);
 router.get("/:id", notificationController.getMyNotificationById);
 router.put("/:id/read", notificationController.markNotificationAsRead);
 router.put("/read-all", notificationController.markAllNotificationsAsRead);
 router.delete("/:id", notificationController.deleteNotification);
+router.post("/:id/restore", notificationController.restoreNotification);
 
-// Chỉ Admin mới được tạo thông báo
+// Chỉ Admin
 router.post(
   "/",
   authorizeRoles("ADMIN"),
   notificationController.createNotification
+);
+router.delete(
+  "/:id/force",
+  authorizeRoles("ADMIN"),
+  notificationController.forceDeleteNotification
 );
 
 module.exports = router;

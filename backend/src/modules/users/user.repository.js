@@ -1,7 +1,9 @@
 const prisma = require("../../config/database");
+const { prismaInternal } = require("../../config/database");
 
-async function findAllUsers() {
+async function findAllUsers(where = {}) {
   return prisma.user.findMany({
+    where,
     select: {
       id: true,
       fullName: true,
@@ -10,6 +12,7 @@ async function findAllUsers() {
       role: true,
       status: true,
       createdAt: true,
+      deletedAt: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -18,14 +21,14 @@ async function findAllUsers() {
 }
 
 async function findUserByEmail(email) {
-  return prisma.user.findUnique({
-    where: { email },
+  return prisma.user.findFirst({
+    where: { email, deletedAt: null },
   });
 }
 
 async function findUserById(id) {
-  return prisma.user.findUnique({
-    where: { id: Number(id) },
+  return prisma.user.findFirst({
+    where: { id: Number(id), deletedAt: null },
     select: {
       id: true,
       fullName: true,
@@ -36,6 +39,16 @@ async function findUserById(id) {
       createdAt: true,
       updatedAt: true,
     },
+  });
+}
+
+/**
+ * Tìm user kể cả đã bị soft-delete (dùng cho restore / force-delete).
+ * Phải dùng prismaInternal vì prisma có extension ẩn bản ghi đã xóa.
+ */
+async function findUserByIdIncludeDeleted(id) {
+  return prismaInternal.user.findUnique({
+    where: { id: Number(id) },
   });
 }
 
@@ -80,6 +93,7 @@ module.exports = {
   findAllUsers,
   findUserByEmail,
   findUserById,
+  findUserByIdIncludeDeleted,
   createUser,
   updateUser,
   deleteUser,

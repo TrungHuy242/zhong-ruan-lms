@@ -58,9 +58,45 @@ async function getOne(req, res) {
 // DELETE /files/:id
 async function remove(req, res) {
   try {
-    const result = await uploadService.removeFile(req.user, req.params.id);
+    const result = await uploadService.removeFile(req.user, req.params.id, req);
     res.json({
-      message: "Xóa file thành công",
+      message: "Đã chuyển file vào thùng rác (soft delete, file vật lý vẫn còn)",
+      data: result,
+    });
+  } catch (error) {
+    let status = 400;
+    if (error.code === "NOT_FOUND") status = 404;
+    else if (error.code === "FORBIDDEN") status = 403;
+    res.status(status).json({
+      message: error.message || "Lỗi hệ thống",
+    });
+  }
+}
+
+// POST /files/:id/restore
+async function restore(req, res) {
+  try {
+    const result = await uploadService.restoreFile(req.user, req.params.id, req);
+    res.json({
+      message: "Khôi phục file thành công",
+      data: result,
+    });
+  } catch (error) {
+    let status = 400;
+    if (error.code === "NOT_FOUND") status = 404;
+    else if (error.code === "FORBIDDEN") status = 403;
+    res.status(status).json({
+      message: error.message || "Lỗi hệ thống",
+    });
+  }
+}
+
+// DELETE /files/:id/force  (chỉ Admin — xóa cứng DB + file vật lý)
+async function forceRemove(req, res) {
+  try {
+    const result = await uploadService.forceDeleteFile(req.user, req.params.id, req);
+    res.json({
+      message: "Đã xóa cứng file khỏi database và xóa file vật lý trên disk",
       data: result,
     });
   } catch (error) {
@@ -78,4 +114,6 @@ module.exports = {
   list,
   getOne,
   remove,
+  restore,
+  forceRemove,
 };

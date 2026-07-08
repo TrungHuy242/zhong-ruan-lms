@@ -2,34 +2,43 @@ const prisma = require("../../config/database");
 
 const VALID_TYPES = ["INFO", "SUCCESS", "WARNING", "ERROR"];
 
-async function findAllByUser(userId, { isRead, page = 1, pageSize = 20 } = {}) {
-  const where = { userId };
-  if (typeof isRead === "boolean") where.isRead = isRead;
+async function findAllByUser(userId, opts) {
+  opts = opts || {};
+  const where = opts.where || { userId: userId };
+  if (typeof opts.isRead === "boolean") where.isRead = opts.isRead;
 
-  const skip = (Number(page) - 1) * Number(pageSize);
-  const take = Number(pageSize);
+  const page = opts.page ? Number(opts.page) : 1;
+  const pageSize = opts.pageSize ? Number(opts.pageSize) : 20;
+  const skip = (page - 1) * pageSize;
+  const take = pageSize;
 
-  const [items, total] = await Promise.all([
-    prisma.notification.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip,
-      take,
-    }),
-    prisma.notification.count({ where }),
-  ]);
+  const items = await prisma.notification.findMany({
+    where: where,
+    orderBy: { createdAt: "desc" },
+    skip: skip,
+    take: take,
+  });
+  const total = await prisma.notification.count({ where: where });
 
-  return { items, total, page: Number(page), pageSize: take };
+  return { items: items, total: total, page: page, pageSize: take };
 }
 
 async function findByIdForUser(id, userId) {
   return prisma.notification.findFirst({
-    where: { id: Number(id), userId },
+    where: { id: Number(id), userId, deletedAt: null },
   });
 }
 
 async function findById(id) {
   return prisma.notification.findUnique({ where: { id: Number(id) } });
+}
+
+/**
+ * Tìm notification kể cả đã bị soft-delete (dùng cho restore / force-delete).
+ */
+async function findByIdIncludeDeleted(id) {
+  const { prismaInternal } = require("../../config/database");
+  return prismaInternal.notification.findUnique({ where: { id: Number(id) } });
 }
 
 async function create({ userId, type, title, message }) {
@@ -88,6 +97,7 @@ module.exports = {
   findAllByUser,
   findByIdForUser,
   findById,
+  findByIdIncludeDeleted,
   create,
   markRead,
   markAllRead,

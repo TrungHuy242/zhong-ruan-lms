@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const { Role, UserStatus } = require("@prisma/client");
 const userRepository = require("./user.repository");
 const audit = require("../audit/audit.service");
+const { softDelete, restore, forceDelete } = require("../../utils/softDelete");
+const { notDeletedWhere, parseFlags } = require("../../utils/softQuery");
 
 const STATUS_MAP = {
   active: UserStatus.ACTIVE,
@@ -9,8 +11,10 @@ const STATUS_MAP = {
   locked: UserStatus.SUSPENDED,
 };
 
-async function getAllUsers() {
-  return userRepository.findAllUsers();
+async function getAllUsers(query = {}) {
+  const flags = parseFlags(query);
+  const where = notDeletedWhere({}, flags);
+  return userRepository.findAllUsers(where);
 }
 
 async function createUser(payload, req) {
@@ -92,23 +96,93 @@ async function updateUser(id, payload, req) {
     role: role ? Role[role] : undefined,
     status: status ? STATUS_MAP[status] : undefined,
   });
-  await audit.log({ userId: req.user.id, action: "ADMIN_USER_UPDATED", target: `User:${updatedUser.id}`, meta: { changes: payload }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
-  return updatedUser;
+  await audit.log({ userId: req.user.id, action: "ADMIN_USER_UPDATED", target: `User:${updateUser.id}`, meta: { changes: payload }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
+  return updateUser;
 }
 
 async function deleteUser(id, currentUserId, req) {
-  const user = await userRepository.findUserById(id);
+  const numericId = Number(id);
+  if (numericId === currentUserId) {
+    throw new Error("Bạn không thể tự xóa tài khoản của mình");
+  }
 
+  const user = await userRepository.findUserByIdIncludeDeleted(numericId);
   if (!user) {
     throw new Error("Không tìm thấy người dùng");
   }
 
-  if (Number(id) === currentUserId) {
-    throw new Error("Bạn không thể tự xóa tài khoản của mình");
+  if (user.deletedAt) {
+    return { id: user.id, email: user.email, deletedAt: user.deletedAt, alreadyDeleted: true };
   }
 
-  await userRepository.deleteUser(id);
-  await audit.log({ userId: currentUserId, action: "ADMIN_USER_DELETED", target: `User:${id}`, meta: { email: user.email }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
+  const deleted = await softDelete(
+    "User",
+    { id: numericId },
+    { req, userId: currentUserId }
+  );
+
+  if (!deleted) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  return { id: deleted.id, email: deleted.email, deletedAt: deleted.deletedAt };
+}
+
+/**
+ * Khôi phục user đã bị soft-delete.
+ * Chỉ Admin được dùng. Idempotent — nếu user chưa xóa thì trả về luôn.
+ */
+async function restoreUser(id, currentUserId, req) {
+  const numericId = Number(id);
+
+  const user = await userRepository.findUserByIdIncludeDeleted(numericId);
+  if (!user) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  // Restore có thể vượt qua kiểm tra "tự xóa" — vì đây là hành động khôi phục
+  const restored = await restore(
+    "User",
+    { id: numericId },
+    { req, userId: currentUserId }
+  );
+
+  if (!restored) {
+    throw new Error("Không thể khôi phục người dùng");
+  }
+
+  return { id: restored.id, email: restored.email, deletedAt: restored.deletedAt };
+}
+
+/**
+ * Xóa cứng user khỏi database.
+ * ⚠️ Chỉ Admin được dùng. Nếu user là chủ sở hữu tài nguyên khác, sẽ fail do FK.
+ */
+async function forceDeleteUser(id, currentUserId, req) {
+  const numericId = Number(id);
+  if (numericId === currentUserId) {
+    throw new Error("Bạn không thể tự xóa cứng tài khoản của mình");
+  }
+
+  const user = await userRepository.findUserByIdIncludeDeleted(numericId);
+  if (!user) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  try {
+    await forceDelete(
+      "User",
+      { id: numericId },
+      { req, userId: currentUserId }
+    );
+  } catch (error) {
+    if (error.code === "P2003") {
+      throw new Error("Không thể xóa cứng: người dùng còn dữ liệu liên quan (audit log, notification, upload, ...). Hãy xử lý dữ liệu liên quan trước.");
+    }
+    throw error;
+  }
+
+  return { id: numericId, hardDeleted: true };
 }
 
 module.exports = {
@@ -117,4 +191,6 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
+  restoreUser,
+  forceDeleteUser,
 };

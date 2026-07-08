@@ -12,7 +12,7 @@ function handlePrismaError(error) {
 
 async function getAllUsers(req, res) {
   try {
-    const users = await userService.getAllUsers();
+    const users = await userService.getAllUsers(req.query || {});
 
     res.json({
       message: "Lấy danh sách người dùng thành công",
@@ -76,10 +76,41 @@ async function updateUser(req, res) {
 
 async function deleteUser(req, res) {
   try {
-    await userService.deleteUser(req.params.id, req.user.id, req);
+    const result = await userService.deleteUser(req.params.id, req.user.id, req);
 
     res.json({
-      message: "Xóa người dùng thành công",
+      message: "Đã chuyển người dùng vào thùng rác (soft delete)",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
+// POST /users/:id/restore — khôi phục user đã soft-delete (chỉ Admin)
+async function restoreUser(req, res) {
+  try {
+    const result = await userService.restoreUser(req.params.id, req.user.id, req);
+    res.json({
+      message: "Khôi phục người dùng thành công",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
+// DELETE /users/:id/force — xóa cứng user khỏi DB (chỉ Admin, dùng khi cần dọn dẹp vĩnh viễn)
+async function forceDeleteUser(req, res) {
+  try {
+    const result = await userService.forceDeleteUser(req.params.id, req.user.id, req);
+    res.json({
+      message: "Đã xóa cứng người dùng khỏi database",
+      data: result,
     });
   } catch (error) {
     res.status(400).json({
@@ -94,4 +125,6 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
+  restoreUser,
+  forceDeleteUser,
 };

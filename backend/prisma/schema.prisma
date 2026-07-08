@@ -20,6 +20,7 @@ model User {
   refreshTokenExpiresAt DateTime?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
+  deletedAt             DateTime?
   auditLogs             AuditLog[]
   notifications         Notification[]
   uploads               UploadFile[]   @relation("UserUploads")
@@ -71,11 +72,13 @@ model Notification {
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+  deletedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([isRead])
+  @@index([deletedAt])
   @@map("notifications")
 }
 
@@ -89,8 +92,10 @@ model UploadFile {
   uploadedById Int
   uploadedBy   User     @relation("UserUploads", fields: [uploadedById], references: [id])
   createdAt    DateTime @default(now())
+  deletedAt    DateTime?
 
   @@index([uploadedById])
+  @@index([deletedAt])
   @@map("upload_files")
 }
 

@@ -86,9 +86,45 @@ async function markAllNotificationsAsRead(req, res) {
 // DELETE /notifications/:id
 async function deleteNotification(req, res) {
   try {
-    const result = await notificationService.removeNotification(req.user, req.params.id);
+    const result = await notificationService.removeNotification(req.user, req.params.id, req);
     res.json({
-      message: "Xóa thông báo thành công",
+      message: "Đã chuyển thông báo vào thùng rác (soft delete)",
+      data: result,
+    });
+  } catch (error) {
+    let status = 400;
+    if (error.code === "NOT_FOUND") status = 404;
+    else if (error.code === "FORBIDDEN") status = 403;
+    res.status(status).json({
+      message: error.message || "Lỗi hệ thống",
+    });
+  }
+}
+
+// POST /notifications/:id/restore
+async function restoreNotification(req, res) {
+  try {
+    const result = await notificationService.restoreNotification(req.user, req.params.id, req);
+    res.json({
+      message: "Khôi phục thông báo thành công",
+      data: result,
+    });
+  } catch (error) {
+    let status = 400;
+    if (error.code === "NOT_FOUND") status = 404;
+    else if (error.code === "FORBIDDEN") status = 403;
+    res.status(status).json({
+      message: error.message || "Lỗi hệ thống",
+    });
+  }
+}
+
+// DELETE /notifications/:id/force  (chỉ Admin)
+async function forceDeleteNotification(req, res) {
+  try {
+    const result = await notificationService.forceDeleteNotification(req.user, req.params.id, req);
+    res.json({
+      message: "Đã xóa cứng thông báo khỏi database",
       data: result,
     });
   } catch (error) {
@@ -108,4 +144,6 @@ module.exports = {
   markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteNotification,
+  restoreNotification,
+  forceDeleteNotification,
 };
