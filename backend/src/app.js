@@ -4,6 +4,7 @@ const cors = require("cors");
 const authRoutes = require("./modules/auth/auth.routes");
 const userRoutes = require("./modules/users/user.routes");
 const auditRoutes = require("./modules/audit/audit.routes");
+const notificationRoutes = require("./modules/notifications/notification.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -36,6 +37,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", userRoutes);
 app.use("/api/admin/audit-logs", auditRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);
