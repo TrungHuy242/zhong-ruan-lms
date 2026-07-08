@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Role, UserStatus } = require("@prisma/client");
 const prisma = require("../../config/database");
+const audit = require("../audit/audit.service");
 
 function generateAccessToken(user) {
   return jwt.sign(
@@ -44,23 +45,26 @@ function getRefreshExpiryDate() {
   return new Date(Date.now() + value * (multipliers[unit] || multipliers.d));
 }
 
-async function login(email, password) {
+async function login(email, password, req) {
   const user = await prisma.user.findUnique({
     where: { email },
   });
 
   if (!user) {
     throw new Error("Email hoặc mật khẩu không đúng");
+    await audit.log({ userId: null, action: "AUTH_LOGIN_FAIL", target: `User:by-email:${email}`, meta: { reason: "INVALID_CREDENTIALS" }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
   }
 
   if (user.status !== UserStatus.ACTIVE) {
     throw new Error("Tài khoản đã bị khóa");
+    await audit.log({ userId: user.id, action: "AUTH_LOGIN_FAIL", target: `User:${user.id}`, meta: { reason: "USER_SUSPENDED" }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
   if (!isPasswordValid) {
     throw new Error("Email hoặc mật khẩu không đúng");
+    await audit.log({ userId: user.id, action: "AUTH_LOGIN_SUCCESS", target: `User:${user.id}`, meta: { email: user.email }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
   }
 
   const accessToken = generateAccessToken(user);
@@ -142,7 +146,7 @@ async function refreshToken(token) {
   };
 }
 
-async function register(payload) {
+async function register(payload, req) {
   const { fullName, email, phone, password } = payload;
 
   if (!fullName || !email || !password) {
@@ -163,6 +167,7 @@ async function register(payload) {
   });
 
   if (existedUser) {
+    await audit.log({ userId: null, action: "AUTH_REGISTER_FAIL", target: "User:new", meta: { email, reason: "DUPLICATE_EMAIL" }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
     const err = new Error("Email đã tồn tại");
     err.code = "DUPLICATE_EMAIL";
     throw err;
@@ -189,7 +194,7 @@ async function register(payload) {
       createdAt: true,
     },
   });
-
+  await audit.log({ userId: newUser.id, action: "AUTH_REGISTER_SUCCESS", target: `User:${newUser.id}`, meta: { email: newUser.email, role: newUser.role }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
   return newUser;
 }
 
@@ -220,7 +225,7 @@ async function updateProfile(userId, payload) {
   return updated;
 }
 
-async function changePassword(userId, oldPassword, newPassword) {
+async function changePassword(userId, oldPassword, newPassword, req) {
   if (!oldPassword || !newPassword) {
     throw new Error("Vui lòng nhập mật khẩu cũ và mật khẩu mới");
   }
@@ -258,6 +263,7 @@ async function changePassword(userId, oldPassword, newPassword) {
       refreshTokenExpiresAt: null,
     },
   });
+  await audit.log({ userId, action: "AUTH_CHANGE_PASSWORD_SUCCESS", target: `User:${userId}`, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
 }
 
 async function forgotPassword(email) {
@@ -347,7 +353,7 @@ async function resetPassword(rawToken, newPassword) {
   });
 }
 
-async function logout(userId) {
+async function logout(userId, req) {
   await prisma.user.update({
     where: { id: userId },
     data: {
@@ -355,6 +361,7 @@ async function logout(userId) {
       refreshTokenExpiresAt: null,
     },
   });
+  await audit.log({ userId, action: "AUTH_LOGOUT_SUCCESS", target: `User:${userId}`, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
 }
 
 module.exports = {

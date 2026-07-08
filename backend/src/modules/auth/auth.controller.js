@@ -2,7 +2,7 @@ const authService = require("./auth.service");
 
 async function register(req, res) {
   try {
-    const user = await authService.register(req.body);
+    const user = await authService.register(req.body, req);
 
     res.status(201).json({
       message: "Đăng ký tài khoản thành công",
@@ -24,7 +24,7 @@ async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    const result = await authService.login(email, password);
+    const result = await authService.login(email, password, req);
 
     res.json({
       message: "Đăng nhập thành công",
@@ -103,7 +103,7 @@ async function resetPassword(req, res) {
 async function changePassword(req, res) {
   try {
     const { oldPassword, newPassword } = req.body;
-    await authService.changePassword(req.user.id, oldPassword, newPassword);
+    await authService.changePassword(req.user.id, oldPassword, newPassword, req);
 
     res.json({
       message: "Đổi mật khẩu thành công",
@@ -132,7 +132,7 @@ async function updateMe(req, res) {
 
 async function logout(req, res) {
   try {
-    await authService.logout(req.user.id);
+    await authService.logout(req.user.id, req);
 
     res.json({
       message: "Đăng xuất thành công",

@@ -7,19 +7,20 @@ datasource db {
 }
 
 model User {
-  id                     Int          @id @default(autoincrement())
-  fullName               String
-  email                  String       @unique
-  phone                  String?
-  passwordHash           String
-  role                   Role         @default(STUDENT)
-  status                 UserStatus   @default(ACTIVE)
-  resetToken             String?
-  resetTokenExpiresAt    DateTime?
-  refreshTokenHash       String?
-  refreshTokenExpiresAt  DateTime?
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
+  id                    Int        @id @default(autoincrement())
+  fullName              String
+  email                 String     @unique
+  phone                 String?
+  passwordHash          String
+  role                  Role       @default(STUDENT)
+  status                UserStatus @default(ACTIVE)
+  resetToken            String?
+  resetTokenExpiresAt   DateTime?
+  refreshTokenHash      String?
+  refreshTokenExpiresAt DateTime?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  auditLogs             AuditLog[]
 }
 
 enum Role {
@@ -32,4 +33,22 @@ enum UserStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String // VD: "AUTH_LOGIN_SUCCESS", "USER_CREATED", ...
+  target    String? // VD: "User:13", "Auth:me"
+  meta      Json? // Thông tin thêm tuỳ action
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

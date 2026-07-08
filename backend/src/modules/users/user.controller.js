@@ -29,7 +29,7 @@ async function getAllUsers(req, res) {
 
 async function createUser(req, res) {
   try {
-    const user = await userService.createUser(req.body);
+    const user = await userService.createUser(req.body, req);
 
     res.status(201).json({
       message: "Tạo người dùng thành công",
@@ -61,7 +61,7 @@ async function getUserById(req, res) {
 
 async function updateUser(req, res) {
   try {
-    const user = await userService.updateUser(req.params.id, req.body);
+    const user = await userService.updateUser(req.params.id, req.body, req);
 
     res.json({
       message: "Cập nhật người dùng thành công",
@@ -76,7 +76,7 @@ async function updateUser(req, res) {
 
 async function deleteUser(req, res) {
   try {
-    await userService.deleteUser(req.params.id, req.user.id);
+    await userService.deleteUser(req.params.id, req.user.id, req);
 
     res.json({
       message: "Xóa người dùng thành công",

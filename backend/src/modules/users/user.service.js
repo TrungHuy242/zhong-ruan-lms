@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const { Role, UserStatus } = require("@prisma/client");
 const userRepository = require("./user.repository");
+const audit = require("../audit/audit.service");
 
 const STATUS_MAP = {
   active: UserStatus.ACTIVE,
@@ -12,7 +13,7 @@ async function getAllUsers() {
   return userRepository.findAllUsers();
 }
 
-async function createUser(payload) {
+async function createUser(payload, req) {
   const { fullName, email, phone, password, role } = payload;
 
   if (!fullName || !email || !password || !role) {
@@ -33,7 +34,7 @@ async function createUser(payload) {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  return userRepository.createUser({
+  const newUser = await userRepository.createUser({
     fullName,
     email,
     phone: phone || null,
@@ -41,6 +42,8 @@ async function createUser(payload) {
     role: Role[role],
     status: UserStatus.ACTIVE,
   });
+  await audit.log({ userId: req.user.id, action: "ADMIN_USER_CREATED", target: `User:${newUser.id}`, meta: { email: newUser.email, role: newUser.role }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
+  return newUser;
 }
 
 async function getUserById(id) {
@@ -53,7 +56,7 @@ async function getUserById(id) {
   return user;
 }
 
-async function updateUser(id, payload) {
+async function updateUser(id, payload, req) {
   const { fullName, email, phone, role, status } = payload;
 
   const currentUser = await userRepository.findUserById(id);
@@ -82,16 +85,18 @@ async function updateUser(id, payload) {
     }
   }
 
-  return userRepository.updateUser(id, {
+  const updateUser = await userRepository.updateUser(id, {
     fullName,
     email,
     phone,
     role: role ? Role[role] : undefined,
     status: status ? STATUS_MAP[status] : undefined,
   });
+  await audit.log({ userId: req.user.id, action: "ADMIN_USER_UPDATED", target: `User:${updatedUser.id}`, meta: { changes: payload }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
+  return updatedUser;
 }
 
-async function deleteUser(id, currentUserId) {
+async function deleteUser(id, currentUserId, req) {
   const user = await userRepository.findUserById(id);
 
   if (!user) {
@@ -102,7 +107,8 @@ async function deleteUser(id, currentUserId) {
     throw new Error("Bạn không thể tự xóa tài khoản của mình");
   }
 
-  return userRepository.deleteUser(id);
+  await userRepository.deleteUser(id);
+  await audit.log({ userId: currentUserId, action: "ADMIN_USER_DELETED", target: `User:${id}`, meta: { email: user.email }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
 }
 
 module.exports = {
