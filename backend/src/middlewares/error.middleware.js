@@ -3,6 +3,7 @@
 // onto the request and emits it on the response; we catch that by listening to "error" on the
 // parser instance and converting it to a 400 instead of letting it crash the process.
 
+const multer = require("multer");
 const STATUS_MESSAGES = {
   400: "Yêu cầu không hợp lệ",
   401: "Chưa xác thực",
@@ -46,6 +47,38 @@ function isJwtError(err) {
 
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
+  // 0) Multer errors (file size, count, unexpected field) — must be before JSON/body checks
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({
+        error: "FILE_TOO_LARGE",
+        message: "File vượt quá dung lượng tối đa 10MB",
+      });
+    }
+    if (err.code === "LIMIT_FILE_COUNT") {
+      return res.status(400).json({
+        error: "TOO_MANY_FILES",
+        message: "Chỉ được upload tối đa 1 file mỗi lần",
+      });
+    }
+    if (err.code === "LIMIT_UNEXPECTED_FILE") {
+      return res.status(400).json({
+        error: "UNEXPECTED_FIELD",
+        message: `Field upload không hợp lệ: ${err.field}`,
+      });
+    }
+    return res.status(400).json({
+      error: "UPLOAD_ERROR",
+      message: err.message,
+    });
+  }
+  // 0.5) Custom error từ fileFilter (định dạng không được phép)
+  if (err && typeof err.message === "string" && err.message.includes("không được phép")) {
+    return res.status(400).json({
+      error: "INVALID_FILE_TYPE",
+      message: err.message,
+    });
+  }
   // 1) Invalid JSON body from express.json() — status 400, body-parser error
   if (err && err.type === "entity.parse.failed") {
     return res.status(400).json({

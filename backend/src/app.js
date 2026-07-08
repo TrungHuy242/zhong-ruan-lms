@@ -5,6 +5,7 @@ const authRoutes = require("./modules/auth/auth.routes");
 const userRoutes = require("./modules/users/user.routes");
 const auditRoutes = require("./modules/audit/audit.routes");
 const notificationRoutes = require("./modules/notifications/notification.routes");
+const uploadRoutes = require("./modules/uploads/upload.routes"); 
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -17,7 +18,11 @@ app.use(cors());
 // 2. Body parsing — must be before routes.
 //    Wrap express.json() so a malformed body becomes a normal 400 response
 //    instead of crashing the process.
+//    Skip JSON parsing for multipart/form-data (handled by multer) so the
+//    request stream is not consumed before multer reads it.
 app.use((req, res, next) => {
+  const ct = req.headers["content-type"] || "";
+  if (ct.startsWith("multipart/form-data")) return next();
   express.json({ limit: "1mb" })(req, res, (err) => {
     if (err) return next(err);
     next();
@@ -38,6 +43,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", userRoutes);
 app.use("/api/admin/audit-logs", auditRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api", uploadRoutes); 
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);
