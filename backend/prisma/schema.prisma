@@ -93,3 +93,15 @@ model UploadFile {
   @@index([uploadedById])
   @@map("upload_files")
 }
+
+model Setting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   // Lưu JSON string để linh hoạt (true/false, số, chuỗi đa ngôn ngữ)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@map("settings")
+}

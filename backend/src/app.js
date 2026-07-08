@@ -6,6 +6,7 @@ const userRoutes = require("./modules/users/user.routes");
 const auditRoutes = require("./modules/audit/audit.routes");
 const notificationRoutes = require("./modules/notifications/notification.routes");
 const uploadRoutes = require("./modules/uploads/upload.routes"); 
+const settingsRouter = require("./modules/settings/setting.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -43,7 +44,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", userRoutes);
 app.use("/api/admin/audit-logs", auditRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api", uploadRoutes); 
+app.use("/api", uploadRoutes);
+app.use("/api/settings", settingsRouter);
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);
