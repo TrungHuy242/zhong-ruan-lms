@@ -8,6 +8,7 @@ const notificationRoutes = require("./modules/notifications/notification.routes"
 const uploadRoutes = require("./modules/uploads/upload.routes"); 
 const settingsRouter = require("./modules/settings/setting.routes");
 const dashboardRouter = require("./modules/dashboard/dashboard.routes");
+const searchRouter = require("./modules/search/search.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -48,6 +49,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/settings", settingsRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/search", searchRouter);
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);
