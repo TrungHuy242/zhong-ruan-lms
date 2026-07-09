@@ -1,0 +1,329 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+  gap: var(--space-3);
+}
+
+.hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.hamburger:hover {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-primary);
+}
+
+@media (max-width: 1023px) {
+  .hamburger {
+    display: flex;
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* ===== User area ===== */
+.userArea {
+  position: relative;
+}
+
+.userBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.userBtn:hover {
+  background-color: var(--bg-surface-alt);
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: var(--brand-primary);
+  color: var(--text-on-primary);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .userName {
+    display: none;
+  }
+}
+
+/* ===== Dropdown ===== */
+.dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  min-width: 220px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownHeader {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dropdownName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dropdownEmail {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.dropdownDivider {
+  height: 1px;
+  background-color: var(--border-default);
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: transparent;
+  color: var(--color-error);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.dropdownItem:hover {
+  background-color: var(--color-error-bg);
+}
+
+/* ===== Bell + dropdown ===== */
+.bellArea {
+  position: relative;
+  margin-right: var(--space-2);
+}
+
+.bellBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background-color: transparent;
+  color: var(--brand-accent-hover);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bellBtn:hover {
+  background-color: var(--brand-accent-light);
+  color: var(--brand-accent-hover);
+}
+
+.bellBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.bellBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-error);
+  color: var(--text-on-primary);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--bg-surface);
+  pointer-events: none;
+}
+
+.bellDropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  width: 360px;
+  max-width: calc(100vw - var(--space-6));
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+  animation: dropdownFadeIn 0.15s ease;
+  z-index: 60;
+}
+
+.bellDropdownHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.bellDropdownTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.bellDropdownLink {
+  font-size: 13px;
+  color: var(--brand-primary);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.bellDropdownLink:hover {
+  text-decoration: underline;
+}
+
+.bellDropdownList {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.bellItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-default);
+  transition: background-color 0.1s ease;
+}
+
+.bellItem:last-child {
+  border-bottom: 0;
+}
+
+.bellItem:hover {
+  background-color: var(--bg-surface-alt);
+}
+
+.bellItem:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring) inset;
+}
+
+.bellItemDot {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  flex-shrink: 0;
+}
+
+.bellItemDotUnread {
+  background-color: var(--brand-primary);
+}
+
+.bellItemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.bellItemTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bellItemTitleUnread {
+  font-weight: 600;
+}
+
+.bellItemMeta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bellEmpty {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}

@@ -4,7 +4,7 @@
   FileText,
   type LucideProps,
 } from "lucide-react";
-import { getFileKind, type FileKind } from "../../lib/fileValidation";
+import { getFileKind, type FileKind } from "../../validation/fileValidation";
 import styles from "./FileIcon.module.css";
 
 const KIND_TO_ICON: Record<FileKind, React.ComponentType<LucideProps>> = {

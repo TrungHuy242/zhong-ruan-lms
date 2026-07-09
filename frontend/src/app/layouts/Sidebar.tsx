@@ -12,7 +12,7 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-import { authStorage } from "../../storage/authStorage";
+import { authStorage } from "../../shared/storage/authStorage";
 import styles from "./Sidebar.module.css";
 
 const SIDEBAR_KEY = "zrlms_sidebar_collapsed";

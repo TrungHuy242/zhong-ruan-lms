@@ -10,7 +10,7 @@ import { CloudUpload, X as XIcon, AlertCircle, CheckCircle2, Loader2 } from "luc
 import {
   validateFile,
   type FileValidationError,
-} from "../../lib/fileValidation";
+} from "../../validation/fileValidation";
 import styles from "./UploadZone.module.css";
 
 export type UploadStatus = "pending" | "uploading" | "success" | "error";

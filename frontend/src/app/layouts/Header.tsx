@@ -7,9 +7,9 @@ import {
   Menu,
   User as UserIcon,
 } from "lucide-react";
-import { authStorage } from "../../storage/authStorage";
-import { useNotifications } from "../../contexts/NotificationContext";
-import type { Notification } from "../../../features/notifications";
+import { authStorage } from "../../shared/storage/authStorage";
+import { useNotifications } from "../../shared/contexts/NotificationContext";
+import type { Notification } from "../../features/notifications";
 import styles from "./Header.module.css";
 
 interface HeaderProps {

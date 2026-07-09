@@ -1,0 +1,44 @@
+/* AdminLayout: sidebar (left) + main area (right) */
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-page);
+}
+
+/* Main area fills remaining width */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* Offset for desktop sidebar */
+  margin-left: 240px;
+  transition: margin-left 200ms ease;
+}
+
+/* When sidebar is collapsed on desktop */
+.shell.sidebarCollapsed .main {
+  margin-left: 64px;
+}
+
+/* Content area */
+.content {
+  flex: 1;
+  padding: var(--space-6);
+  background-color: var(--bg-page);
+}
+
+@media (max-width: 1023px) {
+  .main {
+    margin-left: 0;
+  }
+  .shell.sidebarCollapsed .main {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .content {
+    padding: var(--space-4);
+  }
+}

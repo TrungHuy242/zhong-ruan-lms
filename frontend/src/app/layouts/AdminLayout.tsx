@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 import { Sidebar, loadCollapsedState, saveCollapsedState } from "./Sidebar";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { NotificationProvider } from "../../contexts/NotificationContext";
 import styles from "./AdminLayout.module.css";
 
 export function AdminLayout() {
@@ -29,7 +28,6 @@ export function AdminLayout() {
   }
 
   return (
-    <NotificationProvider>
     <div
       className={[
         styles.shell,
@@ -65,6 +63,5 @@ export function AdminLayout() {
         <Footer />
       </div>
     </div>
-    </NotificationProvider>
   );
 }

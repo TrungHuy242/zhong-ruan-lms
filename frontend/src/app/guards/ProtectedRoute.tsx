@@ -1,6 +1,6 @@
 ﻿import { ReactElement } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { authStorage } from "../../storage/authStorage";
+import { authStorage } from "../../shared/storage/authStorage";
 
 export interface ProtectedRouteProps {
   children: ReactElement;
