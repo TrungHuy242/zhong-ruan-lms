@@ -12,12 +12,16 @@ function handlePrismaError(error) {
 
 async function getAllUsers(req, res) {
   try {
-    const users = await userService.getAllUsers(req.query || {});
+    const result = await userService.getAllUsers(req.query || {});
 
+    // Service giờ trả { users, pagination } (object). Tách ra để giữ envelope
+    // { message, data: { users: [...], pagination: {...} } } cho tương thích ngược
+    // với FE (apiFetch unwrap field `data`, Page đọc result.users + result.pagination.total).
     res.json({
       message: "Lấy danh sách người dùng thành công",
       data: {
-        users,
+        users: result.users,
+        pagination: result.pagination,
       },
     });
   } catch (error) {
@@ -119,6 +123,37 @@ async function forceDeleteUser(req, res) {
   }
 }
 
+// DELETE /users/bulk — soft-delete nhiều user (chỉ Admin)
+async function bulkDeleteUsers(req, res) {
+  try {
+    const result = await userService.bulkDeleteUsers(req.body.ids, req.user.id, req);
+    res.json({
+      message: `Đã chuyển ${result.deletedCount} người dùng vào thùng rác`,
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
+// PATCH /users/bulk-status — đổi status nhiều user (chỉ Admin)
+async function bulkUpdateStatus(req, res) {
+  try {
+    const { ids, status } = req.body || {};
+    const result = await userService.bulkUpdateStatus(ids, status, req.user.id, req);
+    res.json({
+      message: `Đã cập nhật trạng thái cho ${result.updatedCount} người dùng`,
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+}
+
 module.exports = {
   getAllUsers,
   createUser,
@@ -127,4 +162,6 @@ module.exports = {
   deleteUser,
   restoreUser,
   forceDeleteUser,
+  bulkDeleteUsers,
+  bulkUpdateStatus,
 };

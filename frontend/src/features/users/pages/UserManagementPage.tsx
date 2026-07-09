@@ -133,9 +133,10 @@ export function UserManagementPage() {
         role: filters.role === "ALL" ? undefined : filters.role,
         status: filters.status === "ALL" ? undefined : filters.status,
         page: filters.page,
+        limit: USER_PAGE_SIZE,
       });
       setUsers(result.users);
-      setTotal(result.total);
+      setTotal(result.pagination.total);
     } catch (err) {
       const message =
         err instanceof ApiError

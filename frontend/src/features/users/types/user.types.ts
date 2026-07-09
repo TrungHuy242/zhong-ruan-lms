@@ -20,9 +20,17 @@ export interface User {
   updatedAt?: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+/** Response BE trả cho GET /admin/users (server-side pagination). */
 export interface PaginatedUsers {
   users: User[];
-  total: number;
+  pagination: PaginationMeta;
 }
 
 export interface CreateUserPayload {
@@ -47,9 +55,22 @@ export interface UpdateUserPayload {
 }
 
 export interface ListUsersParams {
+  /** Tìm chung theo fullName + email (alias `keyword` cũng được BE chấp nhận). */
   search?: string;
+  /** Tìm riêng theo fullName (mới). */
+  name?: string;
+  /** Tìm riêng theo email (mới). */
+  email?: string;
   role?: UserRole;
   status?: UserStatus;
+  /** Số user mỗi trang (default 10; BE chấp nhận 10/20/50). */
+  limit?: 10 | 20 | 50;
+  /** Trang hiện tại (1-indexed, default 1). */
+  page?: number;
+  /** Field để sort (default createdAt). */
+  sortBy?: "fullName" | "email" | "role" | "status" | "createdAt";
+  /** asc | desc (default desc). */
+  sortOrder?: "asc" | "desc";
   /**
    * Đặt `true` nếu muốn bao gồm cả user đã bị soft-delete (mặc định BE ẩn).
    * Tương ứng ?includeDeleted=true.

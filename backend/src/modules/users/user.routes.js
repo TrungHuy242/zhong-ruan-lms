@@ -19,6 +19,22 @@ router.post(
   userController.createUser
 );
 
+// ===== Bulk endpoints (đặt TRƯỚC "/:id" để Express match đúng — nếu đặt sau
+// thì "DELETE /bulk" sẽ bị route "/:id" bắt mất với id="bulk" → lỗi) =====
+router.delete(
+  "/bulk",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  userController.bulkDeleteUsers
+);
+
+router.patch(
+  "/bulk-status",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  userController.bulkUpdateStatus
+);
+
 router.get(
   "/:id",
   authenticate,

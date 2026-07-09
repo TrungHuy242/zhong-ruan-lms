@@ -1,16 +1,12 @@
 ﻿/**
  * userApi — tầng giao tiếp với backend cho module User Management.
  *
- * Lưu ý quan trọng: backend hiện chưa hỗ trợ search/filter/pagination ở BE,
- * nên tham số phân trang và lọc ở các hàm list/search/filter được xử lý
- * hoàn toàn phía FE (lọc client, rồi phân trang kết quả). Khi BE mở rộng
- * thêm, chỉ cần chuyển các tham số này vào query string mà không phải sửa
- * chỗ gọi ở UI (giữ contract trả về PaginatedResult).
+ * Server-side pagination (BE từ commit này đã hỗ trợ):
+ *   - list: trả { users: User[], pagination: { page, limit, total, totalPages } }
+ *     Toàn bộ search/filter/sort/pagination được BE xử lý qua query string,
+ *     FE chỉ truyền tham số và đọc kết quả.
  *
- * Response contract:
- *   - list: trả { users: User[], total: number } (User có thêm deletedAt).
- *     Khi BE không phân trang ở server, FE lọc/phân trang rồi trả về
- *     { users, total } cho phù hợp shape mà UI dùng (UserManagementPage).
+ * Response contract cho các endpoint khác (giữ nguyên từ trước):
  *   - create: trả User.
  *   - update: trả User.
  *   - delete: trả { id, email, deletedAt }.
@@ -19,13 +15,13 @@
  */
 
 import { apiFetch } from "../../../shared/api";
-import { USER_PAGE_SIZE } from "../constants/user.constants";
 import type {
   CreateUserPayload,
   ListUsersParams,
   PaginatedUsers,
   UpdateUserPayload,
   User,
+  UserStatus,
 } from "../types/user.types";
 
 export type {
@@ -39,58 +35,57 @@ export type {
 } from "../types/user.types";
 export { USER_PAGE_SIZE, USER_ROLE_LABELS, USER_STATUS_LABELS } from "../constants/user.constants";
 
-async function fetchAllUsers(params: ListUsersParams = {}): Promise<User[]> {
-  const qs = new URLSearchParams();
-  if (params.includeDeleted) qs.set("includeDeleted", "true");
-  qs.set("limit", "9999"); // hint; BE hiện bỏ qua.
-  // BE mount user router ở /api/admin/users — khớp với app.use trong app.js.
-  const path = `/admin/users${qs.toString() ? `?${qs}` : ""}`;
-  // BE trả { message, data: { users: [...] } }. apiFetch unwrap field `data`
-  // mặc định nên ta nhận { users: User[] }.
-  const data = await apiFetch<{ users: User[] }>(path);
-  if (!data || !Array.isArray(data.users)) {
-    throw new Error("Phản hồi từ máy chủ không hợp lệ");
-  }
-  return data.users;
-}
-
 /**
- * Loc/pagination client-side cho tới khi BE hỗ trợ.
- * Trả về đúng shape PaginatedUsers để UI dùng như server trả.
+ * Lấy danh sách user có phân trang từ server.
+ * BE sẽ tự filter theo search/name/email/role/status và sort theo sortBy/sortOrder.
  */
-async function listUsersServer(params: ListUsersParams & { page?: number }): Promise<PaginatedUsers> {
-  const users = await fetchAllUsers(params);
-
-  // Lọc client.
-  let filtered = users;
-  const search = (params.search ?? "").trim().toLowerCase();
-  if (search) {
-    filtered = filtered.filter(
-      (u) =>
-        u.fullName.toLowerCase().includes(search) ||
-        u.email.toLowerCase().includes(search)
-    );
-  }
-  if (params.role) {
-    filtered = filtered.filter((u) => u.role === params.role);
-  }
-  if (params.status) {
-    filtered = filtered.filter((u) => u.status === params.status);
-  }
-
-  // Phân trang client.
-  const total = filtered.length;
-  const page = Math.max(1, params.page ?? 1);
-  const start = (page - 1) * USER_PAGE_SIZE;
-  const sliced = filtered.slice(start, start + USER_PAGE_SIZE);
-
-  return { users: sliced, total };
-}
-
 export async function listUsers(
   params: ListUsersParams & { page?: number } = {}
 ): Promise<PaginatedUsers> {
-  return listUsersServer(params);
+  const qs = new URLSearchParams();
+  if (params.search) qs.set("keyword", params.search);
+  if (params.name) qs.set("name", params.name);
+  if (params.email) qs.set("email", params.email);
+  if (params.role) qs.set("role", params.role);
+  if (params.status) qs.set("status", params.status);
+  if (params.includeDeleted) qs.set("includeDeleted", "true");
+  if (params.limit) qs.set("limit", String(params.limit));
+  if (params.page) qs.set("page", String(params.page));
+  if (params.sortBy) qs.set("sortBy", params.sortBy);
+  if (params.sortOrder) qs.set("sortOrder", params.sortOrder);
+
+  const path = `/admin/users${qs.toString() ? `?${qs}` : ""}`;
+  // apiFetch unwrap field `data` mặc định → ta nhận { users, pagination }
+  const data = await apiFetch<PaginatedUsers>(path);
+  if (!data || !Array.isArray(data.users)) {
+    throw new Error("Phản hồi từ máy chủ không hợp lệ");
+  }
+  return data;
+}
+
+/**
+ * Bulk soft-delete nhiều user. DELETE /admin/users/bulk
+ */
+export async function bulkDeleteUsers(
+  ids: Array<string | number>
+): Promise<{ deletedCount: number; deletedIds: Array<string | number> }> {
+  return apiFetch(`/admin/users/bulk`, {
+    method: "DELETE",
+    body: { ids },
+  });
+}
+
+/**
+ * Bulk đổi status nhiều user. PATCH /admin/users/bulk-status
+ */
+export async function bulkUpdateStatus(
+  ids: Array<string | number>,
+  status: UserStatus
+): Promise<{ updatedCount: number; updatedIds: Array<string | number> }> {
+  return apiFetch(`/admin/users/bulk-status`, {
+    method: "PATCH",
+    body: { ids, status },
+  });
 }
 
 /**
