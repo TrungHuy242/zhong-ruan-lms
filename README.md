@@ -63,35 +63,38 @@ zhong-ruan-lms/
 │   ├── uploads/             # Tài liệu học tập (giai đoạn đồ án)
 │   ├── .env.example
 │   └── package.json
-├── frontend/               # ReactJS + Vite + TypeScript
+├── frontend/               # ReactJS + Vite + TypeScript — Feature-Based Architecture
 │   └── src/
-│       ├── main.tsx          # Điểm vào React (BrowserRouter + StrictMode)
-│       ├── App.tsx           # Khai báo route + lazy pages
+│       ├── main.tsx          # Điểm vào React (BrowserRouter + StrictMode + AppProviders)
+│       ├── App.tsx           # Render <AppRoutes /> (chỉ 1 dòng)
 │       ├── styles/           # reset.css, tokens.css (biến CSS dùng chung)
+│       ├── app/              # Cross-cutting: các thành phần xuyên suốt toàn app
+│       │   ├── layouts/      # Header, Sidebar, Footer, AdminLayout
+│       │   ├── providers/    # AppProviders (gom React Context toàn cục)
+│       │   ├── guards/       # ProtectedRoute (kiểm tra đăng nhập + role)
+│       │   └── routes/       # AppRoutes — cấu hình route tập trung
 │       ├── shared/           # Tài nguyên dùng chung, KHÔNG phụ thuộc feature cụ thể
-│       │   ├── components/
-│       │   │   ├── ui/       # Design system: Button, Input, Table, Pagination, Modal,
-│       │   │   │             #   Alert, Card, ConfirmDialog, StatCard, FileIcon, UploadZone
-│       │   │   ├── layout/   # Header, Sidebar, Footer, AdminLayout
-│       │   │   └── guards/   # ProtectedRoute (kiểm tra đăng nhập + role)
-│       │   ├── lib/          # api.ts (apiFetch chung), authStorage, NotificationContext, fileValidation
+│       │   ├── api/          # apiFetch + ApiError (HTTP client)
+│       │   ├── storage/      # authStorage (localStorage wrapper cho token + user)
+│       │   ├── contexts/     # NotificationContext (Bell badge + recent list)
+│       │   ├── validation/   # fileValidation (validate loại/kích thước file)
 │       │   ├── hooks/        # Custom hooks dùng chung (useDebounce, usePagination, ...)
 │       │   ├── types/        # Kiểu dữ liệu dùng chung
-│       │   └── utils/        # Hàm tiện ích: formatDate, formatFileSize, ...
-│       ├── features/         # Mỗi feature tự bọc Page + API + Modal + types riêng
-│       │   ├── auth/         # LoginPage, RegisterPage, authApi
-│       │   ├── dashboard/    # DashboardPage, dashboardApi
-│       │   ├── users/        # UserManagementPage, userApi, UserFormModal, UserDetailModal
-│       │   ├── notifications/# NotificationManagementPage, notificationApi,
-│       │   │                 #   NotificationFormModal, NotificationDetailModal
-│       │   ├── files/        # FileManagerPage, fileApi, FileDetailModal
-│       │   ├── audit-log/    # AuditLogPage, auditLogApi, AuditLogDetailModal
-│       │   ├── settings/     # SystemSettingsPage, settingApi, SettingModal, SettingDetailModal
-│       │   ├── profile/      # ProfilePage, profileApi, ChangePasswordModal
-│       │   ├── search/       # GlobalSearchPage, searchApi
-│       │   └── trash/        # TrashManagerPage, trashApi
-│       └── app/              # Cross-cutting (sẽ mở rộng theo vai trò)
-│           └── routes/       # Cấu hình route tập trung (nếu tách khỏi App.tsx)
+│       │   ├── utils/        # Hàm tiện ích: formatDate, formatFileSize, ...
+│       │   └── components/
+│       │       └── ui/       # Design system: Button, Input, Table, Pagination, Modal,
+│       │                     #   Alert, Card, ConfirmDialog, StatCard, FileIcon, UploadZone
+│       └── features/         # Mỗi feature là 1 module độc lập với sub-folder theo concern
+│           ├── auth/         # LoginPage, RegisterPage, authApi
+│           ├── dashboard/    # DashboardPage, dashboardApi
+│           ├── users/        # UserManagementPage, userApi, UserFormModal, UserDetailModal
+│           ├── notifications/# NotificationManagementPage, notificationApi, modals
+│           ├── files/        # FileManagerPage, fileApi, FileDetailModal
+│           ├── audit-log/    # AuditLogPage, auditLogApi, AuditLogDetailModal
+│           ├── settings/     # SystemSettingsPage, settingApi, modals
+│           ├── profile/      # ProfilePage, profileApi, ChangePasswordModal
+│           ├── search/       # GlobalSearchPage, searchApi
+│           └── trash/        # TrashManagerPage, trashApi (gom User/Notif/File đã xoá mềm)
 └── README.md
 ```
 
