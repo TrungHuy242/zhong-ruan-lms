@@ -5,6 +5,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { UserManagementPage } from "./pages/UserManagementPage";
 import { NotificationManagementPage } from "./pages/NotificationManagementPage";
+import { AuditLogPage } from "./pages/AuditLogPage";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -28,7 +29,7 @@ export default function App() {
         <Route path="/users" element={<UserManagementPage />} />
         <Route path="/notifications" element={<NotificationManagementPage />} />
         <Route path="/files" element={<PlaceholderPage title="Quản lý tệp" />} />
-        <Route path="/logs" element={<PlaceholderPage title="Nhật ký hệ thống" />} />
+        <Route path="/logs" element={<AuditLogPage />} />
         <Route path="/settings" element={<PlaceholderPage title="Cài đặt hệ thống" />} />
         <Route path="/search" element={<PlaceholderPage title="Tìm kiếm" />} />
       </Route>
