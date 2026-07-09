@@ -1,0 +1,203 @@
+.card {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 130px;
+  position: relative;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.iconBadge {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconBadge svg {
+  width: 22px;
+  height: 22px;
+}
+
+.tone_primary {
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
+}
+.tone_accent {
+  background-color: var(--brand-accent-light);
+  color: var(--brand-accent-hover);
+}
+.tone_info {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+}
+.tone_success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+.tone_warning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+.tone_neutral {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ===== Trend (so sánh kỳ trước) ===== */
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.trendArrow {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.trendUp {
+  color: var(--color-success);
+}
+.trendDown {
+  color: var(--color-error);
+}
+.trendFlat {
+  color: var(--text-secondary);
+}
+
+/* ===== Hint (icon i + tooltip) ===== */
+.hintWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  color: var(--text-placeholder);
+  cursor: help;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.hintWrap:hover,
+.hintWrap:focus-visible {
+  color: var(--text-secondary);
+  background-color: var(--bg-surface-alt);
+  outline: none;
+}
+
+.hintWrap:focus-visible {
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.hintTooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: max-content;
+  max-width: 220px;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--text-primary);
+  color: var(--text-on-primary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-modal);
+  z-index: 20;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  transform: translateY(-4px);
+  text-align: left;
+}
+
+.hintTooltip::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--text-primary);
+  transform: rotate(45deg);
+}
+
+.hintWrap:hover .hintTooltip,
+.hintWrap:focus-visible .hintTooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== Skeleton ===== */
+.skeletonBox {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface-alt) 0%,
+    rgba(0, 0, 0, 0.06) 50%,
+    var(--bg-surface-alt) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeletonValue {
+  width: 60%;
+  height: 32px;
+}
+
+.skeletonLabel {
+  width: 90%;
+  height: 14px;
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBox {
+    animation: none;
+  }
+}

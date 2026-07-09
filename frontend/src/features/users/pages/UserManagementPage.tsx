@@ -17,7 +17,7 @@ import {
   type SortConfig,
   type TableColumn,
 } from "../../../shared/components/ui";
-import { UserFormModal } from "../components/UserFormModal";
+import { UserFormModal } from "../../../shared/components/modals/UserFormModal";
 import { UserDetailModal } from "../components/UserDetailModal";
 import {
   UserFilterPanel,

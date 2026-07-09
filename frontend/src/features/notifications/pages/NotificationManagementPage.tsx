@@ -15,7 +15,7 @@ import {
   Table,
   type TableColumn,
 } from "../../../shared/components/ui";
-import { NotificationFormModal } from "../components/NotificationFormModal";
+import { NotificationFormModal } from "../../../shared/components/modals/NotificationFormModal";
 import { NotificationDetailModal } from "../components/NotificationDetailModal";
 import {
   deleteNotification,

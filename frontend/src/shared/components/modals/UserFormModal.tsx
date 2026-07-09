@@ -1,5 +1,5 @@
-﻿import { FormEvent, useEffect, useState } from "react";
-import { Alert, Button, Input, Modal } from "../../../shared/components/ui";
+import { FormEvent, useEffect, useState } from "react";
+import { Alert, Button, Input, Modal } from "../ui";
 import {
   createUser,
   updateUser,
@@ -7,7 +7,7 @@ import {
   type UpdateUserPayload,
   type User,
   type UserRole,
-} from "../services/userApi";
+} from "../../../features/users/services/userApi";
 import { ApiError } from "../../../shared/api";
 import styles from "./UserFormModal.module.css";
 
@@ -55,9 +55,18 @@ function validatePassword(value: string): string | undefined {
   return undefined;
 }
 
+/**
+ * UserFormModal — form tạo/sửa user.
+ *
+ * Đã được tái cấu trúc lên `shared/components/modals/` để các feature
+ * (users, dashboard QuickActions...) cùng dùng chung — tránh trùng code,
+ * không phá ranh giới feature-based.
+ *
+ * - `user=null` → chế độ thêm mới
+ * - `user!=null` → chế độ sửa user đó
+ */
 export interface UserFormModalProps {
   open: boolean;
-  /** user=null → thêm mới; user!=null → sửa user đó. */
   user: User | null;
   onClose: () => void;
   /** Callback khi tạo/sửa thành công để page refresh & hiện toast. */
