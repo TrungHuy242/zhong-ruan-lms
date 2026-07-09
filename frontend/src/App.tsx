@@ -2,13 +2,13 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { DashboardPage } from "./pages/DashboardPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { UserManagementPage } from "./pages/UserManagementPage";
 import { NotificationManagementPage } from "./pages/NotificationManagementPage";
 import { AuditLogPage } from "./pages/AuditLogPage";
 import { FileManagerPage } from "./pages/FileManagerPage";
 import { SystemSettingsPage } from "./pages/SystemSettingsPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { GlobalSearchPage } from "./pages/GlobalSearchPage";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -35,7 +35,7 @@ export default function App() {
         <Route path="/logs" element={<AuditLogPage />} />
         <Route path="/settings" element={<SystemSettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/search" element={<PlaceholderPage title="Tìm kiếm" />} />
+        <Route path="/search" element={<GlobalSearchPage />} />
       </Route>
 
       {/* Catch-all */}

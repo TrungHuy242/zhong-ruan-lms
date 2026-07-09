@@ -1,0 +1,333 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+  letter-spacing: -0.02em;
+}
+
+.titleIcon { color: var(--brand-primary); }
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 720px;
+}
+
+.searchCard {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.searchRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.searchInputWrap {
+  flex: 1 1 360px;
+  min-width: 240px;
+}
+
+.typeLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 160px;
+}
+
+.typeLabelText {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.typeSelect {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  min-height: 42px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.typeSelect:hover { border-color: var(--brand-primary); }
+
+.typeSelect:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(var(--brand-primary-rgb, 99, 102, 241), 0.15);
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--border-default);
+}
+
+.summaryText {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.summaryKeyword {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.badgeAll {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+.badgeUser {
+  background-color: #ecfeff;
+  color: #0e7490;
+  border-color: rgba(14, 116, 144, 0.2);
+}
+
+.badgeNotification {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: rgba(146, 64, 14, 0.2);
+}
+
+.badgeFile {
+  background-color: #ede9fe;
+  color: #5b21b6;
+  border-color: rgba(91, 33, 182, 0.2);
+}
+
+.errorWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.allEmpty { width: 100%; }
+
+.emptyState {
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.emptyState svg { color: var(--text-tertiary, var(--text-secondary)); }
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.emptyHint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 480px;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.section { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sectionCount {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.sectionEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-5) var(--space-3);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.sectionFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-default);
+  flex-wrap: wrap;
+}
+
+.totalLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.totalLabel b { color: var(--text-primary); font-weight: 600; }
+
+.highlight {
+  background-color: #fef08a;
+  color: #713f12;
+  padding: 0 2px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* Cells */
+.userCell,
+.notifCell,
+.fileCell {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.userIcon,
+.notifIcon,
+.fileIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.userInfo,
+.notifInfo,
+.fileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.userName,
+.notifTitle,
+.fileName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.userEmail,
+.notifMessage,
+.fileMeta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+
+.cellText {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.statusActive,
+.statusRead {
+  background-color: #dcfce7;
+  color: #15803d;
+  border-color: rgba(21, 128, 61, 0.2);
+}
+
+.statusOther,
+.statusUnread {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: rgba(146, 64, 14, 0.2);
+}
+
+@media (max-width: 720px) {
+  .title { font-size: 22px; }
+  .searchRow { flex-direction: column; align-items: stretch; }
+  .searchInputWrap { min-width: 0; }
+  .typeLabel { min-width: 0; }
+}
