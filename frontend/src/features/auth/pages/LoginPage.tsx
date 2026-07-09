@@ -147,26 +147,6 @@ export function LoginPage() {
           alt=""
           className={styles.brandImage}
         />
-        <div className={styles.brandOverlay} />
-        <div className={styles.brandInner}>
-          <div className={styles.logoMark}>
-            <img
-              src="/logo/logo-full.png"
-              alt="Zhong Ruan LMS"
-              className={styles.logoImg}
-            />
-          </div>
-          <h1 className={styles.brandTitle}>Hệ thống quản lý đào tạo</h1>
-          <p className={styles.brandTagline}>
-            Nền tảng quản lý lớp học, học viên và lộ trình học tập dành cho
-            Trung tâm Trung Quốc học.
-          </p>
-          <ul className={styles.bullets}>
-            <li>Quản lý học viên & lớp học tập trung</li>
-            <li>Theo dõi tiến độ & điểm danh realtime</li>
-            <li>Báo cáo & thống kê trực quan</li>
-          </ul>
-        </div>
       </section>
 
       <section className={styles.formPanel}>
