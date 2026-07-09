@@ -16,3 +16,11 @@ export { ConfirmDialog } from "./ConfirmDialog";
 export type { ConfirmDialogProps } from "./ConfirmDialog";
 export { StatCard } from "./StatCard";
 export type { StatCardProps, StatCardTone } from "./StatCard";
+export { FileIcon } from "./FileIcon";
+export type { FileIconProps } from "./FileIcon";
+export { UploadZone } from "./UploadZone";
+export type {
+  UploadZoneProps,
+  UploadItem,
+  UploadStatus,
+} from "./UploadZone";

@@ -1,0 +1,16 @@
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.image { background-color: var(--color-info-bg);    color: var(--color-info); }
+.pdf   { background-color: var(--color-error-bg);   color: var(--color-error); }
+.word  { background-color: var(--color-info-bg);    color: var(--color-info); }
+.other { background-color: var(--bg-surface-alt);   color: var(--text-secondary); }
