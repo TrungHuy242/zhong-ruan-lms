@@ -1,0 +1,62 @@
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-6);
+  background-color: var(--bg-page);
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.tag {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-2);
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.role {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.note {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: var(--space-4);
+  background-color: var(--bg-surface-alt);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-6);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}

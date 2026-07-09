@@ -1,0 +1,63 @@
+/* Design tokens — single source of truth cho frontend.
+ * Mapping từ DESIGN.md (file đầu project). Đổi giá trị ở đây là đổi toàn app.
+ */
+:root {
+  /* ===== Brand - Primary (đỏ Trung Hoa) ===== */
+  --brand-primary: #C8102E;
+  --brand-primary-hover: #A50C24;
+  --brand-primary-active: #8A0A1E;
+  --brand-primary-light: #FDEAEC;
+  --brand-primary-lighter: #FFF5F6;
+
+  /* ===== Brand - Accent (vàng gold) ===== */
+  --brand-accent: #D4AF37;
+  --brand-accent-hover: #B6942C;
+  --brand-accent-light: #FBF3D9;
+
+  /* ===== Neutral ===== */
+  --bg-page: #F7F7F9;
+  --bg-surface: #FFFFFF;
+  --bg-surface-alt: #FAFAFB;
+  --border-default: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --text-primary: #1A1A1E;
+  --text-secondary: #6B7280;
+  --text-placeholder: #9CA3AF;
+  --text-disabled: #C4C7CC;
+  --text-on-primary: #FFFFFF;
+
+  /* ===== Semantic ===== */
+  --color-success: #16A34A;
+  --color-success-bg: #ECFDF3;
+  --color-success-hover: #15803D;
+  --color-error: #DC2626;
+  --color-error-bg: #FEF2F2;
+  --color-error-hover: #B91C1C;
+  --color-warning: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-info: #2563EB;
+  --color-info-bg: #EFF6FF;
+
+  /* ===== Radius ===== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  /* ===== Shadow ===== */
+  --shadow-sm: 0 1px 2px rgba(20, 20, 30, 0.04);
+  --shadow-card: 0 8px 24px rgba(20, 20, 30, 0.06);
+  --shadow-modal: 0 16px 48px rgba(20, 20, 30, 0.16);
+  --shadow-focus-ring: 0 0 0 4px rgba(200, 16, 46, 0.12);
+
+  /* ===== Spacing ===== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+}
