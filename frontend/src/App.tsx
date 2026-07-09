@@ -1,17 +1,17 @@
 import { Route, Routes, Navigate } from "react-router-dom";
-import { LoginPage } from "./pages/LoginPage";
-import { RegisterPage } from "./pages/RegisterPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { UserManagementPage } from "./pages/UserManagementPage";
-import { NotificationManagementPage } from "./pages/NotificationManagementPage";
-import { AuditLogPage } from "./pages/AuditLogPage";
-import { FileManagerPage } from "./pages/FileManagerPage";
-import { SystemSettingsPage } from "./pages/SystemSettingsPage";
-import { ProfilePage } from "./pages/ProfilePage";
-import { GlobalSearchPage } from "./pages/GlobalSearchPage";
-import { TrashManagerPage } from "./pages/TrashManagerPage";
-import { AdminLayout } from "./layouts/AdminLayout";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { LoginPage } from "./features/auth/LoginPage";
+import { RegisterPage } from "./features/auth/RegisterPage";
+import { DashboardPage } from "./features/dashboard/DashboardPage";
+import { UserManagementPage } from "./features/users/UserManagementPage";
+import { NotificationManagementPage } from "./features/notifications/NotificationManagementPage";
+import { AuditLogPage } from "./features/audit-log/AuditLogPage";
+import { FileManagerPage } from "./features/files/FileManagerPage";
+import { SystemSettingsPage } from "./features/settings/SystemSettingsPage";
+import { ProfilePage } from "./features/profile/ProfilePage";
+import { GlobalSearchPage } from "./features/search/GlobalSearchPage";
+import { TrashManagerPage } from "./features/trash/TrashManagerPage";
+import { AdminLayout } from "./shared/components/layout/AdminLayout";
+import { ProtectedRoute } from "./shared/components/guards/ProtectedRoute";
 
 export default function App() {
   return (

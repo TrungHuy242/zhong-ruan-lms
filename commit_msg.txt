@@ -1,0 +1,50 @@
+Refactor: Tái cấu trúc thư mục Frontend theo feature-first
+
+Phân loại tổ chức lại src/ từ phẳng (pages/, components/, lib/, layouts/)
+sang 3 lớp rõ ràng để dễ tìm và dễ sửa khi mở rộng:
+
+- shared/ (tài nguyên dùng chung, không phụ thuộc feature cụ thể)
+  - components/ui/      Design system: Button, Input, Table, Pagination, Modal,
+    Alert, Card, ConfirmDialog, StatCard, FileIcon, UploadZone
+  - components/layout/  Header, Sidebar, Footer, AdminLayout
+  - components/guards/  ProtectedRoute
+  - lib/                api.ts (apiFetch chung), authStorage, NotificationContext, fileValidation
+  - hooks/, types/, utils/  (sẵn sàng cho custom hooks dùng chung)
+
+- features/ (mỗi feature tự bọc Page + API + Modal + types riêng)
+  - auth/               LoginPage, RegisterPage, authApi
+  - dashboard/          DashboardPage, dashboardApi
+  - users/              UserManagementPage, userApi, UserFormModal, UserDetailModal
+  - notifications/      NotificationManagementPage, notificationApi,
+    NotificationFormModal, NotificationDetailModal
+  - files/              FileManagerPage, fileApi, FileDetailModal
+  - audit-log/          AuditLogPage, auditLogApi, AuditLogDetailModal
+  - settings/           SystemSettingsPage, settingApi, SettingModal, SettingDetailModal
+  - profile/            ProfilePage, profileApi, ChangePasswordModal
+  - search/             GlobalSearchPage, searchApi
+  - trash/              TrashManagerPage, trashApi
+
+- app/ (cross-cutting, dành cho cấu hình route theo vai trò trong tương lai)
+  - routes/             (chỗ để tách App.tsx khi cần)
+
+Cập nhật toàn bộ import path (relative) cho phù hợp với vị trí mới, bao gồm:
+- Page → shared/components/ui: "../components/ui" → "../../shared/components/ui"
+- Modal cùng feature: "../components/<Modal>" → "./<Modal>" (giảm tải đường dẫn)
+- API cùng feature: "./<feature>Api" (giữ nguyên sau khi đã di chuyển)
+- API cross-feature: "../<otherFeature>/<otherApi>" (vd. trashApi dùng UserRole từ userApi)
+- shared/lib/NotificationContext → features/notifications/notificationApi (cross-feature shared)
+- shared/components/ui/FileIcon,UploadZone → ../../lib/fileValidation
+- App.tsx → cập nhật đường dẫn mới
+
+README mục 3 "Cấu trúc thư mục" cập nhật cho khớp cấu trúc thực tế.
+
+Verify:
+- npx tsc --noEmit: 0 errors
+- npx vite build: 1876 modules, 342.86 kB JS / 85.75 kB CSS, built in 9.39s
+- Linter: 0 errors
+- PlaceholderPage.tsx bị xoá (không còn dùng ở route nào)
+- Cấu trúc mới giúp: tìm feature theo tên → mở folder features/<x>/ → có đủ
+  Page/Api/Modal cùng chỗ; tìm UI design system → shared/components/ui/;
+  tìm hook chung → shared/hooks/; tìm helper HTTP → shared/lib/api.ts.
+
+Co-Authored-By: Claude <noreply@anthropic.com>

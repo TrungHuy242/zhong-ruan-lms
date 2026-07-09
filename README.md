@@ -63,21 +63,35 @@ zhong-ruan-lms/
 │   ├── uploads/             # Tài liệu học tập (giai đoạn đồ án)
 │   ├── .env.example
 │   └── package.json
-├── frontend/               # ReactJS (đang khởi tạo)
+├── frontend/               # ReactJS + Vite + TypeScript
 │   └── src/
-│       ├── api/             # axios client
-│       ├── components/
-│       ├── layouts/         # PublicLayout, StudentLayout, TeacherLayout, AdminLayout
-│       ├── pages/
-│       │   ├── public/      # Trang chủ, giới thiệu, khóa học, tin tức, liên hệ
-│       │   ├── auth/        # Login, Register
-│       │   ├── student/     # Dashboard, lịch học, tài liệu, bài tập
-│       │   ├── teacher/     # Dashboard, điểm danh, chấm bài
-│       │   └── admin/       # Users, courses, classes, CRM, reports
-│       ├── routes/
-│       ├── store/
-│       ├── hooks/
-│       └── utils/
+│       ├── main.tsx          # Điểm vào React (BrowserRouter + StrictMode)
+│       ├── App.tsx           # Khai báo route + lazy pages
+│       ├── styles/           # reset.css, tokens.css (biến CSS dùng chung)
+│       ├── shared/           # Tài nguyên dùng chung, KHÔNG phụ thuộc feature cụ thể
+│       │   ├── components/
+│       │   │   ├── ui/       # Design system: Button, Input, Table, Pagination, Modal,
+│       │   │   │             #   Alert, Card, ConfirmDialog, StatCard, FileIcon, UploadZone
+│       │   │   ├── layout/   # Header, Sidebar, Footer, AdminLayout
+│       │   │   └── guards/   # ProtectedRoute (kiểm tra đăng nhập + role)
+│       │   ├── lib/          # api.ts (apiFetch chung), authStorage, NotificationContext, fileValidation
+│       │   ├── hooks/        # Custom hooks dùng chung (useDebounce, usePagination, ...)
+│       │   ├── types/        # Kiểu dữ liệu dùng chung
+│       │   └── utils/        # Hàm tiện ích: formatDate, formatFileSize, ...
+│       ├── features/         # Mỗi feature tự bọc Page + API + Modal + types riêng
+│       │   ├── auth/         # LoginPage, RegisterPage, authApi
+│       │   ├── dashboard/    # DashboardPage, dashboardApi
+│       │   ├── users/        # UserManagementPage, userApi, UserFormModal, UserDetailModal
+│       │   ├── notifications/# NotificationManagementPage, notificationApi,
+│       │   │                 #   NotificationFormModal, NotificationDetailModal
+│       │   ├── files/        # FileManagerPage, fileApi, FileDetailModal
+│       │   ├── audit-log/    # AuditLogPage, auditLogApi, AuditLogDetailModal
+│       │   ├── settings/     # SystemSettingsPage, settingApi, SettingModal, SettingDetailModal
+│       │   ├── profile/      # ProfilePage, profileApi, ChangePasswordModal
+│       │   ├── search/       # GlobalSearchPage, searchApi
+│       │   └── trash/        # TrashManagerPage, trashApi
+│       └── app/              # Cross-cutting (sẽ mở rộng theo vai trò)
+│           └── routes/       # Cấu hình route tập trung (nếu tách khỏi App.tsx)
 └── README.md
 ```
 
