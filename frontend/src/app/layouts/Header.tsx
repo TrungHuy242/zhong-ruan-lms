@@ -220,6 +220,17 @@ export function Header({ onMenuClick }: HeaderProps) {
             <button
               className={styles.dropdownItem}
               role="menuitem"
+              onClick={() => {
+                setUserOpen(false);
+                navigate("/profile");
+              }}
+            >
+              <UserIcon size={15} />
+              Xem hồ sơ
+            </button>
+            <button
+              className={styles.dropdownItem}
+              role="menuitem"
               onClick={handleLogout}
             >
               <LogOut size={15} />
