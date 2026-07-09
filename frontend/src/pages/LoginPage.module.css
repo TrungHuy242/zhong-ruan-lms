@@ -50,24 +50,16 @@
   margin-bottom: var(--space-8);
 }
 
-.logoAccent {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background-color: var(--brand-accent);
-  color: var(--brand-primary-active);
-  border-radius: var(--radius-md);
-  font-weight: 700;
-  font-size: 24px;
-  line-height: 1;
-}
-
-.logoText {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+.logoImg {
+  height: 64px;
+  width: auto;
+  display: block;
+  /* Invert logo nền vàng → trắng trên nền brandPanel đỏ để giữ tương phản.
+   * Logo gốc nền vàng → hơi chìm trên nền đỏ; mix-blend-mode lighten giữ phần tối (chữ + viền nhân vật)
+   * và loại bỏ phần vàng nhạt làm logo sáng nổi hơn trên brand panel đỏ.
+   * (Tắt blend-mode nếu muốn giữ logo màu nguyên bản.) */
+  mix-blend-mode: screen;
+  filter: brightness(1.05);
 }
 
 .brandTitle {

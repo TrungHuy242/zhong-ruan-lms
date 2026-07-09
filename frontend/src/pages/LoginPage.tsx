@@ -144,8 +144,11 @@ export function LoginPage() {
       <section className={styles.brandPanel} aria-hidden="true">
         <div className={styles.brandInner}>
           <div className={styles.logoMark}>
-            <span className={styles.logoAccent}>中</span>
-            <span className={styles.logoText}>Zhong Ruan</span>
+            <img
+              src="/logo/logo-full.png"
+              alt="Zhong Ruan LMS"
+              className={styles.logoImg}
+            />
           </div>
           <h1 className={styles.brandTitle}>Hệ thống quản lý đào tạo</h1>
           <p className={styles.brandTagline}>

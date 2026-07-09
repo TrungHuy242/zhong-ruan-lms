@@ -206,8 +206,11 @@ export function RegisterPage() {
       <section className={styles.brandPanel} aria-hidden="true">
         <div className={styles.brandInner}>
           <div className={styles.logoMark}>
-            <span className={styles.logoAccent}>中</span>
-            <span className={styles.logoText}>Zhong Ruan</span>
+            <img
+              src="/logo/logo-full.png"
+              alt="Zhong Ruan LMS"
+              className={styles.logoImg}
+            />
           </div>
           <h1 className={styles.brandTitle}>Tạo tài khoản học viên</h1>
           <p className={styles.brandTagline}>
