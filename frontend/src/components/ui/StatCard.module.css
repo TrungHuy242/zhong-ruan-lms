@@ -1,0 +1,103 @@
+.card {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 120px;
+}
+
+.iconBadge {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconBadge svg {
+  width: 22px;
+  height: 22px;
+}
+
+.tone_primary {
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
+}
+.tone_accent {
+  background-color: var(--brand-accent-light);
+  color: var(--brand-accent-hover);
+}
+.tone_info {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+}
+.tone_success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+.tone_warning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+.tone_neutral {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Skeleton — vẫn giữ kích thước gần với value/label thật để không giật layout. */
+.skeletonBox {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface-alt) 0%,
+    rgba(0, 0, 0, 0.06) 50%,
+    var(--bg-surface-alt) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeletonValue {
+  width: 60%;
+  height: 32px;
+}
+
+.skeletonLabel {
+  width: 90%;
+  height: 14px;
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBox {
+    animation: none;
+  }
+}
