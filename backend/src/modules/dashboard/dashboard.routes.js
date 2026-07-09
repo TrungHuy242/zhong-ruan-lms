@@ -15,4 +15,14 @@ router.get(
   dashboardController.getOverview
 );
 
+// GET /api/dashboard/stats/monthly?months=6
+// Thống kê time-series theo tháng (users/files/notifications) cho khoảng
+// N tháng gần nhất. Chỉ Admin.
+router.get(
+  "/stats/monthly",
+  authenticate,
+  authorizeRoles("ADMIN"),
+  dashboardController.getMonthlyStats
+);
+
 module.exports = router;
