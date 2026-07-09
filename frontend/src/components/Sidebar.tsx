@@ -7,6 +7,7 @@ import {
   ScrollText,
   Settings,
   Search,
+  Trash2,
   ChevronLeft,
   ChevronRight,
   X,
@@ -36,6 +37,7 @@ const MENU_ITEMS: MenuItem[] = [
     allowedRoles: ["ADMIN"],
   },
   { label: "Cài đặt hệ thống", to: "/settings", Icon: Settings, allowedRoles: ["ADMIN"] },
+  { label: "Thùng rác", to: "/trash", Icon: Trash2, allowedRoles: ["ADMIN"] },
   { label: "Tìm kiếm", to: "/search", Icon: Search },
 ];
 
