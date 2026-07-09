@@ -1,0 +1,42 @@
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--space-6);
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
+  border-radius: var(--radius-lg);
+  margin: 0 auto var(--space-6);
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-3);
+}
+
+.note {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: var(--space-4);
+  background-color: var(--bg-surface-alt);
+  border-radius: var(--radius-sm);
+}

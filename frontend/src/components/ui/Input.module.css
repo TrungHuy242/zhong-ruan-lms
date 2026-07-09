@@ -68,6 +68,22 @@
   cursor: not-allowed;
 }
 
+.hasLeftIcon .input {
+  padding-left: var(--space-10);
+}
+
+.leftIcon {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
 .fieldWrapper.hasError ~ .errorText {
   color: var(--color-error);
 }

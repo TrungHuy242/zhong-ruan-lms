@@ -11,6 +11,9 @@ export interface InputProps
   label?: string;
   error?: string;
   hint?: string;
+  /** Icon bên trái input (thường là search). */
+  leftIcon?: ReactNode;
+  /** Icon bên phải (eye toggle, clear). Click được qua onRightIconClick. */
   rightIcon?: ReactNode;
   onRightIconClick?: () => void;
 }
@@ -24,6 +27,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     label,
     error,
     hint,
+    leftIcon,
     rightIcon,
     onRightIconClick,
     id,
@@ -52,10 +56,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       <div
         className={classNames(
           styles.fieldWrapper,
-          error && styles.hasError,
-          disabled && styles.disabled
+          error ? styles.hasError : null,
+          disabled ? styles.disabled : null,
+          leftIcon ? styles.hasLeftIcon : null
         )}
       >
+        {leftIcon ? (
+          <span className={styles.leftIcon} aria-hidden="true">
+            {leftIcon}
+          </span>
+        ) : null}
         <input
           ref={ref}
           id={inputId}
