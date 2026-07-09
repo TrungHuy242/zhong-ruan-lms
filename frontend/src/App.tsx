@@ -8,6 +8,7 @@ import { NotificationManagementPage } from "./pages/NotificationManagementPage";
 import { AuditLogPage } from "./pages/AuditLogPage";
 import { FileManagerPage } from "./pages/FileManagerPage";
 import { SystemSettingsPage } from "./pages/SystemSettingsPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/files" element={<FileManagerPage />} />
         <Route path="/logs" element={<AuditLogPage />} />
         <Route path="/settings" element={<SystemSettingsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/search" element={<PlaceholderPage title="Tìm kiếm" />} />
       </Route>
 
