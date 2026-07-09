@@ -142,6 +142,12 @@ export function LoginPage() {
   return (
     <main className={styles.page}>
       <section className={styles.brandPanel} aria-hidden="true">
+        <img
+          src="/Banner/Login.png"
+          alt=""
+          className={styles.brandImage}
+        />
+        <div className={styles.brandOverlay} />
         <div className={styles.brandInner}>
           <div className={styles.logoMark}>
             <img
