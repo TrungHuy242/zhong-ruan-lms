@@ -1,0 +1,170 @@
+.timelineSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.loading {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-4);
+  color: var(--text-secondary);
+}
+
+.empty svg {
+  color: var(--text-placeholder);
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* Đường line dọc nối các icon */
+.list::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 16px;
+  bottom: 16px;
+  width: 2px;
+  background-color: var(--border-default);
+  border-radius: 1px;
+}
+
+.entry {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+}
+
+.iconWrap {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border-default);
+  position: relative;
+  z-index: 1;
+}
+
+.content {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-1);
+}
+
+.entryTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.actionLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.groupBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.entryBottom {
+  display: flex;
+  gap: var(--space-3);
+  font-size: 11px;
+  color: var(--text-placeholder);
+}
+
+.time {
+  font-variant-numeric: tabular-nums;
+}
+
+.ip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.loadMoreWrap {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-3);
+}
+
+/* ===== Tone theo group (icon + badge) ===== */
+.toneCreate  { color: var(--color-success); border-color: var(--color-success-bg); background-color: var(--color-success-bg); }
+.toneUpdate  { color: var(--color-info);    border-color: var(--color-info-bg);    background-color: var(--color-info-bg); }
+.toneDelete  { color: var(--color-error);   border-color: var(--color-error-bg);   background-color: var(--color-error-bg); }
+.toneRestore { color: var(--color-warning); border-color: var(--color-warning-bg); background-color: var(--color-warning-bg); }
+.toneAuth    { color: var(--brand-primary);border-color: var(--brand-primary-light); background-color: var(--brand-primary-light); }
+.toneOther   { color: var(--text-secondary); border-color: var(--border-default); background-color: var(--bg-surface-alt); }
+
+/* Khi áp dụng tone cho groupBadge — chỉ cần chữ + nền nhẹ */
+.groupBadge.toneCreate  { background-color: var(--color-success-bg); color: var(--color-success); }
+.groupBadge.toneUpdate  { background-color: var(--color-info-bg);    color: var(--color-info); }
+.groupBadge.toneDelete  { background-color: var(--color-error-bg);   color: var(--color-error); }
+.groupBadge.toneRestore { background-color: var(--color-warning-bg); color: var(--color-warning); }
+.groupBadge.toneAuth    { background-color: var(--brand-primary-light); color: var(--brand-primary); }
+.groupBadge.toneOther   { background-color: var(--bg-surface-alt);   color: var(--text-secondary); }

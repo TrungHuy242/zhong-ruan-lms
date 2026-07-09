@@ -14,28 +14,40 @@ import {
   Input,
   Pagination,
   Table,
+  type SortConfig,
   type TableColumn,
 } from "../../../shared/components/ui";
 import { UserFormModal } from "../components/UserFormModal";
 import { UserDetailModal } from "../components/UserDetailModal";
 import {
+  UserFilterPanel,
+  type UserAdvancedFilterValues,
+  EMPTY_ADVANCED_FILTERS,
+} from "../components/UserFilterPanel";
+import { BulkActionBar } from "../components/BulkActionBar";
+import {
   USER_PAGE_SIZE,
+  bulkDeleteUsers,
+  bulkUpdateStatus,
   deleteUser,
+  listUsers,
   restoreUser,
   type User,
   type UserRole,
   type UserStatus,
 } from "../services/userApi";
-import { listUsers } from "../services/userApi";
 import { ApiError } from "../../../shared/api";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { useTableColumns } from "../../../shared/hooks/useTableColumns";
 import {
   ChevronDown,
+  Columns,
   Edit3,
   Eye,
   Plus,
   RotateCcw,
   Search,
+  SlidersHorizontal,
   Trash2,
   Users as UsersIcon,
   X as XIcon,
@@ -60,8 +72,65 @@ const ROLE_BADGE_VARIANT: Record<UserRole, "admin" | "teacher" | "student"> = {
 
 const STATUS_LABELS: Record<UserStatus, string> = {
   ACTIVE: "Đang hoạt động",
-  INACTIVE: "Chưa kích hoạt",
-  SUSPENDED: "Đã khoá",
+  INACTIVE: "Ngừng hoạt động",
+  SUSPENDED: "Bị đình chỉ",
+};
+
+interface FilterState {
+  /** Ô search chính (gửi qua param `keyword`). */
+  search: string;
+  /** Khi search debounced xong, mới dùng để gọi API. */
+  searchApplied: string;
+  /** Filter nâng cao — 4 field riêng (Tên/Email/Role/Status). */
+  advanced: UserAdvancedFilterValues;
+  page: number;
+  /** Cột đang sort (controlled Table sortable). */
+  sort: SortConfig;
+}
+
+const INITIAL_FILTERS: FilterState = {
+  search: "",
+  searchApplied: "",
+  advanced: { ...EMPTY_ADVANCED_FILTERS },
+  page: 1,
+  sort: { key: "createdAt", order: "desc" },
+};
+
+const SORTABLE_USER_KEYS = ["fullName", "email", "role", "status", "createdAt"] as const;
+type SortableUserKey = (typeof SORTABLE_USER_KEYS)[number];
+
+function isSortableUserKey(k: string): k is SortableUserKey {
+  return (SORTABLE_USER_KEYS as readonly string[]).includes(k);
+}
+
+// UI → BE mapping cho status (đảm bảo luôn gửi enum uppercase)
+function statusToBE(s: StatusFilter): UserStatus | undefined {
+  if (s === "ALL") return undefined;
+  return s;
+}
+
+function isDeletedUser(u: User): boolean {
+  return Boolean(u.deletedAt);
+}
+
+const COLUMNS_STORAGE_KEY = "zrlms_user_table_columns";
+// Always-visible columns (không thể ẩn) — gồm checkbox (do Table render) + action
+// + tên để luôn có anchor trong table.
+const LOCKED_COLUMN_KEYS = ["fullName"] as const;
+const AVAILABLE_COLUMN_KEYS = [
+  "email",
+  "phone",
+  "role",
+  "status",
+  "createdAt",
+] as const;
+
+const COLUMN_LABELS: Record<string, string> = {
+  email: "Email",
+  phone: "Số điện thoại",
+  role: "Vai trò",
+  status: "Trạng thái",
+  createdAt: "Ngày tạo",
 };
 
 interface ConfirmState {
@@ -71,25 +140,16 @@ interface ConfirmState {
   mode: "delete" | "restore";
 }
 
-interface FilterState {
-  search: string;
-  /** Khi search debounced xong, mới dùng để gọi API. */
-  searchApplied: string;
-  role: RoleFilter;
-  status: StatusFilter;
-  page: number;
-}
-
-const INITIAL_FILTERS: FilterState = {
-  search: "",
-  searchApplied: "",
-  role: "ALL",
-  status: "ALL",
-  page: 1,
-};
-
-function isDeletedUser(u: User): boolean {
-  return Boolean(u.deletedAt);
+/**
+ * Bulk confirm state.
+ * - mode='delete': xoá mềm nhiều user
+ * - mode='status': đổi status nhiều user, kèm target status
+ */
+interface BulkConfirmState {
+  open: boolean;
+  loading: boolean;
+  mode: "delete" | "status";
+  status: UserStatus;
 }
 
 export function UserManagementPage() {
@@ -99,28 +159,86 @@ export function UserManagementPage() {
 
   // ===== URL sync =====
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filters, setFilters] = useState<FilterState>(() => ({
-    ...INITIAL_FILTERS,
-    search: searchParams.get("search") ?? "",
-    searchApplied: searchParams.get("search") ?? "",
-    role: (searchParams.get("role") as RoleFilter) ?? "ALL",
-    status: (searchParams.get("status") as StatusFilter) ?? "ALL",
-    page: Number(searchParams.get("page") ?? "1") || 1,
-  }));
+  const [filters, setFilters] = useState<FilterState>(() => {
+    const initial: FilterState = {
+      ...INITIAL_FILTERS,
+      advanced: { ...EMPTY_ADVANCED_FILTERS },
+    };
+    const sp = searchParams.get("search");
+    if (sp) {
+      initial.search = sp;
+      initial.searchApplied = sp;
+    }
+    const name = searchParams.get("name");
+    if (name) initial.advanced.name = name;
+    const email = searchParams.get("email");
+    if (email) initial.advanced.email = email;
+    const role = searchParams.get("role");
+    if (role && (["ALL", "ADMIN", "TEACHER", "STUDENT"] as const).includes(role as RoleFilter)) {
+      initial.advanced.role = role as RoleFilter;
+    }
+    const status = searchParams.get("status");
+    if (status && (["ALL", "ACTIVE", "INACTIVE", "SUSPENDED"] as const).includes(status as StatusFilter)) {
+      initial.advanced.status = status as StatusFilter;
+    }
+    const sortBy = searchParams.get("sortBy");
+    const sortOrder = searchParams.get("sortOrder");
+    if (sortBy && isSortableUserKey(sortBy)) {
+      initial.sort = {
+        key: sortBy,
+        order: sortOrder === "asc" ? "asc" : "desc",
+      };
+    }
+    const page = Number(searchParams.get("page") ?? "1");
+    if (page > 1) initial.page = page;
+    return initial;
+  });
 
-  // Đồng bộ URL mỗi khi filters thay đổi (searchApplied/role/status/page).
+  // Track xem filter panel đang mở hay đóng — panel được kiểm soát local
+  // (không lưu URL), vì đây là UI state không ảnh hưởng dữ liệu tải về.
+  const [filterOpen, setFilterOpen] = useState<boolean>(() => {
+    const adv = searchParams;
+    // Mở sẵn nếu URL có ít nhất 1 param advanced
+    return Boolean(adv.get("name") || adv.get("email") || adv.get("role") || adv.get("status"));
+  });
+
+  // Đồng bộ URL mỗi khi filter thay đổi.
+  // Khi panel đang mở → ưu tiên param advanced (name/email/role/status);
+  // khi đóng → chỉ dùng `keyword` từ ô search chính.
   useEffect(() => {
     const next: Record<string, string> = {};
-    if (filters.searchApplied) next.search = filters.searchApplied;
-    if (filters.role !== "ALL") next.role = filters.role;
-    if (filters.status !== "ALL") next.status = filters.status;
+    if (filterOpen) {
+      if (filters.advanced.name) next.name = filters.advanced.name;
+      if (filters.advanced.email) next.email = filters.advanced.email;
+      if (filters.advanced.role !== "ALL") next.role = filters.advanced.role;
+      if (filters.advanced.status !== "ALL") next.status = filters.advanced.status;
+      // Khi panel mở, KHÔNG ghi `search` vào URL (tránh conflict với advanced filter).
+    } else {
+      if (filters.searchApplied) next.search = filters.searchApplied;
+    }
+    if (filters.sort.key !== "createdAt" || filters.sort.order !== "desc") {
+      next.sortBy = filters.sort.key;
+      next.sortOrder = filters.sort.order;
+    }
     if (filters.page > 1) next.page = String(filters.page);
     setSearchParams(next, { replace: true });
-  }, [filters.searchApplied, filters.role, filters.status, filters.page, setSearchParams]);
+  }, [
+    filterOpen,
+    filters.searchApplied,
+    filters.advanced.name,
+    filters.advanced.email,
+    filters.advanced.role,
+    filters.advanced.status,
+    filters.sort.key,
+    filters.sort.order,
+    filters.page,
+    setSearchParams,
+  ]);
 
   // ===== Data state =====
   const [users, setUsers] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -128,15 +246,25 @@ export function UserManagementPage() {
     setLoading(true);
     setLoadError(null);
     try {
-      const result = await listUsers({
-        search: filters.searchApplied || undefined,
-        role: filters.role === "ALL" ? undefined : filters.role,
-        status: filters.status === "ALL" ? undefined : filters.status,
+      const params: Parameters<typeof listUsers>[0] = {
         page: filters.page,
         limit: USER_PAGE_SIZE,
-      });
+        sortBy: filters.sort.key as SortableUserKey,
+        sortOrder: filters.sort.order,
+      };
+      if (filterOpen) {
+        if (filters.advanced.name) params.name = filters.advanced.name;
+        if (filters.advanced.email) params.email = filters.advanced.email;
+        if (filters.advanced.role !== "ALL") params.role = filters.advanced.role;
+        const st = statusToBE(filters.advanced.status);
+        if (st) params.status = st;
+      } else {
+        if (filters.searchApplied) params.search = filters.searchApplied;
+      }
+      const result = await listUsers(params);
       setUsers(result.users);
       setTotal(result.pagination.total);
+      setTotalPages(result.pagination.totalPages);
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -148,7 +276,17 @@ export function UserManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters.searchApplied, filters.role, filters.status, filters.page]);
+  }, [
+    filterOpen,
+    filters.searchApplied,
+    filters.advanced.name,
+    filters.advanced.email,
+    filters.advanced.role,
+    filters.advanced.status,
+    filters.sort.key,
+    filters.sort.order,
+    filters.page,
+  ]);
 
   useEffect(() => {
     loadUsers();
@@ -185,27 +323,75 @@ export function UserManagementPage() {
     }));
   }
 
-  // ===== Filter dropdowns =====
-  function handleRoleChange(e: ChangeEvent<HTMLSelectElement>) {
+  // ===== Filter Panel =====
+  function handleFilterPanelChange(next: UserAdvancedFilterValues) {
+    setFilters((prev) => ({ ...prev, advanced: next, page: 1 }));
+  }
+  function clearAdvancedFilters() {
     setFilters((prev) => ({
       ...prev,
-      role: e.target.value as RoleFilter,
+      advanced: { ...EMPTY_ADVANCED_FILTERS },
       page: 1,
     }));
   }
-  function handleStatusChange(e: ChangeEvent<HTMLSelectElement>) {
-    setFilters((prev) => ({
-      ...prev,
-      status: e.target.value as StatusFilter,
-      page: 1,
-    }));
+  function toggleFilterPanel() {
+    setFilterOpen((v) => !v);
   }
 
+  // ===== Sort (controlled Table) =====
+  function handleSortChange(next: SortConfig) {
+    setFilters((prev) => ({ ...prev, sort: next, page: 1 }));
+  }
+
+  // ===== Columns visibility (localStorage) =====
+  const allColumnKeysForHook = [...AVAILABLE_COLUMN_KEYS, ...LOCKED_COLUMN_KEYS] as unknown as readonly string[];
+  const {
+    hiddenKeys: hiddenColumnKeys,
+    toggle: toggleColumn,
+    reset: resetColumns,
+  } = useTableColumns({
+    availableKeys: allColumnKeysForHook,
+    lockedKeys: LOCKED_COLUMN_KEYS as unknown as readonly string[],
+    storageKey: COLUMNS_STORAGE_KEY,
+  });
+
+  // ===== Column visibility dropdown UI =====
+  const [columnMenuOpen, setColumnMenuOpen] = useState(false);
+  const columnMenuRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!columnMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (columnMenuRef.current && !columnMenuRef.current.contains(e.target as Node)) {
+        setColumnMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [columnMenuOpen]);
+
   // ===== Pagination =====
-  const totalPages = Math.max(1, Math.ceil(total / USER_PAGE_SIZE));
   function handlePageChange(page: number) {
     setFilters((prev) => ({ ...prev, page }));
   }
+
+  // ===== Selection state (bulk) =====
+  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
+
+  // Khi filter/page thay đổi mạnh (data không còn liên quan), clear selection
+  // để tránh user bấm bulk delete trên id không còn hiển thị.
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [
+    filterOpen,
+    filters.searchApplied,
+    filters.advanced.name,
+    filters.advanced.email,
+    filters.advanced.role,
+    filters.advanced.status,
+    filters.sort.key,
+    filters.sort.order,
+    filters.page,
+  ]);
 
   // ===== Modal state =====
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -219,6 +405,13 @@ export function UserManagementPage() {
     loading: false,
     user: null,
     mode: "delete",
+  });
+
+  const [bulkConfirm, setBulkConfirm] = useState<BulkConfirmState>({
+    open: false,
+    loading: false,
+    mode: "delete",
+    status: "SUSPENDED",
   });
 
   // Dropdown action
@@ -265,7 +458,6 @@ export function UserManagementPage() {
       type: "success",
       text: mode === "create" ? "Tạo người dùng thành công" : "Cập nhật người dùng thành công",
     });
-    // Refresh danh sách (giữ nguyên filter + page).
     loadUsers();
   }
 
@@ -294,15 +486,64 @@ export function UserManagementPage() {
     }
   }
 
+  // ===== Bulk handlers =====
+  function openBulkDelete() {
+    if (selectedIds.length === 0) return;
+    setBulkConfirm({ open: true, loading: false, mode: "delete", status: "SUSPENDED" });
+  }
+  function openBulkStatus(status: UserStatus) {
+    if (selectedIds.length === 0) return;
+    setBulkConfirm({ open: true, loading: false, mode: "status", status });
+  }
+  function clearBulkSelection() {
+    setSelectedIds([]);
+  }
+
+  async function handleBulkConfirm() {
+    setBulkConfirm((p) => ({ ...p, loading: true }));
+    try {
+      if (bulkConfirm.mode === "delete") {
+        const result = await bulkDeleteUsers(selectedIds);
+        setBanner({
+          type: "success",
+          text: `Đã chuyển ${result.deletedCount} người dùng vào thùng rác`,
+        });
+      } else {
+        const result = await bulkUpdateStatus(selectedIds, bulkConfirm.status);
+        setBanner({
+          type: "success",
+          text: `Đã cập nhật trạng thái cho ${result.updatedCount} người dùng`,
+        });
+      }
+      setBulkConfirm((p) => ({ ...p, open: false, loading: false }));
+      setSelectedIds([]);
+      loadUsers();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+          ? err.message
+          : "Thao tác hàng loạt thất bại";
+      setBanner({ type: "error", text: message });
+      setBulkConfirm((p) => ({ ...p, loading: false }));
+    }
+  }
+
   // ===== Table columns =====
   const columns: TableColumn<User>[] = useMemo(
     () => [
       {
         key: "fullName",
         header: "Họ tên",
+        sortable: true,
         render: (u) => <span className={styles.fullName}>{u.fullName}</span>,
       },
-      { key: "email", header: "Email" },
+      {
+        key: "email",
+        header: "Email",
+        sortable: true,
+      },
       {
         key: "phone",
         header: "Số điện thoại",
@@ -311,6 +552,7 @@ export function UserManagementPage() {
       {
         key: "role",
         header: "Vai trò",
+        sortable: true,
         render: (u) => (
           <span
             className={[
@@ -327,6 +569,7 @@ export function UserManagementPage() {
       {
         key: "status",
         header: "Trạng thái",
+        sortable: true,
         render: (u) => {
           if (isDeletedUser(u)) {
             return (
@@ -351,6 +594,7 @@ export function UserManagementPage() {
       {
         key: "createdAt",
         header: "Ngày tạo",
+        sortable: true,
         render: (u) => formatDate(u.createdAt),
       },
       {
@@ -437,8 +681,12 @@ export function UserManagementPage() {
 
   // ===== Empty / Skeleton =====
   const tableSkeletonRows = 6;
-  const isFiltered =
-    Boolean(filters.searchApplied) || filters.role !== "ALL" || filters.status !== "ALL";
+  const isFiltered = filterOpen
+    ? Boolean(filters.advanced.name) ||
+      Boolean(filters.advanced.email) ||
+      filters.advanced.role !== "ALL" ||
+      filters.advanced.status !== "ALL"
+    : Boolean(filters.searchApplied);
 
   const emptyState = (
     <div className={styles.emptyState}>
@@ -460,6 +708,13 @@ export function UserManagementPage() {
       ) : null}
     </div>
   );
+
+  // Filter Panel is active if any advanced field is set
+  const isFilterPanelActive =
+    Boolean(filters.advanced.name) ||
+    Boolean(filters.advanced.email) ||
+    filters.advanced.role !== "ALL" ||
+    filters.advanced.status !== "ALL";
 
   return (
     <div className={styles.page}>
@@ -499,57 +754,123 @@ export function UserManagementPage() {
       ) : null}
 
       <Card padding="md" className={styles.tableCard}>
-        {/* Toolbar: search + filter */}
+        {/* Toolbar: search + filter toggle + columns toggle + add filter panel */}
         <div className={styles.toolbar}>
           <div className={styles.searchWrap}>
             <Input
-              placeholder="Tìm theo họ tên hoặc email"
+              placeholder={
+                filterOpen
+                  ? "Đang dùng bộ lọc nâng cao — tắt bộ lọc để tìm chung"
+                  : "Tìm theo họ tên hoặc email"
+              }
               value={filters.search}
               onChange={handleSearchInput}
               leftIcon={<Search size={16} />}
               rightIcon={
-                filters.search ? (
-                  <XIcon size={14} />
-                ) : undefined
+                filters.search ? <XIcon size={14} /> : undefined
               }
               onRightIconClick={filters.search ? clearSearch : undefined}
+              disabled={filterOpen}
             />
           </div>
 
-          <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>
-              <span>Vai trò</span>
-              <select
-                className={styles.select}
-                value={filters.role}
-                onChange={handleRoleChange}
-              >
-                <option value="ALL">Tất cả</option>
-                {Object.entries(ROLE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <div className={styles.toolbarActions}>
+            <button
+              type="button"
+              className={`${styles.filterToggleBtn} ${
+                filterOpen ? styles.filterToggleBtnActive : ""
+              }`}
+              onClick={toggleFilterPanel}
+              aria-expanded={filterOpen}
+            >
+              <SlidersHorizontal size={14} />
+              <span>Bộ lọc nâng cao</span>
+              {isFilterPanelActive ? (
+                <span
+                  style={{
+                    backgroundColor: "var(--brand-primary)",
+                    color: "var(--text-on-primary)",
+                    fontSize: "10px",
+                    padding: "1px 6px",
+                    borderRadius: "var(--radius-full)",
+                    fontWeight: 700,
+                  }}
+                >
+                  đang lọc
+                </span>
+              ) : null}
+              <ChevronDown
+                size={14}
+                className={`${styles.chevron} ${filterOpen ? styles.chevronOpen : ""}`}
+              />
+            </button>
 
-            <label className={styles.filterLabel}>
-              <span>Trạng thái</span>
-              <select
-                className={styles.select}
-                value={filters.status}
-                onChange={handleStatusChange}
+            <div className={styles.columnToggleWrap} ref={columnMenuRef}>
+              <button
+                type="button"
+                className={styles.filterToggleBtn}
+                onClick={() => setColumnMenuOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={columnMenuOpen}
               >
-                <option value="ALL">Tất cả</option>
-                {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <Columns size={14} />
+                <span>Cột hiển thị</span>
+              </button>
+              {columnMenuOpen ? (
+                <div role="menu" className={styles.columnMenu}>
+                  <div className={styles.columnMenuHeader}>Cột có thể ẩn</div>
+                  {AVAILABLE_COLUMN_KEYS.map((key) => {
+                    const isLocked = (LOCKED_COLUMN_KEYS as readonly string[]).includes(key);
+                    const hidden = hiddenColumnKeys.includes(key);
+                    return (
+                      <label
+                        key={key}
+                        className={`${styles.columnItem} ${isLocked ? styles.columnItemLocked : ""}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!hidden}
+                          disabled={isLocked}
+                          onChange={() => toggleColumn(key)}
+                        />
+                        <span>{COLUMN_LABELS[key] ?? key}</span>
+                      </label>
+                    );
+                  })}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      resetColumns();
+                    }}
+                    style={{ marginTop: "var(--space-1)" }}
+                  >
+                    Khôi phục mặc định
+                  </Button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
+
+        {/* Advanced Filter Panel (toggle) */}
+        <UserFilterPanel
+          open={filterOpen}
+          values={filters.advanced}
+          onChange={handleFilterPanelChange}
+          onClear={clearAdvancedFilters}
+        />
+
+        {/* Bulk Action Bar (sticky, chỉ hiện khi có selection) */}
+        {canManage ? (
+          <BulkActionBar
+            selectedCount={selectedIds.length}
+            loading={bulkConfirm.loading}
+            onDelete={openBulkDelete}
+            onChangeStatus={(s) => openBulkStatus(s)}
+            onClearSelection={clearBulkSelection}
+          />
+        ) : null}
 
         {/* Error state */}
         {loadError ? (
@@ -569,6 +890,14 @@ export function UserManagementPage() {
               rowKey={(u) => u.id}
               emptyState={emptyState}
               rowClassName={(u) => (isDeletedUser(u) ? styles.rowDeleted : undefined)}
+              selectable={canManage}
+              selectedIds={selectedIds}
+              onSelectedChange={setSelectedIds}
+              selectableKey={(u) => u.id}
+              sortable
+              sortConfig={filters.sort}
+              onSortChange={handleSortChange}
+              hiddenColumnKeys={hiddenColumnKeys as string[]}
             />
 
             {!loading && users.length > 0 ? (
@@ -586,6 +915,43 @@ export function UserManagementPage() {
           </>
         )}
       </Card>
+
+      {/* Bulk-confirm dialog (xoá / đổi status) */}
+      <ConfirmDialog
+        open={bulkConfirm.open}
+        loading={bulkConfirm.loading}
+        title={
+          bulkConfirm.mode === "delete"
+            ? `Xoá ${selectedIds.length} người dùng?`
+            : `Đổi trạng thái ${selectedIds.length} người dùng?`
+        }
+        message={
+          bulkConfirm.mode === "delete" ? (
+            <>
+              Bạn sắp <b>xoá mềm</b> {selectedIds.length} người dùng đã chọn. Hành
+              động này sẽ chuyển họ vào thùng rác và có thể khôi phục lại sau.
+              <br />
+              <span style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+                Nếu trong danh sách có chính bạn, thao tác sẽ tự loại trừ và báo lỗi
+                rõ ràng.
+              </span>
+            </>
+          ) : (
+            <>
+              Đổi trạng thái của {selectedIds.length} người dùng đã chọn sang{" "}
+              <b>{STATUS_LABELS[bulkConfirm.status]}</b>. Hành động này sẽ không áp
+              dụng nếu trong danh sách có chính bạn và trạng thái mới là khoá/ngừng
+              hoạt động.
+            </>
+          )
+        }
+        confirmText={bulkConfirm.mode === "delete" ? "Xoá" : "Đổi trạng thái"}
+        confirmVariant={bulkConfirm.mode === "delete" ? "danger" : "primary"}
+        onConfirm={handleBulkConfirm}
+        onCancel={() =>
+          setBulkConfirm((p) => ({ ...p, open: false }))
+        }
+      />
 
       <UserFormModal
         open={formModalOpen}
@@ -642,7 +1008,3 @@ function formatDate(value: string | null | undefined): string {
     return value;
   }
 }
-
-// Tránh TypeScript coi ChevronDown nhập khẩu không dùng (giữ icon lib cho
-// extension sau: dropdown caret khi cần hiển thị menu dạng native).
-void ChevronDown;

@@ -1,5 +1,6 @@
 ﻿import { Modal, Button } from "../../../shared/components/ui";
 import { getUser, type User, type UserRole, type UserStatus } from "../services/userApi";
+import { UserActivityTimeline } from "./UserActivityTimeline";
 import { useEffect, useState } from "react";
 import { ApiError } from "../../../shared/api";
 import styles from "./UserDetailModal.module.css";
@@ -114,6 +115,10 @@ export function UserDetailModal({
       ) : (
         <p className={styles.placeholder}>Không có dữ liệu</p>
       )}
+
+      {user && userId != null ? (
+        <UserActivityTimeline userId={userId} />
+      ) : null}
 
       <div className={styles.actions}>
         <Button variant="secondary" onClick={onClose}>

@@ -23,6 +23,13 @@
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-default);
   white-space: nowrap;
+  position: relative;
+}
+
+.thInner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .row {
@@ -47,6 +54,62 @@
 .align_left   { text-align: left;   }
 .align_center { text-align: center; }
 .align_right  { text-align: right;  }
+
+/* ===== Sortable header ===== */
+.thSortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.thSortable:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+}
+
+.thSortable:focus-visible {
+  outline: none;
+  box-shadow: inset var(--shadow-focus-ring);
+}
+
+.thSorted {
+  color: var(--brand-primary);
+}
+
+.sortIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+}
+
+.thSorted .sortIcon {
+  color: var(--brand-primary);
+}
+
+/* ===== Selectable (checkbox cột + row selected) ===== */
+.checkboxCell {
+  width: 44px;
+  text-align: center;
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.checkboxCell input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--brand-primary);
+}
+
+.rowSelected {
+  background-color: var(--brand-primary-light);
+}
+
+.rowSelected:hover {
+  background-color: var(--brand-primary-light);
+}
 
 /* Skeleton loading — shimmer animation thay spinner. */
 .skeletonRow:hover {

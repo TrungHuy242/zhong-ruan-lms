@@ -9,7 +9,7 @@ export type { AlertProps, AlertVariant } from "./Alert";
 export { Modal } from "./Modal";
 export type { ModalProps } from "./Modal";
 export { Table } from "./Table";
-export type { TableProps, TableColumn } from "./Table";
+export type { TableProps, TableColumn, SortConfig, SortOrder } from "./Table";
 export { Pagination } from "./Pagination";
 export type { PaginationProps } from "./Pagination";
 export { ConfirmDialog } from "./ConfirmDialog";
