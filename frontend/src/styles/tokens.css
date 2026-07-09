@@ -61,3 +61,56 @@
   --space-10: 40px;
   --space-12: 48px;
 }
+
+/* ===== Native <select> — design system override =====
+ * Mặc định browser render <select> rất "thơ mộc" (đặc biệt Windows/Chrome).
+ * Áp dụng cho MỌI select native trong app; muốn tuỳ chỉnh riêng thì
+ * override ở CSS module của feature tương ứng (specificity cao hơn).
+ */
+select {
+  height: 40px;
+  width: 100%;
+  padding: 0 36px 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+  /* Chevron icon tự vẽ (SVG inline) — tránh phụ thuộc icon lib và khớp màu
+   * neutral với design system. */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 14px 14px;
+}
+
+select:hover {
+  border-color: var(--border-strong);
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+select:disabled {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Dropdown options — một số browser không kế thừa màu từ <select> cha. */
+select option {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  padding: var(--space-2);
+}
