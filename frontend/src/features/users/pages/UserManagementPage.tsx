@@ -48,6 +48,7 @@ import {
   RotateCcw,
   Search,
   SlidersHorizontal,
+  ToggleRight,
   Trash2,
   Users as UsersIcon,
   X as XIcon,
@@ -75,6 +76,11 @@ const STATUS_LABELS: Record<UserStatus, string> = {
   INACTIVE: "Ngừng hoạt động",
   SUSPENDED: "Bị đình chỉ",
 };
+
+const STATUS_OPTIONS = (Object.keys(STATUS_LABELS) as UserStatus[]).map((v) => ({
+  value: v,
+  label: STATUS_LABELS[v],
+}));
 
 interface FilterState {
   /** Ô search chính (gửi qua param `keyword`). */
@@ -865,9 +871,28 @@ export function UserManagementPage() {
         {canManage ? (
           <BulkActionBar
             selectedCount={selectedIds.length}
+            itemLabel="người dùng"
             loading={bulkConfirm.loading}
-            onDelete={openBulkDelete}
-            onChangeStatus={(s) => openBulkStatus(s)}
+            actions={[
+              {
+                key: "changeStatus",
+                label: "Đổi trạng thái",
+                icon: <ToggleRight size={14} />,
+                variant: "secondary",
+                subOptions: STATUS_OPTIONS.map((s) => ({
+                  key: s.value,
+                  label: s.label,
+                })),
+                onAction: (key) => openBulkStatus(key as UserStatus),
+              },
+              {
+                key: "delete",
+                label: "Xoá",
+                icon: <Trash2 size={14} />,
+                variant: "danger",
+                onAction: openBulkDelete,
+              },
+            ]}
             onClearSelection={clearBulkSelection}
           />
         ) : null}

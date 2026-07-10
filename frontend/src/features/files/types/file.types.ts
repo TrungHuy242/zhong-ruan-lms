@@ -15,13 +15,26 @@ export interface UploadedFile {
   deletedAt: string | null;
 }
 
+/** Sortable keys ở client — map sang field name của BE ở fileApi.ts. */
+export type FileSortBy = "name" | "size" | "createdAt";
+
 export interface FileListParams {
   page?: number;
   pageSize?: number;
-  /** Tìm theo tên file (client-side, vì BE không có param). */
+  /** Tìm theo tên file (BE-side). */
   search?: string;
-  /** Lọc theo loại (client-side). */
-  kind?: "all" | "image" | "pdf" | "word";
+  /** Lọc theo API category: image | document | video | audio. */
+  fileType?: import("../constants/file.constants").FileApiCategory;
+  /** Filter theo uploader (chỉ Admin dùng được — user thường bị ép về currentUser.id). */
+  uploaderId?: number;
+  /** ISO date string "YYYY-MM-DD" — createdAt >= dateFrom. */
+  dateFrom?: string;
+  /** ISO date string "YYYY-MM-DD" — createdAt <= dateTo. */
+  dateTo?: string;
+  /** Mặc định "createdAt". */
+  sortBy?: FileSortBy;
+  /** Mặc định "desc". */
+  sortOrder?: "asc" | "desc";
 }
 
 export interface FileListResult {
@@ -44,3 +57,35 @@ export interface FileListResponse {
 export interface FileDetailResponse {
   file: UploadedFile;
 }
+
+// ===== Storage stats (chỉ Admin) =====
+export interface FileCategoryBucket {
+  count: number;
+  size: number;
+}
+
+export interface FileStorageStats {
+  totalSize: number;
+  totalFiles: number;
+  byType: Record<import("../constants/file.constants").FileApiCategory, FileCategoryBucket>;
+}
+
+export interface FileStorageStatsResponse {
+  data: FileStorageStats;
+}
+
+// ===== Bulk operations =====
+export interface BulkDeleteFilesResponse {
+  message?: string;
+  deletedCount: number;
+  deletedIds: number[];
+  data?: { deletedCount: number; deletedIds: number[] };
+}
+
+export interface BulkDeleteForbiddenDetail {
+  forbiddenIds: number[];
+  notFoundIds?: number[];
+}
+
+// ===== View mode (Table | Grid) — lưu localStorage =====
+export type FileViewMode = "table" | "grid";

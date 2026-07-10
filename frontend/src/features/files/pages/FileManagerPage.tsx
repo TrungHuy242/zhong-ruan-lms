@@ -1,4 +1,23 @@
-﻿import {
+﻿/**
+ * FileManagerPage — File Manager chuẩn SaaS.
+ *
+ * Tính năng (nâng cấp từ bản CRUD cơ bản):
+ *  - View toggle: Table | Grid (lưu localStorage)
+ *  - Sort: name | size | createdAt (URL sync)
+ *  - Filter nâng cao: fileType / uploaderId / dateFrom / dateTo (URL sync)
+ *  - Upload queue với progress % thật (XMLHttpRequest) + retry + cancel
+ *  - Auto-inject file vừa upload xong vào list
+ *  - Storage stats card (chỉ Admin)
+ *  - Bulk actions: xoá nhiều / tải zip
+ *  - Copy Link / Download nhanh / Preview mở rộng (ảnh/PDF/video/audio)
+ *
+ * Component reusable:
+ *  - FileFilterPanel, FileTableView, FileGridView, FileDetailModal,
+ *    StorageStatsCard, UploadQueue
+ *  - Shared: BulkActionBar (move lên shared), useUploadQueue
+ *  - Shared: Table, Pagination, Alert, ConfirmDialog (đã có sẵn)
+ */
+import {
   ChangeEvent,
   useCallback,
   useEffect,
@@ -10,124 +29,190 @@ import {
   Alert,
   Button,
   ConfirmDialog,
-  FileIcon,
   Input,
   Pagination,
-  Table,
-  UploadZone,
-  type TableColumn,
-  type UploadItem,
+  type SortConfig,
 } from "../../../shared/components/ui";
-import { FileDetailModal } from "../components/FileDetailModal";
-import { Eye, Trash2, FolderOpen, Search, X as XIcon, UploadCloud } from "lucide-react";
+import { CloudUpload as CloudUploadIcon, FolderOpen, LayoutGrid, List as ListIcon, Search, SlidersHorizontal, Trash2 as Trash2Icon, X as XIcon, Download as DownloadIcon } from "lucide-react";
+import { BulkActionBar, type BulkAction } from "../../../shared/components/layout/BulkActionBar";
+import { useUploadQueue } from "../../../shared/hooks/useUploadQueue";
+import { useSearchParams } from "react-router-dom";
 import {
   FILE_PAGE_SIZE,
-  deleteFile,
-  getFiles,
-  uploadFile,
+  FILE_VIEW_MODE_STORAGE_KEY,
+} from "../constants/file.constants";
+import type { FileViewMode } from "../types/file.types";
+import type { FileAdvancedFilterValues } from "../components/FileFilterPanel";
+import { FileFilterPanel, EMPTY_FILE_FILTERS } from "../components/FileFilterPanel";
+import { FileTableView } from "../components/FileTableView";
+import { FileGridView } from "../components/FileGridView";
+import { FileDetailModal } from "../components/FileDetailModal";
+import { StorageStatsCard } from "../components/StorageStatsCard";
+import { UploadQueue } from "../components/UploadQueue";
+import {
   type UploadedFile,
+  getFiles,
+  deleteFile,
+  bulkDeleteFiles,
+  bulkDownloadFiles,
+  uploadFileRaw,
+  uploadFile,
 } from "../services/fileApi";
 import {
-  formatFileSize,
   getApiErrorMessage,
-  getFileKind,
-  getFileKindLabel,
-  type FileKind,
-  type FileValidationError,
+  validateFile,
 } from "../../../shared/validation/fileValidation";
-import { listUsers, type User } from "../../users";
 import { authStorage } from "../../../shared/storage/authStorage";
-import { useSearchParams } from "react-router-dom";
+import { listUsers, type User } from "../../users/services/userApi";
 import styles from "./FileManagerPage.module.css";
 
-interface FiltersState {
-  search: string;
-  searchApplied: string;
-  kind: "all" | FileKind;
-  page: number;
+// Re-validate the shape of EMPTY_FILE_FILTERS (TS assertion, no runtime cost)
+const _assertFilter: FileAdvancedFilterValues = EMPTY_FILE_FILTERS;
+void _assertFilter;
+
+interface ConfirmState {
+  open: boolean;
+  loading: boolean;
+  mode: "single" | "bulk";
+  file: UploadedFile | null;
 }
 
-const INITIAL_FILTERS: FiltersState = {
-  search: "",
-  searchApplied: "",
-  kind: "all",
-  page: 1,
-};
+const SORT_KEYS_API = ["name", "size", "createdAt"] as const;
+type SortKeyApi = (typeof SORT_KEYS_API)[number];
 
-const KIND_BADGE_CLASS: Record<FileKind, string> = {
-  image: styles.badgeImage ?? "",
-  pdf: styles.badgePdf ?? "",
-  word: styles.badgeWord ?? "",
-  other: styles.badgeOther ?? "",
-};
-
-const KIND_FILTER_OPTIONS: { value: FiltersState["kind"]; label: string }[] = [
-  { value: "all", label: "Tất cả" },
-  { value: "image", label: "Ảnh" },
-  { value: "pdf", label: "PDF" },
-  { value: "word", label: "Word" },
-];
-
-function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "—";
-  try {
-    return new Date(value).toLocaleString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return value;
-  }
+function isSortKeyApi(k: string): k is SortKeyApi {
+  return (SORT_KEYS_API as readonly string[]).includes(k);
 }
 
-function isFiltersActive(f: FiltersState): boolean {
-  return Boolean(f.searchApplied) || f.kind !== "all";
+const VALID_FILE_TYPES = ["image", "document", "video", "audio"] as const;
+type FileType = (typeof VALID_FILE_TYPES)[number];
+function isFileType(s: string): s is FileType {
+  return (VALID_FILE_TYPES as readonly string[]).includes(s);
 }
 
-function findUploader(
-  users: User[],
-  uploadedById: number
-): { fullName: string; email: string } | null {
-  const u = users.find((x) => String(x.id) === String(uploadedById));
-  if (!u) return null;
-  return { fullName: u.fullName, email: u.email };
+function findUploader(users: User[], uploadedById: number) {
+  return users.find((x) => x.id === uploadedById) ?? null;
 }
 
 export function FileManagerPage() {
   // ===== Auth =====
   const currentUser = authStorage.getUser();
   const isAdmin = currentUser?.role === "ADMIN";
-  const currentUserId = currentUser?.id;
+  const currentUserId =
+    currentUser?.id !== undefined
+      ? typeof currentUser.id === "number"
+        ? currentUser.id
+        : Number(currentUser.id)
+      : undefined;
 
   // ===== URL sync =====
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [filters, setFilters] = useState<FiltersState>(() => {
-    const initial: FiltersState = { ...INITIAL_FILTERS };
-    const kind = searchParams.get("kind");
-    if (kind === "image" || kind === "pdf" || kind === "word") {
-      initial.kind = kind;
-    }
-    const search = searchParams.get("search");
-    if (search) {
-      initial.search = search;
-      initial.searchApplied = search;
-    }
-    const page = Number(searchParams.get("page") ?? "1");
-    if (page > 1) initial.page = page;
-    return initial;
-  });
+  const [filters, setFilters] = useState<{
+    search: string;
+    searchApplied: string;
+    advanced: FileAdvancedFilterValues;
+    page: number;
+    sort: SortConfig;
+  }>(() => ({
+    search: "",
+    searchApplied: "",
+    advanced: { ...EMPTY_FILE_FILTERS },
+    page: 1,
+    sort: { key: "createdAt", order: "desc" },
+  }));
 
+  // Sync URL → state khi mount / URL đổi (back/forward)
+  useEffect(() => {
+    const sp = searchParams;
+    setFilters((prev) => {
+      const next = { ...prev };
+      const s = sp.get("search");
+      if (s !== null) {
+        next.search = s;
+        next.searchApplied = s;
+      }
+      const fileType = sp.get("fileType");
+      if (fileType && isFileType(fileType)) next.advanced.fileType = fileType;
+      else if (fileType === null || fileType === "")
+        next.advanced.fileType = "all";
+
+      const uid = sp.get("uploaderId");
+      if (uid) {
+        const n = Number(uid);
+        if (Number.isInteger(n) && n > 0) next.advanced.uploaderId = n;
+      } else if (uid === "") {
+        next.advanced.uploaderId = null;
+      }
+      next.advanced.dateFrom = sp.get("dateFrom") ?? "";
+      next.advanced.dateTo = sp.get("dateTo") ?? "";
+      const sortBy = sp.get("sortBy");
+      const sortOrder = sp.get("sortOrder");
+      if (sortBy && isSortKeyApi(sortBy)) {
+        next.sort = {
+          key: sortBy,
+          order: sortOrder === "asc" ? "asc" : "desc",
+        };
+      }
+      const p = Number(sp.get("page") ?? "1");
+      if (p > 1) next.page = p;
+      else next.page = 1;
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Chỉ chạy 1 lần khi mount.
+
+  // Sync state → URL mỗi khi filters thay đổi.
   useEffect(() => {
     const next: Record<string, string> = {};
     if (filters.searchApplied) next.search = filters.searchApplied;
-    if (filters.kind !== "all") next.kind = filters.kind;
+    if (filters.advanced.fileType !== "all") next.fileType = filters.advanced.fileType;
+    if (filters.advanced.uploaderId !== null) next.uploaderId = String(filters.advanced.uploaderId);
+    if (filters.advanced.dateFrom) next.dateFrom = filters.advanced.dateFrom;
+    if (filters.advanced.dateTo) next.dateTo = filters.advanced.dateTo;
+    if (filters.sort.key !== "createdAt" || filters.sort.order !== "desc") {
+      next.sortBy = filters.sort.key;
+      next.sortOrder = filters.sort.order;
+    }
     if (filters.page > 1) next.page = String(filters.page);
     setSearchParams(next, { replace: true });
-  }, [filters.searchApplied, filters.kind, filters.page, setSearchParams]);
+  }, [
+    filters.searchApplied,
+    filters.advanced.fileType,
+    filters.advanced.uploaderId,
+    filters.advanced.dateFrom,
+    filters.advanced.dateTo,
+    filters.sort.key,
+    filters.sort.order,
+    filters.page,
+    setSearchParams,
+  ]);
+
+  // ===== View mode (lưu localStorage) =====
+  const [viewMode, setViewMode] = useState<FileViewMode>(() => {
+    if (typeof window === "undefined") return "table";
+    const v = window.localStorage.getItem(FILE_VIEW_MODE_STORAGE_KEY);
+    return v === "grid" ? "grid" : "table";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(FILE_VIEW_MODE_STORAGE_KEY, viewMode);
+    }
+  }, [viewMode]);
+
+  // ===== Filter panel open (UI state, KHÔNG lưu URL) =====
+  const [filterPanelOpen, setFilterPanelOpen] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    // Auto-mở nếu URL có bất kỳ param advanced nào.
+    const sp = new URLSearchParams(window.location.search);
+    return Boolean(
+      sp.get("fileType") ||
+        sp.get("uploaderId") ||
+        sp.get("dateFrom") ||
+        sp.get("dateTo")
+    );
+  });
 
   // ===== Data =====
   const [items, setItems] = useState<UploadedFile[]>([]);
@@ -136,83 +221,117 @@ export function FileManagerPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  const [storageStatsRefreshKey, setStorageStatsRefreshKey] = useState(0);
+
   // ===== Users (cho uploader) =====
   const [users, setUsers] = useState<User[]>([]);
 
-  // ===== Upload + toast =====
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<{
-    type: "success" | "error" | "info";
-    text: string;
-  } | null>(null);
-  const lastSuccessCountRef = useRef(0);
-  const lastInvalidCountRef = useRef(0);
+  // ===== Selection (bulk) =====
+  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
 
-  // ===== Detail modal =====
+  // Clear selection khi filter/page thay đổi mạnh.
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [
+    filters.searchApplied,
+    filters.advanced.fileType,
+    filters.advanced.uploaderId,
+    filters.advanced.dateFrom,
+    filters.advanced.dateTo,
+    filters.sort.key,
+    filters.sort.order,
+    filters.page,
+  ]);
+
+  // ===== Drag drop state =====
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // ===== Upload queue =====
+  const uploadQueue = useUploadQueue<UploadedFile>({
+    uploadFn: (file, opts) => uploadFileRaw(file, opts),
+    onItemSuccess: (_item, response) => {
+      // Auto-inject file mới vào đầu list NGAY khi upload xong.
+      // Phân biệt với loadList() đầy đủ → tốn 1 API call cho mỗi file.
+      setItems((prev) => {
+        // Tránh duplicate nếu đã có sẵn (load trước).
+        if (prev.some((p) => p.id === response.id)) return prev;
+        return [response, ...prev];
+      });
+      setTotal((t) => t + 1);
+      setStorageStatsRefreshKey((k) => k + 1);
+    },
+  });
+
+  // ===== Detail / Confirm =====
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailFile, setDetailFile] = useState<UploadedFile | null>(null);
 
-  // ===== Delete confirm =====
-  const [deleting, setDeleting] = useState<UploadedFile | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [confirm, setConfirm] = useState<ConfirmState>({
+    open: false,
+    loading: false,
+    mode: "single",
+    file: null,
+  });
+
+  // ===== Banner (toast inline) =====
+  const [banner, setBanner] = useState<{
+    type: "success" | "error" | "info";
+    text: string;
+  } | null>(null);
 
   // ===== Load list =====
   const loadList = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
-      const result: {
-        items: UploadedFile[];
-        total: number;
-        page: number;
-        pageSize: number;
-        totalPages: number;
-      } = await getFiles({
+      const result = await getFiles({
         page: filters.page,
         pageSize: FILE_PAGE_SIZE,
+        search: filters.searchApplied || undefined,
+        fileType: filters.advanced.fileType === "all" ? undefined : filters.advanced.fileType,
+        uploaderId: filters.advanced.uploaderId ?? undefined,
+        dateFrom: filters.advanced.dateFrom || undefined,
+        dateTo: filters.advanced.dateTo || undefined,
+        sortBy: filters.sort.key as SortKeyApi,
+        sortOrder: filters.sort.order,
       });
-      // Client-side filter search + kind (BE không hỗ trợ).
-      let filtered = result.items;
-      if (filters.searchApplied) {
-        const s = filters.searchApplied.toLowerCase();
-        filtered = filtered.filter((f) =>
-          f.originalName.toLowerCase().includes(s)
-        );
-      }
-      if (filters.kind !== "all") {
-        filtered = filtered.filter(
-          (f) => getFileKind(f.originalName || f.mimeType) === filters.kind
-        );
-      }
-      setItems(filtered);
-      setTotal(filtered.length);
-      setTotalPages(Math.max(1, Math.ceil(filtered.length / FILE_PAGE_SIZE)));
+      setItems(result.items);
+      setTotal(result.total);
+      setTotalPages(result.totalPages);
     } catch (err) {
-      const message = getApiErrorMessage(err, "Không tải được danh sách file");
-      setLoadError(message);
+      setLoadError(getApiErrorMessage(err, "Không tải được danh sách file"));
     } finally {
       setLoading(false);
     }
-  }, [filters.page, filters.searchApplied, filters.kind]);
+  }, [
+    filters.page,
+    filters.searchApplied,
+    filters.advanced.fileType,
+    filters.advanced.uploaderId,
+    filters.advanced.dateFrom,
+    filters.advanced.dateTo,
+    filters.sort.key,
+    filters.sort.order,
+  ]);
 
   useEffect(() => {
     loadList();
   }, [loadList]);
 
-  // ===== Load users (chỉ Admin thấy user khác, cần cho cột "Người upload") =====
+  // ===== Load users (cho uploader) =====
   useEffect(() => {
     let cancelled = false;
     async function loadUsers() {
       try {
-        const result = await listUsers({});
+        const result = await listUsers({ limit: 50 });
         if (cancelled) return;
         const list = Array.isArray(result.users) ? result.users : [];
         const active = list.filter((u) => !u.deletedAt);
         active.sort((a, b) => a.fullName.localeCompare(b.fullName, "vi"));
         setUsers(active);
       } catch {
-        // Không block UI — fallback hiện "ID: <number>".
+        // ignore
       }
     }
     loadUsers();
@@ -231,11 +350,39 @@ export function FileManagerPage() {
           ? prev
           : { ...prev, searchApplied: prev.search, page: 1 }
       );
-    }, 450);
+    }, 400);
     return () => {
       if (debounceRef.current) window.clearTimeout(debounceRef.current);
     };
   }, [filters.search]);
+
+  // ===== Watch for queue completion → summary banner =====
+  useEffect(() => {
+    if (
+      uploadQueue.summary.total > 0 &&
+      uploadQueue.summary.uploading === 0 &&
+      uploadQueue.summary.pending === 0
+    ) {
+      const { success, error, cancelled } = uploadQueue.summary;
+      if (success > 0 || error > 0 || cancelled > 0) {
+        const parts: string[] = [];
+        if (success > 0) parts.push(`Đã tải lên thành công ${success} file`);
+        if (error > 0) parts.push(`${error} file lỗi`);
+        if (cancelled > 0) parts.push(`${cancelled} file đã huỷ`);
+        setBanner({
+          type: success > 0 && error === 0 ? "success" : "info",
+          text: parts.join(" · "),
+        });
+      }
+    }
+  }, [
+    uploadQueue.summary.total,
+    uploadQueue.summary.uploading,
+    uploadQueue.summary.pending,
+    uploadQueue.summary.success,
+    uploadQueue.summary.error,
+    uploadQueue.summary.cancelled,
+  ]);
 
   // ===== Handlers =====
   function handleSearchInput(e: ChangeEvent<HTMLInputElement>) {
@@ -244,69 +391,64 @@ export function FileManagerPage() {
   function clearSearch() {
     setFilters((prev) => ({ ...prev, search: "", searchApplied: "", page: 1 }));
   }
-  function handleKindChange(e: ChangeEvent<HTMLSelectElement>) {
-    setFilters((prev) => ({
-      ...prev,
-      kind: e.target.value as FiltersState["kind"],
-      page: 1,
-    }));
-  }
-  function clearAllFilters() {
-    setFilters({ ...INITIAL_FILTERS });
-  }
   function handlePageChange(page: number) {
     setFilters((prev) => ({ ...prev, page }));
   }
-
-  function openUpload() {
-    setUploadOpen((v) => !v);
-    setAlertMessage(null);
+  function handleSortChange(next: SortConfig) {
+    setFilters((prev) => ({ ...prev, sort: next, page: 1 }));
+  }
+  function handleFilterPanelChange(next: FileAdvancedFilterValues) {
+    setFilters((prev) => ({ ...prev, advanced: next, page: 1 }));
+  }
+  function clearAdvancedFilters() {
+    setFilters((prev) => ({
+      ...prev,
+      advanced: { ...EMPTY_FILE_FILTERS },
+      page: 1,
+    }));
+  }
+  function handleFilePickerOpen() {
+    inputRef.current?.click();
   }
 
-  async function handleUploadOne(file: File): Promise<void> {
-    await uploadFile(file);
-    // Cập nhật số success để hiện Alert khi onItemsChange thấy batch kết thúc.
-    lastSuccessCountRef.current += 1;
-  }
-
-  function handleInvalid(errors: { file: File; error: FileValidationError }[]) {
-    lastInvalidCountRef.current += errors.length;
-    setAlertMessage({
-      type: "error",
-      text: `Bỏ qua ${errors.length} file không hợp lệ: ${errors
-        .map((e) => e.error.message)
-        .join("; ")}`,
-    });
-  }
-
-  function handleUploadQueueChange(queue: UploadItem[]) {
-    // Khi queue vừa được clear hết (thành công + lỗi xử lý xong),
-    // refresh list + tổng kết.
-    const isAllDone =
-      queue.length > 0 &&
-      queue.every((q) => q.status === "success" || q.status === "error");
-    const hadInFlight = queue.some(
-      (q) => q.status === "uploading" || q.status === "pending"
-    );
-    if (isAllDone && !hadInFlight) {
-      const successCount = lastSuccessCountRef.current;
-      const invalidCount = lastInvalidCountRef.current;
-      lastSuccessCountRef.current = 0;
-      lastInvalidCountRef.current = 0;
-      if (successCount > 0 || invalidCount > 0) {
-        const parts: string[] = [];
-        if (successCount > 0) parts.push(`Đã tải lên ${successCount} file thành công`);
-        if (invalidCount > 0) parts.push(`${invalidCount} file bị từ chối`);
-        setAlertMessage({
-          type: successCount > 0 ? "success" : "info",
-          text: parts.join(" · "),
-        });
-      }
-      void loadList();
-      setUploading(false);
-    } else if (queue.some((q) => q.status === "uploading")) {
-      setUploading(true);
+  function handleFiles(files: FileList | File[]) {
+    const arr = Array.from(files);
+    const valid: File[] = [];
+    const invalid: string[] = [];
+    for (const f of arr) {
+      const v = validateFile(f);
+      if (v.ok) valid.push(f);
+      else invalid.push(f.name);
     }
+    if (invalid.length > 0) {
+      setBanner({
+        type: "error",
+        text: `Bỏ qua ${invalid.length} file không hợp lệ: ${invalid.join(", ")}. Chỉ chấp nhận jpg/jpeg/png/pdf/doc/docx, tối đa 10MB.`,
+      });
+    }
+    if (valid.length > 0) uploadQueue.enqueue(valid);
+  }
+
+  function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+    e.target.value = "";
+  }
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  }
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setDragOver(true);
+  }
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setDragOver(false);
   }
 
   function openDetail(file: UploadedFile) {
@@ -314,155 +456,182 @@ export function FileManagerPage() {
     setDetailOpen(true);
   }
 
-  function askDelete(file: UploadedFile) {
-    setDeleting(file);
-  }
-  async function confirmDelete() {
-    if (!deleting) return;
-    setDeleteLoading(true);
+  async function copyLink(file: UploadedFile) {
+    // URL có thể truy cập được: hiện tại BE chưa static-serve file, nên URL
+    // này thực ra trỏ tới endpoint JSON. Vẫn copy vì hữu ích làm ID reference.
+    const url = `${window.location.origin}/api/files/${file.id}/preview`;
     try {
-      await deleteFile(deleting.id);
-      setDeleting(null);
-      setAlertMessage({ type: "success", text: `Đã xoá file "${deleting.originalName}".` });
-      void loadList();
-    } catch (err) {
-      const message = getApiErrorMessage(err, "Không xoá được file");
-      setAlertMessage({ type: "error", text: message });
-    } finally {
-      setDeleteLoading(false);
+      await navigator.clipboard.writeText(url);
+      setBanner({
+        type: "success",
+        text: `Đã sao chép liên kết của "${file.originalName}". (Lưu ý: BE chưa serve file vật lý — link này dùng làm ID reference.)`,
+      });
+    } catch {
+      // Fallback cho trình duyệt không hỗ trợ clipboard API (vd HTTP)
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        setBanner({
+          type: "success",
+          text: `Đã sao chép liên kết của "${file.originalName}".`,
+        });
+      } catch {
+        setBanner({
+          type: "error",
+          text: "Trình duyệt không hỗ trợ sao chép tự động — vui lòng copy thủ công.",
+        });
+      }
+      document.body.removeChild(ta);
     }
   }
 
-  function canDelete(file: UploadedFile): boolean {
-    if (isAdmin) return true;
-    if (!currentUserId) return false;
-    return String(file.uploadedById) === String(currentUserId);
+  function quickDownload(file: UploadedFile) {
+    // Vì BE chưa serve file vật lý, gọi fetch trực tiếp /api/files/:id/preview
+    // sẽ fail. Vẫn attempt — nếu BE sau này serve, code không cần đổi.
+    const url = `/api/files/${file.id}/preview`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file.originalName;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setBanner({
+      type: "info",
+      text: `Đã gửi yêu cầu tải "${file.originalName}". (Nếu download không bắt đầu, BE chưa serve file vật lý.)`,
+    });
   }
 
-  // ===== Columns =====
-  const columns: TableColumn<UploadedFile>[] = useMemo(
-    () => [
-      {
-        key: "name",
-        header: "Tên file",
-        minWidth: 280,
-        render: (file) => {
-          const kind = getFileKind(file.originalName || file.mimeType);
-          return (
-            <div className={styles.nameCell}>
-              <FileIcon
-                filename={file.originalName}
-                mimeType={file.mimeType}
-                kind={kind}
-                size={20}
-              />
-              <button
-                type="button"
-                className={styles.nameLink}
-                onClick={() => openDetail(file)}
-                title={file.originalName}
-              >
-                {file.originalName}
-              </button>
-            </div>
-          );
-        },
-      },
-      {
-        key: "kind",
-        header: "Loại",
-        render: (file) => {
-          const kind = getFileKind(file.originalName || file.mimeType);
-          return (
-            <span className={[styles.badge, KIND_BADGE_CLASS[kind]].join(" ")}>
-              {getFileKindLabel(kind)}
-            </span>
-          );
-        },
-      },
-      {
-        key: "size",
-        header: "Kích thước",
-        render: (file) => (
-          <span className={styles.sizeCell}>{formatFileSize(file.size)}</span>
-        ),
-      },
-      {
-        key: "uploader",
-        header: "Người upload",
-        render: (file) => {
-          const u = findUploader(users, file.uploadedById);
-          return (
-            <div className={styles.uploaderCell}>
-              <span className={styles.uploaderName}>
-                {u?.fullName ?? `ID: ${file.uploadedById}`}
-              </span>
-              {u ? <span className={styles.uploaderEmail}>{u.email}</span> : null}
-            </div>
-          );
-        },
-      },
-      {
-        key: "createdAt",
-        header: "Thời gian",
-        render: (file) => (
-          <span className={styles.timeCell}>{formatDateTime(file.createdAt)}</span>
-        ),
-      },
-      {
-        key: "actions",
-        header: "",
-        align: "right",
-        render: (file) => {
-          const allowed = canDelete(file);
-          return (
-            <div className={styles.actionCell}>
-              <button
-                type="button"
-                className={[styles.iconBtn, styles.iconBtnView].join(" ")}
-                onClick={() => openDetail(file)}
-                title="Xem thông tin"
-                aria-label="Xem thông tin"
-              >
-                <Eye size={16} />
-              </button>
-              {allowed ? (
-                <button
-                  type="button"
-                  className={[styles.iconBtn, styles.iconBtnDanger].join(" ")}
-                  onClick={() => askDelete(file)}
-                  title="Xoá file"
-                  aria-label="Xoá file"
-                >
-                  <Trash2 size={16} />
-                </button>
-              ) : null}
-            </div>
-          );
-        },
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [users, isAdmin, currentUserId]
-  );
+  function askDelete(file: UploadedFile) {
+    setConfirm({ open: true, loading: false, mode: "single", file });
+  }
 
-  const filtered = isFiltersActive(filters);
+  async function confirmDelete() {
+    if (!confirm.file) return;
+    setConfirm((p) => ({ ...p, loading: true }));
+    try {
+      if (confirm.mode === "bulk") {
+        const result = await bulkDeleteFiles(selectedIds);
+        setBanner({
+          type: "success",
+          text: `Đã chuyển ${result.deletedCount} file vào thùng rác.`,
+        });
+        setSelectedIds([]);
+      } else {
+        await deleteFile(confirm.file.id);
+        setBanner({
+          type: "success",
+          text: `Đã xoá file "${confirm.file.originalName}".`,
+        });
+      }
+      setConfirm({ open: false, loading: false, mode: "single", file: null });
+      await loadList();
+      setStorageStatsRefreshKey((k) => k + 1);
+    } catch (err) {
+      const message = getApiErrorMessage(err, "Không xoá được file");
+      setBanner({ type: "error", text: message });
+      setConfirm((p) => ({ ...p, loading: false }));
+    }
+  }
+
+  // ===== Bulk handlers =====
+  function clearBulkSelection() {
+    setSelectedIds([]);
+  }
+
+  async function bulkDownload() {
+    if (selectedIds.length === 0) return;
+    setBanner({ type: "info", text: `Đang nén ${selectedIds.length} file thành zip...` });
+    try {
+      const result = await bulkDownloadFiles(selectedIds);
+      const url = URL.createObjectURL(result.blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = result.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // Clean up sau 30s để browser kịp tải
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+
+      if (result.missingFiles.length > 0) {
+        setBanner({
+          type: "info",
+          text: `Đã tải zip nhưng có ${result.missingFiles.length} file vật lý bị thiếu trên đĩa — đã bỏ qua khỏi zip.`,
+        });
+      } else {
+        setBanner({ type: "success", text: `Đã tải xuống zip ${selectedIds.length} file.` });
+      }
+      setSelectedIds([]);
+    } catch (err) {
+      const message = getApiErrorMessage(err, "Không tải được zip");
+      setBanner({ type: "error", text: message });
+    }
+  }
+
+  function askBulkDelete() {
+    setConfirm({ open: true, loading: false, mode: "bulk", file: null });
+  }
+
+  // ===== Computed =====
   const detailUploader = detailFile
     ? findUploader(users, detailFile.uploadedById)
     : null;
+
+  const isFiltered =
+    Boolean(filters.searchApplied) ||
+    filters.advanced.fileType !== "all" ||
+    filters.advanced.uploaderId !== null ||
+    Boolean(filters.advanced.dateFrom) ||
+    Boolean(filters.advanced.dateTo);
+
+  const filteredUsers = useMemo(
+    () =>
+      users.map((u) => ({
+        id: typeof u.id === "number" ? u.id : Number(u.id),
+        fullName: u.fullName,
+        email: u.email,
+      })),
+    [users]
+  );
 
   const emptyState = (
     <div className={styles.emptyState}>
       <FolderOpen size={48} aria-hidden="true" />
       <p className={styles.emptyTitle}>
-        {filtered ? "Không tìm thấy file phù hợp" : "Chưa có file nào"}
+        {isFiltered ? "Không tìm thấy file phù hợp" : "Chưa có file nào"}
       </p>
       <p className={styles.emptyHint}>
-        {filtered
+        {isFiltered
           ? "Thử bỏ bớt bộ lọc hoặc thay đổi từ khoá tìm kiếm."
           : "Bấm nút \"Tải file lên\" để thêm file đầu tiên vào hệ thống."}
       </p>
     </div>
+  );
+
+  // ===== Bulk action config =====
+  const bulkActions: BulkAction[] = useMemo(
+    () => [
+      {
+        key: "download",
+        label: "Tải xuống (zip)",
+        icon: <DownloadIcon size={14} />,
+        variant: "secondary",
+        onAction: () => void bulkDownload(),
+      },
+      {
+        key: "delete",
+        label: "Xoá nhiều",
+        icon: <Trash2Icon />,
+        variant: "danger",
+        onAction: askBulkDelete,
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedIds]
   );
 
   return (
@@ -477,43 +646,72 @@ export function FileManagerPage() {
         </div>
         <div className={styles.headerActions}>
           <Button
-            variant={uploadOpen ? "secondary" : "primary"}
-            leftIcon={<UploadCloud size={16} />}
-            onClick={openUpload}
+            variant="primary"
+            size="md"
+            leftIcon={<CloudUploadIcon size={16} />}
+            onClick={handleFilePickerOpen}
           >
-            {uploadOpen ? "Đóng vùng upload" : "Tải file lên"}
+            Tải file lên
           </Button>
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            className={styles.hiddenFileInput}
+            onChange={handleInputChange}
+            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+          />
         </div>
       </header>
 
-      {alertMessage ? (
+      {/* ===== Storage Stats — chỉ Admin ===== */}
+      <StorageStatsCard isAdmin={isAdmin} refreshKey={storageStatsRefreshKey} />
+
+      {banner ? (
         <Alert
           variant={
-            alertMessage.type === "success"
+            banner.type === "success"
               ? "success"
-              : alertMessage.type === "error"
-              ? "error"
-              : "info"
+              : banner.type === "error"
+                ? "error"
+                : "info"
           }
-          onClose={() => setAlertMessage(null)}
+          onClose={() => setBanner(null)}
         >
-          {alertMessage.text}
+          {banner.text}
         </Alert>
       ) : null}
 
-      {uploadOpen ? (
-        <section className={styles.uploadSection}>
-          <UploadZone
-            onUpload={handleUploadOne}
-            onInvalid={handleInvalid}
-            onItemsChange={handleUploadQueueChange}
-            multiple
-            disabled={uploading && false}
-            showQueue
-          />
-        </section>
-      ) : null}
+      {/* ===== Drag & Drop area + Upload Queue ===== */}
+      <section className={styles.uploadSection}>
+        <div
+          className={[
+            styles.dropzone,
+            dragOver ? styles.dropzoneActive : "",
+          ].join(" ")}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+        >
+          <CloudUploadIcon size={28} />
+          <p className={styles.dropTitle}>
+            {dragOver ? "Thả file vào đây" : "Kéo-thả file hoặc"}
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleFilePickerOpen}
+          >
+            Chọn file từ máy
+          </Button>
+          <p className={styles.dropHint}>
+            Hỗ trợ: jpg, jpeg, png, pdf, doc, docx. Tối đa 10MB / file.
+          </p>
+        </div>
+        <UploadQueue queue={uploadQueue} />
+      </section>
 
+      {/* ===== Table / Grid card ===== */}
       <div className={styles.tableCard}>
         {/* Toolbar */}
         <div className={styles.toolbar}>
@@ -528,29 +726,77 @@ export function FileManagerPage() {
             />
           </div>
 
-          <label className={styles.filterLabel}>
-            <span>Loại</span>
-            <select
-              className={styles.select}
-              value={filters.kind}
-              onChange={handleKindChange}
+          <div className={styles.toolbarRight}>
+            <button
+              type="button"
+              className={`${styles.viewToggleBtn} ${
+                viewMode === "table" ? styles.viewToggleBtnActive : ""
+              }`}
+              onClick={() => setViewMode("table")}
+              aria-pressed={viewMode === "table"}
+              aria-label="Chế độ bảng"
+              title="Xem dạng bảng"
             >
-              {KIND_FILTER_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
+              <ListIcon size={14} />
+              <span>Bảng</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.viewToggleBtn} ${
+                viewMode === "grid" ? styles.viewToggleBtnActive : ""
+              }`}
+              onClick={() => setViewMode("grid")}
+              aria-pressed={viewMode === "grid"}
+              aria-label="Chế độ lưới"
+              title="Xem dạng lưới"
+            >
+              <LayoutGrid size={14} />
+              <span>Lưới</span>
+            </button>
+          </div>
+        </div>
 
-          {filtered ? (
-            <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+        {/* Filter panel toggle */}
+        <div className={styles.advFilterToggle}>
+          <button
+            type="button"
+            className={`${styles.advFilterBtn} ${
+              filterPanelOpen ? styles.advFilterBtnActive : ""
+            } ${isFiltered ? styles.advFilterBtnFiltering : ""}`}
+            onClick={() => setFilterPanelOpen((v) => !v)}
+            aria-expanded={filterPanelOpen}
+          >
+            <SlidersHorizontal size={14} />
+            <span>Bộ lọc nâng cao</span>
+            {isFiltered ? (
+              <span className={styles.advFilterActive}>đang lọc</span>
+            ) : null}
+          </button>
+          {isFiltered ? (
+            <Button variant="ghost" size="sm" onClick={clearAdvancedFilters}>
               Xoá bộ lọc
             </Button>
           ) : null}
         </div>
 
-        {/* Body */}
+        <FileFilterPanel
+          open={filterPanelOpen}
+          values={filters.advanced}
+          onChange={handleFilterPanelChange}
+          onClear={clearAdvancedFilters}
+          isAdmin={isAdmin}
+        />
+
+        {/* Bulk action bar — chỉ hiển thị khi có selection */}
+        <BulkActionBar
+          selectedCount={selectedIds.length}
+          itemLabel="file"
+          loading={false}
+          actions={bulkActions}
+          onClearSelection={clearBulkSelection}
+        />
+
+        {/* Error state */}
         {loadError ? (
           <div className={styles.errorWrap}>
             <Alert variant="error">{loadError}</Alert>
@@ -558,17 +804,54 @@ export function FileManagerPage() {
               Thử lại
             </Button>
           </div>
-        ) : (
+        ) : viewMode === "table" ? (
           <>
-            <Table
-              columns={columns}
-              data={items}
+            <FileTableView
+              items={items}
               loading={loading}
-              skeletonRows={6}
-              rowKey={(f) => f.id}
+              selectable
+              selectedIds={selectedIds}
+              onSelectedChange={setSelectedIds}
+              sortConfig={filters.sort}
+              onSortChange={handleSortChange}
+              users={filteredUsers}
+              currentUserId={currentUserId}
+              isAdmin={isAdmin}
+              onOpenDetail={openDetail}
+              onCopyLink={copyLink}
+              onDownload={quickDownload}
+              onAskDelete={askDelete}
               emptyState={emptyState}
             />
-
+            {!loading && items.length > 0 ? (
+              <div className={styles.tableFooter}>
+                <span className={styles.totalLabel}>
+                  Hiển thị <b>{items.length}</b> / <b>{total}</b> file
+                </span>
+                <Pagination
+                  currentPage={filters.page}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <FileGridView
+              items={items}
+              loading={loading}
+              selectable
+              selectedIds={selectedIds}
+              onSelectedChange={setSelectedIds}
+              currentUserId={currentUserId}
+              isAdmin={isAdmin}
+              onOpenDetail={openDetail}
+              onCopyLink={copyLink}
+              onDownload={quickDownload}
+              onAskDelete={askDelete}
+              emptyState={emptyState}
+            />
             {!loading && items.length > 0 ? (
               <div className={styles.tableFooter}>
                 <span className={styles.totalLabel}>
@@ -585,6 +868,7 @@ export function FileManagerPage() {
         )}
       </div>
 
+      {/* Detail modal */}
       <FileDetailModal
         open={detailOpen}
         file={detailFile}
@@ -593,21 +877,42 @@ export function FileManagerPage() {
         onClose={() => setDetailOpen(false)}
       />
 
+      {/* Confirm dialog (xoá 1 file hoặc bulk) */}
       <ConfirmDialog
-        open={Boolean(deleting)}
-        title="Xoá file này?"
-        message={
-          deleting
-            ? `Hành động này sẽ chuyển file "${deleting.originalName}" vào thùng rác. Admin có thể khôi phục lại sau.`
-            : ""
+        open={confirm.open}
+        loading={confirm.loading}
+        title={
+          confirm.mode === "bulk"
+            ? `Xoá ${selectedIds.length} file?`
+            : "Xoá file này?"
         }
-        confirmText="Xoá file"
+        message={
+          confirm.mode === "bulk" ? (
+            <>
+              Bạn sắp <b>xoá mềm</b> {selectedIds.length} file đã chọn. Hành
+              động này sẽ chuyển chúng vào thùng rác và có thể khôi phục lại
+              sau.
+              <br />
+              <span style={{ color: "var(--text-secondary)", fontSize: 13 }}>
+                Nếu trong danh sách có file bạn không có quyền xoá, thao tác
+                sẽ thất bại rõ ràng với danh sách id bị từ chối.
+              </span>
+            </>
+          ) : (
+            `Hành động này sẽ chuyển file "${confirm.file?.originalName}" vào thùng rác. Admin có thể khôi phục lại sau.`
+          )
+        }
+        confirmText={confirm.mode === "bulk" ? "Xoá tất cả" : "Xoá file"}
         cancelText="Huỷ"
         confirmVariant="danger"
-        loading={deleteLoading}
         onConfirm={confirmDelete}
-        onCancel={() => setDeleting(null)}
+        onCancel={() =>
+          setConfirm({ open: false, loading: false, mode: "single", file: null })
+        }
       />
     </div>
   );
 }
+
+// Re-export để dùng nơi khác nếu cần.
+export { uploadFile };
