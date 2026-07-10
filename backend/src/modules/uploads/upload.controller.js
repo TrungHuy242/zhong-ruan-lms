@@ -1,9 +1,20 @@
-const uploadService = require("./upload.service");
+/**
+ * upload.controller.js — Controller cho module uploads/ (chỉ endpoint POST /upload).
+ *
+ * Lưu ý: tất cả các endpoint khác (list, detail, delete, restore, force, bulk, storage-stats)
+ * đã được chuyển sang module files/ ở /api/files. Module uploads/ chỉ còn nhiệm vụ:
+ *   - Nhận multipart upload qua multer
+ *   - Tạo record UploadFile (qua files.service.uploadFile — shared)
+ *
+ * Lý do tách: route rõ ràng. POST /api/upload chỉ để upload; thao tác khác qua /api/files.
+ */
+
+const filesService = require("../files/files.service");
 
 // POST /upload
 async function upload(req, res) {
   try {
-    const file = await uploadService.uploadFile(req.user.id, req.file);
+    const file = await filesService.uploadFile(req.user.id, req.file);
     res.status(201).json({
       message: "Upload file thành công",
       data: { file },
@@ -16,104 +27,4 @@ async function upload(req, res) {
   }
 }
 
-// GET /files
-async function list(req, res) {
-  try {
-    const result = await uploadService.listFiles(req.user, req.query);
-    res.json({
-      message: "Lấy danh sách file thành công",
-      data: result.items,
-      pagination: {
-        page: result.page,
-        pageSize: result.pageSize,
-        total: result.total,
-      },
-    });
-  } catch (error) {
-    const status = error.code === "BAD_REQUEST" ? 400 : 400;
-    res.status(status).json({
-      message: error.message || "Lỗi hệ thống",
-    });
-  }
-}
-
-// GET /files/:id
-async function getOne(req, res) {
-  try {
-    const file = await uploadService.getOneFile(req.user, req.params.id);
-    res.json({
-      message: "Lấy thông tin file thành công",
-      data: { file },
-    });
-  } catch (error) {
-    let status = 400;
-    if (error.code === "NOT_FOUND") status = 404;
-    else if (error.code === "FORBIDDEN") status = 403;
-    res.status(status).json({
-      message: error.message || "Lỗi hệ thống",
-    });
-  }
-}
-
-// DELETE /files/:id
-async function remove(req, res) {
-  try {
-    const result = await uploadService.removeFile(req.user, req.params.id, req);
-    res.json({
-      message: "Đã chuyển file vào thùng rác (soft delete, file vật lý vẫn còn)",
-      data: result,
-    });
-  } catch (error) {
-    let status = 400;
-    if (error.code === "NOT_FOUND") status = 404;
-    else if (error.code === "FORBIDDEN") status = 403;
-    res.status(status).json({
-      message: error.message || "Lỗi hệ thống",
-    });
-  }
-}
-
-// POST /files/:id/restore
-async function restore(req, res) {
-  try {
-    const result = await uploadService.restoreFile(req.user, req.params.id, req);
-    res.json({
-      message: "Khôi phục file thành công",
-      data: result,
-    });
-  } catch (error) {
-    let status = 400;
-    if (error.code === "NOT_FOUND") status = 404;
-    else if (error.code === "FORBIDDEN") status = 403;
-    res.status(status).json({
-      message: error.message || "Lỗi hệ thống",
-    });
-  }
-}
-
-// DELETE /files/:id/force  (chỉ Admin — xóa cứng DB + file vật lý)
-async function forceRemove(req, res) {
-  try {
-    const result = await uploadService.forceDeleteFile(req.user, req.params.id, req);
-    res.json({
-      message: "Đã xóa cứng file khỏi database và xóa file vật lý trên disk",
-      data: result,
-    });
-  } catch (error) {
-    let status = 400;
-    if (error.code === "NOT_FOUND") status = 404;
-    else if (error.code === "FORBIDDEN") status = 403;
-    res.status(status).json({
-      message: error.message || "Lỗi hệ thống",
-    });
-  }
-}
-
-module.exports = {
-  upload,
-  list,
-  getOne,
-  remove,
-  restore,
-  forceRemove,
-};
+module.exports = { upload };
