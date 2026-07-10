@@ -24,9 +24,23 @@ export interface AuditLog {
   user: AuditLogActor | null;
 }
 
+/**
+ * Các module có trong `target` (prefix "<Module>:<id>").
+ * Hard-code từ các target thực tế trong source BE — không có endpoint liệt kê.
+ */
+export const AUDIT_MODULES = [
+  "User",
+  "Auth",
+  "UploadFile",
+  "Notification",
+] as const;
+
+export type AuditModule = (typeof AUDIT_MODULES)[number];
+
 export interface AuditLogListParams {
   userId?: number;
   action?: AuditAction | "";
+  module?: AuditModule | "";
   from?: string; // YYYY-MM-DD
   to?: string; // YYYY-MM-DD
   search?: string;

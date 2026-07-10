@@ -55,29 +55,109 @@ async function logFromRequest(req, { userId = null, action, target = null, meta 
   return log({ userId, action, target, meta, ip, userAgent });
 }
 
+// ===== Helpers dùng cho API =====
+const ACTOR_SELECT = { id: true, email: true, fullName: true, role: true };
+
+/**
+ * Danh sách các field nhạy cảm cần redact khỏi `meta` trước khi trả ra FE.
+ * Áp dụng cả cho list lẫn detail — module audit không có endpoint write,
+ * nên redaction sống tập trung tại đây.
+ */
+const REDACT_KEYS = new Set([
+  "password",
+  "passwordHash",
+  "oldPassword",
+  "newPassword",
+  "refreshToken",
+  "refreshTokenHash",
+  "resetToken",
+  "resetTokenExpiresAt",
+]);
+const REDACTED_VALUE = "[REDACTED]";
+
+function redactValue(key, value) {
+  if (REDACT_KEYS.has(key)) return REDACTED_VALUE;
+  return value;
+}
+
+function redactMeta(meta) {
+  if (meta === null || meta === undefined) return meta;
+  if (Array.isArray(meta)) return meta.map((v) => redactMeta(v));
+  if (typeof meta === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(meta)) {
+      out[k] = v !== null && typeof v === "object" ? redactMeta(v) : redactValue(k, v);
+    }
+    return out;
+  }
+  return meta;
+}
+
+function redactLog(log) {
+  if (!log) return log;
+  return { ...log, meta: redactMeta(log.meta) };
+}
+
 /**
  * Lấy danh sách audit log cho admin.
- * Hỗ trợ filter: userId, action, từ ngày -> đến ngày, phân trang.
+ *
+ * Filter hỗ trợ:
+ *   - userId:  number
+ *   - action:  string (exact match)
+ *   - module:  string (match với prefix của `target`, VD module="User" → "User:13")
+ *   - from/to: ISO date string, inclusive
+ *   - search:  keyword — search trong user.email, user.fullName, action, target, ip, userAgent.
+ *              (Prisma không cho `string_contains` portable trên cột Json nên ta
+ *               không search trong `meta` ở BE; FE có thể search text khi mở detail.)
+ *   - page, pageSize: phân trang (pageSize tối đa 100 để tránh OOM)
+ *
+ * Sort mặc định: createdAt desc (mới nhất trước) — đúng yêu cầu.
  */
 async function listLogs({
   userId = null,
   action = null,
+  module: moduleName = null,
   from = null,
   to = null,
+  search = null,
   page = 1,
   pageSize = 20,
 } = {}) {
-  const where = {};
-  if (userId) where.userId = Number(userId);
-  if (action) where.action = action;
+  const andClauses = [];
+
+  if (userId) andClauses.push({ userId: Number(userId) });
+  if (action) andClauses.push({ action: action });
   if (from || to) {
-    where.createdAt = {};
-    if (from) where.createdAt.gte = new Date(from);
-    if (to) where.createdAt.lte = new Date(to);
+    const range = {};
+    if (from) range.gte = new Date(from);
+    if (to) range.lte = new Date(to);
+    andClauses.push({ createdAt: range });
+  }
+  if (moduleName) {
+    // target có dạng "<Module>:<id>" — dùng startsWith là đủ cho các module hiện có
+    // (User, Auth, UploadFile, Notification). Không phân biệt hoa thường.
+    andClauses.push({ target: { startsWith: `${moduleName}:` } });
+  }
+  if (search && String(search).trim() !== "") {
+    const q = String(search).trim();
+    const orClauses = [
+      { action: { contains: q, mode: "insensitive" } },
+      { target: { contains: q, mode: "insensitive" } },
+      { ip: { contains: q, mode: "insensitive" } },
+      { userAgent: { contains: q, mode: "insensitive" } },
+      // user.email / user.fullName — dùng relation filter
+      { user: { is: { email: { contains: q, mode: "insensitive" } } } },
+      { user: { is: { fullName: { contains: q, mode: "insensitive" } } } },
+    ];
+    andClauses.push({ OR: orClauses });
   }
 
-  const skip = (Math.max(1, Number(page)) - 1) * Math.max(1, Number(pageSize));
-  const take = Math.min(100, Math.max(1, Number(pageSize)));
+  const where = andClauses.length === 0 ? {} : { AND: andClauses };
+
+  const safePage = Math.max(1, Number(page) || 1);
+  const safePageSize = Math.min(100, Math.max(1, Number(pageSize) || 20));
+  const skip = (safePage - 1) * safePageSize;
+  const take = safePageSize;
 
   const [items, total] = await Promise.all([
     prisma.auditLog.findMany({
@@ -86,21 +166,37 @@ async function listLogs({
       skip,
       take,
       include: {
-        user: { select: { id: true, email: true, fullName: true, role: true } },
+        user: { select: ACTOR_SELECT },
       },
     }),
     prisma.auditLog.count({ where }),
   ]);
 
   return {
-    items,
+    items: items.map(redactLog),
     pagination: {
-      page: Math.max(1, Number(page)),
+      page: safePage,
       pageSize: take,
       total,
-      totalPages: Math.ceil(total / take),
+      totalPages: Math.max(1, Math.ceil(total / take)),
     },
   };
+}
+
+/**
+ * Lấy chi tiết 1 audit log theo id. Trả `null` nếu không tồn tại.
+ * `meta` được redact như list.
+ */
+async function getLogById(id) {
+  const numericId = Number(id);
+  if (!Number.isFinite(numericId) || numericId <= 0) return null;
+  const log = await prisma.auditLog.findUnique({
+    where: { id: numericId },
+    include: {
+      user: { select: ACTOR_SELECT },
+    },
+  });
+  return redactLog(log);
 }
 
 module.exports = {
@@ -108,4 +204,8 @@ module.exports = {
   logFromRequest,
   extractRequestMeta,
   listLogs,
+  getLogById,
+  // Export `redactMeta` cho test đơn vị. Không nên gọi từ controller —
+  // redaction phải đi qua `listLogs` / `getLogById` để đảm bảo không lộ data thô.
+  _internal: { redactMeta },
 };

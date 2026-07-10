@@ -2,8 +2,8 @@
  * audit.constants — const dùng riêng cho feature audit-log.
  */
 
-import { AUDIT_ACTIONS } from "../types/audit.types";
-import type { AuditAction, AuditActionGroup } from "../types/audit.types";
+import { AUDIT_ACTIONS, AUDIT_MODULES } from "../types/audit.types";
+import type { AuditAction, AuditActionGroup, AuditModule } from "../types/audit.types";
 
 export const AUDIT_PAGE_SIZE = 10;
 
@@ -56,6 +56,14 @@ export const AUDIT_GROUP_LABELS: Record<AuditActionGroup, string> = {
   other: "Khác",
 };
 
+/** Module label tiếng Việt cho filter dropdown. */
+export const AUDIT_MODULE_LABELS: Record<AuditModule, string> = {
+  User: "Người dùng",
+  Auth: "Xác thực",
+  UploadFile: "Tệp tin",
+  Notification: "Thông báo",
+};
+
 /** Re-export từ types để caller có thể import duy nhất từ constants. */
-export { AUDIT_ACTIONS };
-export type { AuditAction, AuditActionGroup };
+export { AUDIT_ACTIONS, AUDIT_MODULES };
+export type { AuditAction, AuditActionGroup, AuditModule };

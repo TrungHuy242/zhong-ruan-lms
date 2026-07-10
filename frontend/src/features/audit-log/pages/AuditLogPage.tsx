@@ -20,10 +20,13 @@ import {
   AUDIT_ACTION_LABELS,
   AUDIT_ACTION_GROUPS,
   AUDIT_GROUP_LABELS,
+  AUDIT_MODULES,
+  AUDIT_MODULE_LABELS,
   listAuditLogs,
   type AuditAction,
   type AuditActionGroup,
   type AuditLog,
+  type AuditModule,
 } from "../services/auditLogApi";
 import { ApiError } from "../../../shared/api";
 import { listUsers, type User } from "../../users";
@@ -36,6 +39,7 @@ interface FiltersState {
   searchApplied: string;
   action: "" | AuditAction;
   userId: "" | number;
+  module: "" | AuditModule;
   from: string; // YYYY-MM-DD
   to: string;
   page: number;
@@ -46,6 +50,7 @@ const INITIAL_FILTERS: FiltersState = {
   searchApplied: "",
   action: "",
   userId: "",
+  module: "",
   from: "",
   to: "",
   page: 1,
@@ -80,6 +85,7 @@ function isFiltersActive(f: FiltersState): boolean {
     Boolean(f.searchApplied) ||
     Boolean(f.action) ||
     Boolean(f.userId) ||
+    Boolean(f.module) ||
     Boolean(f.from) ||
     Boolean(f.to)
   );
@@ -101,6 +107,10 @@ export function AuditLogPage() {
     if (from) initial.from = from;
     const to = searchParams.get("to");
     if (to) initial.to = to;
+    const module = searchParams.get("module");
+    if (module && (AUDIT_MODULES as readonly string[]).includes(module)) {
+      initial.module = module as AuditModule;
+    }
     const search = searchParams.get("search");
     if (search) {
       initial.search = search;
@@ -116,6 +126,7 @@ export function AuditLogPage() {
     if (filters.searchApplied) next.search = filters.searchApplied;
     if (filters.action) next.action = filters.action;
     if (filters.userId !== "") next.userId = String(filters.userId);
+    if (filters.module) next.module = filters.module;
     if (filters.from) next.from = filters.from;
     if (filters.to) next.to = filters.to;
     if (filters.page > 1) next.page = String(filters.page);
@@ -124,6 +135,7 @@ export function AuditLogPage() {
     filters.searchApplied,
     filters.action,
     filters.userId,
+    filters.module,
     filters.from,
     filters.to,
     filters.page,
@@ -153,6 +165,7 @@ export function AuditLogPage() {
       const result = await listAuditLogs({
         userId: typeof filters.userId === "number" ? filters.userId : undefined,
         action: filters.action || undefined,
+        module: filters.module || undefined,
         from: filters.from || undefined,
         to: filters.to || undefined,
         search: filters.searchApplied || undefined,
@@ -172,7 +185,7 @@ export function AuditLogPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters.userId, filters.action, filters.from, filters.to, filters.searchApplied, filters.page]);
+  }, [filters.userId, filters.action, filters.module, filters.from, filters.to, filters.searchApplied, filters.page]);
 
   useEffect(() => {
     loadList();
@@ -240,6 +253,13 @@ export function AuditLogPage() {
     setFilters((prev) => ({
       ...prev,
       userId: val ? Number(val) : "",
+      page: 1,
+    }));
+  }
+  function handleModuleChange(e: ChangeEvent<HTMLSelectElement>) {
+    setFilters((prev) => ({
+      ...prev,
+      module: e.target.value as "" | AuditModule,
       page: 1,
     }));
   }
@@ -416,6 +436,22 @@ export function AuditLogPage() {
               {users.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.fullName} ({u.email})
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className={styles.filterLabel}>
+            <span>Module</span>
+            <select
+              className={styles.select}
+              value={filters.module}
+              onChange={handleModuleChange}
+            >
+              <option value="">Tất cả</option>
+              {AUDIT_MODULES.map((m) => (
+                <option key={m} value={m}>
+                  {AUDIT_MODULE_LABELS[m]}
                 </option>
               ))}
             </select>

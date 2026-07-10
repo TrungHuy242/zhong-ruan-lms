@@ -1,7 +1,9 @@
-﻿import { Button, Modal } from "../../../shared/components/ui";
+﻿import { useEffect, useState } from "react";
+import { Button, Modal } from "../../../shared/components/ui";
 import {
   AUDIT_ACTION_LABELS,
   AUDIT_GROUP_LABELS,
+  getAuditLog,
   type AuditLog,
   type AuditActionGroup,
 } from "../services/auditLogApi";
@@ -47,18 +49,78 @@ function formatMeta(value: unknown): string {
   }
 }
 
+const GROUP_BY_ACTION: Record<string, AuditActionGroup> = {
+  AUTH_LOGIN_SUCCESS: "auth",
+  AUTH_LOGIN_FAIL: "auth",
+  AUTH_LOGOUT_SUCCESS: "auth",
+  AUTH_REGISTER_SUCCESS: "auth",
+  AUTH_REGISTER_FAIL: "auth",
+  AUTH_CHANGE_PASSWORD_SUCCESS: "auth",
+  ADMIN_USER_CREATED: "create",
+  ADMIN_USER_UPDATED: "update",
+  USER_SOFT_DELETE: "delete",
+  USER_SOFT_DELETE_BULK: "delete",
+  USER_STATUS_BULK_UPDATE: "update",
+  USER_RESTORE: "restore",
+  USER_FORCE_DELETE: "delete",
+  NOTIFICATION_SOFT_DELETE: "delete",
+  NOTIFICATION_RESTORE: "restore",
+  NOTIFICATION_FORCE_DELETE: "delete",
+};
+
 export interface AuditLogDetailModalProps {
   open: boolean;
   log: AuditLog | null;
   onClose: () => void;
 }
 
+/**
+ * Modal chi tiết.
+ *
+ * - Nhận `log` từ list (giữ UX cũ — admin click vào row → modal mở ngay).
+ * - Song song fetch `GET /admin/audit-logs/:id` để có bản đầy đủ (đặc biệt `meta`
+ *   dài mà list có thể bị truncate, dù schema hiện tại không truncate — nhưng
+ *   đây là điểm mở rộng an toàn khi sau này BE thêm chính sách này).
+ * - Nếu `getAuditLog` trả null (404) → fallback dùng `log` từ list.
+ * - Meta đã được BE redact ở cả list và detail → tránh trường hợp hiển thị
+ *   field nhạy cảm kể cả khi list được gọi từ cache cũ (lý do bảo mật:
+ *   redact sống tập trung tại BE).
+ */
 export function AuditLogDetailModal({
   open,
   log,
   onClose,
 }: AuditLogDetailModalProps) {
-  if (!log) {
+  const [detail, setDetail] = useState<AuditLog | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !log) {
+      setDetail(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    getAuditLog(log.id)
+      .then((res) => {
+        if (cancelled) return;
+        setDetail(res);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setDetail(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, log?.id]);
+
+  const view = detail ?? log;
+
+  if (!view) {
     return (
       <Modal open={open} onClose={onClose} title="Chi tiết nhật ký" size="md">
         <p className={styles.placeholder}>Không có dữ liệu</p>
@@ -71,35 +133,12 @@ export function AuditLogDetailModal({
     );
   }
 
-  // Look up action label by reverse-mapping or fallback to code.
   const actionLabel =
-    AUDIT_ACTION_LABELS[log.action as keyof typeof AUDIT_ACTION_LABELS] ?? log.action;
+    AUDIT_ACTION_LABELS[view.action as keyof typeof AUDIT_ACTION_LABELS] ?? view.action;
 
-  // Compute group from action.
-  let group: AuditActionGroup = "other";
-  for (const [code, grp] of Object.entries({
-    AUTH_LOGIN_SUCCESS: "auth",
-    AUTH_LOGIN_FAIL: "auth",
-    AUTH_LOGOUT_SUCCESS: "auth",
-    AUTH_REGISTER_SUCCESS: "auth",
-    AUTH_REGISTER_FAIL: "auth",
-    AUTH_CHANGE_PASSWORD_SUCCESS: "auth",
-    ADMIN_USER_CREATED: "create",
-    ADMIN_USER_UPDATED: "update",
-    USER_SOFT_DELETE: "delete",
-    USER_RESTORE: "restore",
-    USER_FORCE_DELETE: "delete",
-    NOTIFICATION_SOFT_DELETE: "delete",
-    NOTIFICATION_RESTORE: "restore",
-    NOTIFICATION_FORCE_DELETE: "delete",
-  } as Record<string, AuditActionGroup>)) {
-    if (code === log.action) {
-      group = grp;
-      break;
-    }
-  }
+  const group: AuditActionGroup = GROUP_BY_ACTION[view.action] ?? "other";
 
-  const actor = log.user;
+  const actor = view.user;
 
   return (
     <Modal open={open} onClose={onClose} title="Chi tiết nhật ký" size="md">
@@ -129,7 +168,7 @@ export function AuditLogDetailModal({
           ) : (
             <p className={styles.placeholder}>
               Không có thông tin người thực hiện
-              {log.userId != null ? ` (ID: ${log.userId})` : ""}
+              {view.userId != null ? ` (ID: ${view.userId})` : ""}
             </p>
           )}
         </section>
@@ -141,40 +180,44 @@ export function AuditLogDetailModal({
               {AUDIT_GROUP_LABELS[group]}
             </span>
             <span className={styles.actionLabel}>{actionLabel}</span>
-            <code className={styles.actionCode}>{log.action}</code>
+            <code className={styles.actionCode}>{view.action}</code>
           </div>
         </section>
 
         <section className={styles.section}>
           <h4 className={styles.sectionTitle}>Đối tượng tác động</h4>
-          <p className={styles.value}>{log.target ?? "—"}</p>
+          <p className={styles.value}>{view.target ?? "—"}</p>
         </section>
 
         <section className={styles.section}>
           <h4 className={styles.sectionTitle}>Thời gian</h4>
-          <p className={styles.value}>{formatDateTime(log.createdAt)}</p>
+          <p className={styles.value}>{formatDateTime(view.createdAt)}</p>
         </section>
 
-        {log.ip ? (
+        {view.ip ? (
           <section className={styles.section}>
             <h4 className={styles.sectionTitle}>Địa chỉ IP</h4>
-            <p className={styles.value}>{log.ip}</p>
+            <p className={styles.value}>{view.ip}</p>
           </section>
         ) : null}
 
-        {log.userAgent ? (
+        {view.userAgent ? (
           <section className={styles.section}>
             <h4 className={styles.sectionTitle}>User-Agent</h4>
             <p className={[styles.value, styles.userAgent].join(" ")}>
-              {log.userAgent}
+              {view.userAgent}
             </p>
           </section>
         ) : null}
 
-        {log.meta ? (
+        {loading && !detail ? (
+          <p className={styles.placeholder}>Đang tải chi tiết...</p>
+        ) : null}
+
+        {view.meta ? (
           <section className={styles.section}>
             <h4 className={styles.sectionTitle}>Dữ liệu chi tiết (meta)</h4>
-            <pre className={styles.metaBlock}>{formatMeta(log.meta)}</pre>
+            <pre className={styles.metaBlock}>{formatMeta(view.meta)}</pre>
           </section>
         ) : null}
       </div>
