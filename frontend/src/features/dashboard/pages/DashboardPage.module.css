@@ -1,10 +1,18 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
 }
 
-/* ===== Welcome ===== */
+/* ===== Toolbar Header (welcome + actions) ===== */
+.toolbarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
 .welcome {
   display: flex;
   align-items: center;
@@ -13,6 +21,8 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   padding: var(--space-5) var(--space-6);
+  flex: 1;
+  min-width: 280px;
 }
 
 .welcomeIcon {
@@ -45,7 +55,35 @@
   margin: 0;
 }
 
-/* ===== Error block ===== */
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.lastUpdated {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.spinIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== Export area ===== */
+.exportArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ===== Error block (per-widget) ===== */
 .errorWrap {
   display: flex;
   flex-direction: column;
@@ -53,21 +91,25 @@
   align-items: stretch;
 }
 
-/* ===== Grid 6 cards ===== */
+/* ===== KPI Grid 6 cards ===== */
+.kpiSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
-/* Desktop nhỏ / tablet ngang — 2 cột */
 @media (max-width: 1279px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Mobile — 1 cột */
 @media (max-width: 767px) {
   .grid {
     grid-template-columns: 1fr;
@@ -78,4 +120,86 @@
   .welcomeTitle {
     font-size: 18px;
   }
+}
+
+/* ===== Charts ===== */
+.chartCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.chartTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chartSwitcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background-color: var(--bg-surface-alt);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+.chartSwitchBtn {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.chartSwitchBtn:hover {
+  color: var(--text-primary);
+}
+
+.chartSwitchBtnActive {
+  background-color: var(--bg-surface);
+  color: var(--brand-primary);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+/* ===== Bottom grid (Quick Actions + Recent Activities) ===== */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 1023px) {
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quickCard,
+.activityCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.widgetTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
