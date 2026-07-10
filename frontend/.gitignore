@@ -8,3 +8,6 @@ dist/
 Thumbs.db
 .vscode/
 .idea/
+
+# Banner images dùng cho trang Login/Register — file nặng, không cần thiết trong git
+public/Banner/

@@ -30,3 +30,6 @@ build/
 
 # Coverage
 coverage/
+
+# Smoke / e2e test scripts tạm thời ở root backend (không thuộc test runner chính)
+test-*.js
