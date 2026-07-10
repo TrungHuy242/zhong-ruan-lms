@@ -2,35 +2,17 @@
 import { useNavigate } from "react-router-dom";
 import {
   Bell,
-  CheckCheck,
   LogOut,
   Menu,
   User as UserIcon,
 } from "lucide-react";
 import { authStorage } from "../../storage/authStorage";
 import { useNotifications } from "../../contexts/NotificationContext";
-import type { Notification } from "../../../features/notifications";
+import { NotificationPanel } from "../../../features/notifications/components/NotificationPanel";
 import styles from "./Header.module.css";
 
 interface HeaderProps {
   onMenuClick: () => void;
-}
-
-function relativeTime(value: string | null | undefined): string {
-  if (!value) return "";
-  try {
-    const diffMs = Date.now() - new Date(value).getTime();
-    const diffMin = Math.floor(diffMs / 60_000);
-    if (diffMin < 1) return "Vừa xong";
-    if (diffMin < 60) return `${diffMin} phút trước`;
-    const diffH = Math.floor(diffMin / 60);
-    if (diffH < 24) return `${diffH} giờ trước`;
-    const diffD = Math.floor(diffH / 24);
-    if (diffD < 7) return `${diffD} ngày trước`;
-    return new Date(value).toLocaleDateString("vi-VN");
-  } catch {
-    return "";
-  }
 }
 
 function badgeText(count: number): string {
@@ -42,7 +24,7 @@ function badgeText(count: number): string {
 export function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const user = authStorage.getUser();
-  const { unreadCount, recent, markOneRead, markAll } = useNotifications();
+  const { unreadCount } = useNotifications();
 
   const [userOpen, setUserOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
@@ -80,18 +62,8 @@ export function Header({ onMenuClick }: HeaderProps) {
     navigate("/login", { replace: true });
   }
 
-  function handleBellClickItem(n: Notification) {
-    setBellOpen(false);
-    // Đánh dấu đã đọc (optimistic) + navigate tới trang với highlight.
-    if (!n.isRead) {
-      markOneRead(n.id);
-    }
-    navigate(`/notifications?highlight=${n.id}`);
-  }
-
-  async function handleMarkAllClick() {
-    await markAll();
-    // Giữ dropdown mở để user thấy badge update.
+  function handleBellToggle() {
+    setBellOpen((v) => !v);
   }
 
   return (
@@ -108,13 +80,13 @@ export function Header({ onMenuClick }: HeaderProps) {
       {/* Spacer so title is pushed to the right */}
       <div className={styles.spacer} />
 
-      {/* Bell + User */}
+      {/* Bell */}
       <div className={styles.bellArea} ref={bellRef}>
         <button
           className={styles.bellBtn}
-          onClick={() => setBellOpen((v) => !v)}
+          onClick={handleBellToggle}
           aria-label="Thông báo"
-          aria-haspopup="menu"
+          aria-haspopup="dialog"
           aria-expanded={bellOpen}
         >
           <Bell size={20} />
@@ -124,77 +96,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </button>
 
         {bellOpen ? (
-          <div className={styles.bellDropdown} role="menu" aria-label="Thông báo">
-            <div className={styles.bellDropdownHeader}>
-              <span className={styles.bellDropdownTitle}>Thông báo</span>
-              <div style={{ display: "flex", gap: "var(--space-2)" }}>
-                {unreadCount > 0 ? (
-                  <button
-                    type="button"
-                    className={styles.bellDropdownLink}
-                    onClick={handleMarkAllClick}
-                    aria-label="Đánh dấu tất cả đã đọc"
-                  >
-                    <CheckCheck
-                      size={14}
-                      style={{ verticalAlign: "middle", marginRight: 4 }}
-                    />
-                    Đánh dấu tất cả đã đọc
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  className={styles.bellDropdownLink}
-                  onClick={() => {
-                    setBellOpen(false);
-                    navigate("/notifications");
-                  }}
-                >
-                  Xem tất cả
-                </button>
-              </div>
-            </div>
-            <div className={styles.bellDropdownList}>
-              {recent.length === 0 ? (
-                <div className={styles.bellEmpty}>Không có thông báo mới</div>
-              ) : (
-                recent.map((n) => (
-                  <button
-                    key={n.id}
-                    type="button"
-                    role="menuitem"
-                    className={styles.bellItem}
-                    onClick={() => handleBellClickItem(n)}
-                  >
-                    <span
-                      className={[
-                        styles.bellItemDot,
-                        !n.isRead && styles.bellItemDotUnread,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      aria-hidden="true"
-                    />
-                    <span className={styles.bellItemBody}>
-                      <span
-                        className={[
-                          styles.bellItemTitle,
-                          !n.isRead && styles.bellItemTitleUnread,
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                      >
-                        {n.title}
-                      </span>
-                      <span className={styles.bellItemMeta}>
-                        {relativeTime(n.createdAt)}
-                      </span>
-                    </span>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
+          <NotificationPanel onClose={() => setBellOpen(false)} />
         ) : null}
       </div>
 

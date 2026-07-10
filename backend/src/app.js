@@ -12,6 +12,7 @@ const searchRouter = require("./modules/search/search.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
+const { getIO } = require("./sockets");
 
 const app = express();
 
@@ -39,6 +40,37 @@ app.get("/", (req, res) => {
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
+});
+
+// Endpoint kiểm tra sức khỏe Socket.io (clientsCount).
+// Trả { status, clientsCount, namespaces? } — hữu ích khi debug kết nối FE.
+app.get("/api/health/socket", (req, res) => {
+  try {
+    const io = getIO();
+    if (!io) {
+      return res.status(503).json({
+        status: "unavailable",
+        message: "Socket.io chưa khởi tạo (server chưa chạy với HTTP server).",
+        clientsCount: 0,
+      });
+    }
+    const count =
+      typeof io.engine === "object" && io.engine && typeof io.engine.clientsCount === "number"
+        ? io.engine.clientsCount
+        : 0;
+    return res.status(200).json({
+      status: "ok",
+      clientsCount: count,
+      path: "/socket.io",
+      corsOrigin: process.env.FRONTEND_URL || "http://localhost:5173",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: err && err.message ? err.message : "Lỗi khi đọc trạng thái socket",
+      clientsCount: 0,
+    });
+  }
 });
 
 // 4. Routes

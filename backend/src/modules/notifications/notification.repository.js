@@ -52,6 +52,53 @@ async function create({ userId, type, title, message }) {
   });
 }
 
+/**
+ * Tạo nhiều notification trong 1 lần (dùng cho broadcast theo role / tất cả).
+ * Trả về danh sách record đã tạo (mảng).
+ */
+async function createMany(records) {
+  if (!Array.isArray(records) || records.length === 0) return [];
+  // createMany không trả về record trên một số driver Postgres, nên dùng create lặp
+  // để đảm bảo có đầy đủ createdAt cho payload broadcast.
+  const results = [];
+  for (const r of records) {
+    const created = await prisma.notification.create({
+      data: {
+        userId: Number(r.userId),
+        type: r.type,
+        title: r.title,
+        message: r.message,
+      },
+    });
+    results.push(created);
+  }
+  return results;
+}
+
+/**
+ * Lấy id của tất cả user active (chưa xoá, status=ACTIVE).
+ * Dùng để broadcast "Tất cả".
+ */
+async function findActiveUserIds() {
+  const rows = await prisma.user.findMany({
+    where: { deletedAt: null, status: "ACTIVE" },
+    select: { id: true },
+  });
+  return rows.map((r) => r.id);
+}
+
+/**
+ * Lấy id của user active theo role (ADMIN / TEACHER / STUDENT).
+ * Dùng để broadcast theo vai trò.
+ */
+async function findActiveUserIdsByRole(role) {
+  const rows = await prisma.user.findMany({
+    where: { deletedAt: null, status: "ACTIVE", role },
+    select: { id: true },
+  });
+  return rows.map((r) => r.id);
+}
+
 async function markRead(id, userId) {
   // findFirst để check ownership trước, tránh update nhầm
   const exist = await prisma.notification.findFirst({
@@ -99,6 +146,9 @@ module.exports = {
   findById,
   findByIdIncludeDeleted,
   create,
+  createMany,
+  findActiveUserIds,
+  findActiveUserIdsByRole,
   markRead,
   markAllRead,
   remove,
