@@ -1,0 +1,80 @@
+/* AuditActionBadge — tone-based chip, dùng token CSS từ DESIGN.md.
+ * Không hard-code hex — mọi màu đều qua var(--color-*).
+ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+.label {
+  /* Để tooltip/aria đọc được */
+  letter-spacing: 0;
+}
+
+/* ===== Tone → token (đồng bộ DESIGN.md §3.5) ===== */
+
+/* CREATE → success (green) */
+.tone_create {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+/* UPDATE → warning (orange) */
+.tone_update {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+/* DELETE → error/danger (red) */
+.tone_delete {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* LOGIN → info (blue) */
+.tone_login {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+/* LOGOUT → neutral (gray) */
+.tone_logout {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+}
+
+/* RESTORE → warning (orange — reuse update tone) */
+.tone_restore {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+/* FAIL → danger (red) */
+.tone_fail {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* NEUTRAL → gray */
+.tone_neutral {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+}

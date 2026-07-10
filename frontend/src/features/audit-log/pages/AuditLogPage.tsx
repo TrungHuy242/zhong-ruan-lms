@@ -1,5 +1,16 @@
-﻿import {
-  ChangeEvent,
+﻿/**
+ * AuditLogPage — Audit Center (nâng cấp từ bảng cơ bản).
+ *
+ * Tính năng:
+ *   - View toggle: Table View ↔ Timeline View (lưu localStorage)
+ *   - Filter nâng cao (search/user/action/module/date) — sync URL
+ *   - AuditActionBadge tone-based (CSS token theo DESIGN.md)
+ *   - AuditLogDetailModal tái sử dụng với Before/After + Copy JSON + Quick Link
+ *   - Export CSV (client-side, page hiện tại) — RFC 4180 + UTF-8 BOM
+ *   - Loading skeleton / Empty state / Error Alert + nút Thử lại
+ *   - Responsive desktop + mobile
+ */
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -9,40 +20,68 @@
 import {
   Alert,
   Button,
-  Input,
+  Card,
   Pagination,
   Table,
   type TableColumn,
 } from "../../../shared/components/ui";
 import { AuditLogDetailModal } from "../components/AuditLogDetailModal";
+import { AuditFilter, EMPTY_AUDIT_FILTERS } from "../components/AuditFilter";
+import { AuditActionBadge } from "../components/AuditActionBadge";
+import { AuditTimeline } from "../components/AuditTimeline";
 import {
   AUDIT_ACTIONS,
   AUDIT_ACTION_LABELS,
-  AUDIT_ACTION_GROUPS,
-  AUDIT_GROUP_LABELS,
   AUDIT_MODULES,
   AUDIT_MODULE_LABELS,
+  exportAuditLogsCsv,
   listAuditLogs,
   type AuditAction,
-  type AuditActionGroup,
   type AuditLog,
   type AuditModule,
 } from "../services/auditLogApi";
 import { ApiError } from "../../../shared/api";
 import { listUsers, type User } from "../../users";
-import { ScrollText, Search, X as XIcon } from "lucide-react";
+import {
+  Calendar,
+  ChevronDown,
+  Download,
+  List as ListIcon,
+  ScrollText,
+  Search as SearchIcon,
+  SlidersHorizontal,
+  Table as TableIcon,
+  X as XIcon,
+} from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import styles from "./AuditLogPage.module.css";
 
+// ===== View mode =====
+const VIEW_MODE_STORAGE_KEY = "zrlms_audit_view_mode";
+type ViewMode = "table" | "timeline";
+
+function readStoredViewMode(): ViewMode {
+  if (typeof window === "undefined") return "table";
+  try {
+    const v = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    if (v === "timeline" || v === "table") return v;
+  } catch {
+    // localStorage có thể không khả dụng (private mode, v.v.) → bỏ qua.
+  }
+  return "table";
+}
+
+// ===== Filter state =====
 interface FiltersState {
   search: string;
   searchApplied: string;
   action: "" | AuditAction;
   userId: "" | number;
   module: "" | AuditModule;
-  from: string; // YYYY-MM-DD
+  from: string;
   to: string;
   page: number;
+  view: ViewMode;
 }
 
 const INITIAL_FILTERS: FiltersState = {
@@ -54,16 +93,19 @@ const INITIAL_FILTERS: FiltersState = {
   from: "",
   to: "",
   page: 1,
+  view: readStoredViewMode(),
 };
 
-const GROUP_CLASS: Record<AuditActionGroup, string> = {
-  create: styles.badgeCreate ?? "",
-  update: styles.badgeUpdate ?? "",
-  delete: styles.badgeDelete ?? "",
-  auth: styles.badgeAuth ?? "",
-  restore: styles.badgeRestore ?? "",
-  other: styles.badgeOther ?? "",
-};
+function isFiltersActive(f: FiltersState): boolean {
+  return (
+    Boolean(f.searchApplied) ||
+    Boolean(f.action) ||
+    Boolean(f.userId) ||
+    Boolean(f.module) ||
+    Boolean(f.from) ||
+    Boolean(f.to)
+  );
+}
 
 function formatDateTime(value: string | null | undefined): string {
   if (!value) return "—";
@@ -78,17 +120,6 @@ function formatDateTime(value: string | null | undefined): string {
   } catch {
     return value;
   }
-}
-
-function isFiltersActive(f: FiltersState): boolean {
-  return (
-    Boolean(f.searchApplied) ||
-    Boolean(f.action) ||
-    Boolean(f.userId) ||
-    Boolean(f.module) ||
-    Boolean(f.from) ||
-    Boolean(f.to)
-  );
 }
 
 export function AuditLogPage() {
@@ -116,10 +147,21 @@ export function AuditLogPage() {
       initial.search = search;
       initial.searchApplied = search;
     }
+    const view = searchParams.get("view");
+    if (view === "timeline" || view === "table") initial.view = view;
     const page = Number(searchParams.get("page") ?? "1");
     if (page > 1) initial.page = page;
     return initial;
   });
+
+  // View mode → localStorage + URL (chỉ ghi URL khi != default để tránh rác URL).
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, filters.view);
+    } catch {
+      // ignore
+    }
+  }, [filters.view]);
 
   useEffect(() => {
     const next: Record<string, string> = {};
@@ -129,6 +171,7 @@ export function AuditLogPage() {
     if (filters.module) next.module = filters.module;
     if (filters.from) next.from = filters.from;
     if (filters.to) next.to = filters.to;
+    if (filters.view !== "table") next.view = filters.view;
     if (filters.page > 1) next.page = String(filters.page);
     setSearchParams(next, { replace: true });
   }, [
@@ -138,6 +181,7 @@ export function AuditLogPage() {
     filters.module,
     filters.from,
     filters.to,
+    filters.view,
     filters.page,
     setSearchParams,
   ]);
@@ -156,6 +200,9 @@ export function AuditLogPage() {
   // ===== Detail modal =====
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLog, setDetailLog] = useState<AuditLog | null>(null);
+
+  // ===== Toast banner =====
+  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // ===== Filter actions =====
   const loadList = useCallback(async () => {
@@ -197,17 +244,14 @@ export function AuditLogPage() {
     async function loadUsers() {
       setUsersLoading(true);
       try {
-        // Lấy nhiều nhất có thể — listUsers hiện trả về tất cả users.
         const result = await listUsers({});
         if (cancelled) return;
         const list = Array.isArray(result.users) ? result.users : [];
-        // Loại bỏ user đã xoá mềm.
         const active = list.filter((u) => !u.deletedAt);
-        // Sort theo tên để dropdown dễ tra cứu.
         active.sort((a, b) => a.fullName.localeCompare(b.fullName, "vi"));
         setUsers(active);
       } catch {
-        // Không block UI nếu user list fail — chỉ disable dropdown user filter.
+        // Không block UI nếu user list fail.
       } finally {
         if (!cancelled) setUsersLoading(false);
       }
@@ -235,45 +279,34 @@ export function AuditLogPage() {
   }, [filters.search]);
 
   // ===== Handlers =====
-  function handleSearchInput(e: ChangeEvent<HTMLInputElement>) {
-    setFilters((prev) => ({ ...prev, search: e.target.value }));
-  }
   function clearSearch() {
     setFilters((prev) => ({ ...prev, search: "", searchApplied: "", page: 1 }));
   }
-  function handleActionChange(e: ChangeEvent<HTMLSelectElement>) {
+  function handleFilterChange(next: typeof EMPTY_AUDIT_FILTERS) {
     setFilters((prev) => ({
       ...prev,
-      action: e.target.value as "" | AuditAction,
+      search: next.search,
+      action: next.action,
+      userId: next.userId,
+      module: next.module,
+      from: next.from,
+      to: next.to,
       page: 1,
     }));
-  }
-  function handleUserChange(e: ChangeEvent<HTMLSelectElement>) {
-    const val = e.target.value;
-    setFilters((prev) => ({
-      ...prev,
-      userId: val ? Number(val) : "",
-      page: 1,
-    }));
-  }
-  function handleModuleChange(e: ChangeEvent<HTMLSelectElement>) {
-    setFilters((prev) => ({
-      ...prev,
-      module: e.target.value as "" | AuditModule,
-      page: 1,
-    }));
-  }
-  function handleFromChange(e: ChangeEvent<HTMLInputElement>) {
-    setFilters((prev) => ({ ...prev, from: e.target.value, page: 1 }));
-  }
-  function handleToChange(e: ChangeEvent<HTMLInputElement>) {
-    setFilters((prev) => ({ ...prev, to: e.target.value, page: 1 }));
   }
   function clearAllFilters() {
-    setFilters({ ...INITIAL_FILTERS });
+    setFilters((prev) => ({
+      ...prev,
+      ...EMPTY_AUDIT_FILTERS,
+      view: prev.view,
+      page: 1,
+    }));
   }
   function handlePageChange(page: number) {
     setFilters((prev) => ({ ...prev, page }));
+  }
+  function setView(view: ViewMode) {
+    setFilters((prev) => ({ ...prev, view }));
   }
 
   function openDetail(log: AuditLog) {
@@ -281,7 +314,36 @@ export function AuditLogPage() {
     setDetailOpen(true);
   }
 
-  // ===== Columns =====
+  function handleExportCsv() {
+    if (items.length === 0) {
+      setBanner({ type: "error", text: "Không có dữ liệu để xuất" });
+      return;
+    }
+    try {
+      exportAuditLogsCsv(items);
+      setBanner({
+        type: "success",
+        text: `Đã xuất ${items.length} bản ghi ra CSV`,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Xuất CSV thất bại";
+      setBanner({ type: "error", text: message });
+    }
+  }
+
+  // ===== User options cho AuditFilter =====
+  const userOptions = useMemo(
+    () =>
+      users.map((u) => ({
+        id: u.id,
+        fullName: u.fullName,
+        email: u.email,
+      })),
+    [users]
+  );
+
+  // ===== Table columns =====
   const columns: TableColumn<AuditLog>[] = useMemo(
     () => [
       {
@@ -316,20 +378,14 @@ export function AuditLogPage() {
       {
         key: "action",
         header: "Hành động",
-        render: (log) => {
-          const group =
-            AUDIT_ACTION_GROUPS[log.action as AuditAction] ?? "other";
-          const label =
-            AUDIT_ACTION_LABELS[log.action as AuditAction] ?? log.action;
-          return (
-            <div className={styles.actionCell}>
-              <span className={[styles.badge, GROUP_CLASS[group]].join(" ")}>
-                {AUDIT_GROUP_LABELS[group]}
-              </span>
-              <span className={styles.actionLabel}>{label}</span>
-            </div>
-          );
-        },
+        render: (log) => (
+          <div className={styles.actionCell}>
+            <AuditActionBadge action={log.action} />
+            <span className={styles.actionLabel}>
+              {AUDIT_ACTION_LABELS[log.action as AuditAction] ?? log.action}
+            </span>
+          </div>
+        ),
       },
       {
         key: "target",
@@ -380,113 +436,186 @@ export function AuditLogPage() {
           ? "Thử bỏ bớt bộ lọc hoặc thay đổi từ khoá tìm kiếm."
           : "Nhật ký sẽ xuất hiện khi có hoạt động đầu tiên trên hệ thống."}
       </p>
+      {filtered ? (
+        <Button variant="secondary" size="sm" onClick={clearAllFilters}>
+          Xoá bộ lọc
+        </Button>
+      ) : null}
     </div>
+  );
+
+  // Lấy phần filters thuần (không có search riêng — AuditFilter quản lý search).
+  const filterValues = useMemo(
+    () => ({
+      search: filters.search,
+      action: filters.action,
+      userId: filters.userId,
+      module: filters.module,
+      from: filters.from,
+      to: filters.to,
+    }),
+    [filters.search, filters.action, filters.userId, filters.module, filters.from, filters.to]
   );
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>Nhật ký hệ thống</h1>
+          <h1 className={styles.title}>Audit Center</h1>
           <p className={styles.subtitle}>
             Theo dõi mọi hành động nhạy cảm của người dùng và hệ thống.
           </p>
         </div>
-      </header>
 
-      <div className={styles.tableCard}>
-        {/* Toolbar */}
-        <div className={styles.toolbar}>
-          <div className={styles.searchWrap}>
-            <Input
-              placeholder="Tìm theo tên, email, mô tả đối tượng..."
-              value={filters.search}
-              onChange={handleSearchInput}
-              leftIcon={<Search size={16} />}
-              rightIcon={filters.search ? <XIcon size={14} /> : undefined}
-              onRightIconClick={filters.search ? clearSearch : undefined}
-            />
+        {/* ===== Toolbar: view toggle + export + clear filters ===== */}
+        <div className={styles.headerActions}>
+          <div className={styles.viewToggle} role="tablist" aria-label="Chế độ xem">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filters.view === "table"}
+              className={[
+                styles.viewBtn2,
+                filters.view === "table" ? styles.viewBtn2Active : "",
+              ].join(" ")}
+              onClick={() => setView("table")}
+            >
+              <TableIcon size={14} aria-hidden="true" />
+              <span>Bảng</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={filters.view === "timeline"}
+              className={[
+                styles.viewBtn2,
+                filters.view === "timeline" ? styles.viewBtn2Active : "",
+              ].join(" ")}
+              onClick={() => setView("timeline")}
+            >
+              <Calendar size={14} aria-hidden="true" />
+              <span>Dòng thời gian</span>
+            </button>
           </div>
 
-          <label className={styles.filterLabel}>
-            <span>Hành động</span>
-            <select
-              className={styles.select}
-              value={filters.action}
-              onChange={handleActionChange}
+          <div className={styles.exportMenu}>
+            <Button
+              variant="secondary"
+              size="sm"
+              leftIcon={<Download size={14} />}
+              onClick={handleExportCsv}
+              disabled={loading || items.length === 0}
+              title="Xuất CSV theo trang hiện tại"
             >
-              <option value="">Tất cả</option>
-              {AUDIT_ACTIONS.map((act) => (
-                <option key={act} value={act}>
-                  {AUDIT_ACTION_LABELS[act]}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.filterLabel}>
-            <span>Người thực hiện</span>
-            <select
-              className={styles.select}
-              value={filters.userId === "" ? "" : String(filters.userId)}
-              onChange={handleUserChange}
-              disabled={usersLoading}
-            >
-              <option value="">Tất cả</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.fullName} ({u.email})
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.filterLabel}>
-            <span>Module</span>
-            <select
-              className={styles.select}
-              value={filters.module}
-              onChange={handleModuleChange}
-            >
-              <option value="">Tất cả</option>
-              {AUDIT_MODULES.map((m) => (
-                <option key={m} value={m}>
-                  {AUDIT_MODULE_LABELS[m]}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.filterLabel}>
-            <span>Từ ngày</span>
-            <input
-              type="date"
-              className={styles.dateInput}
-              value={filters.from}
-              onChange={handleFromChange}
-              max={filters.to || undefined}
-            />
-          </label>
-
-          <label className={styles.filterLabel}>
-            <span>Đến ngày</span>
-            <input
-              type="date"
-              className={styles.dateInput}
-              value={filters.to}
-              onChange={handleToChange}
-              min={filters.from || undefined}
-            />
-          </label>
-
-          {filtered ? (
-            <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-              Xoá bộ lọc
+              Xuất CSV
             </Button>
-          ) : null}
+          </div>
         </div>
+      </header>
 
-        {/* Error */}
+      {banner ? (
+        <Alert
+          variant={banner.type === "success" ? "success" : "error"}
+          onClose={() => setBanner(null)}
+        >
+          {banner.text}
+        </Alert>
+      ) : null}
+
+      <Card padding="md" className={styles.tableCard}>
+        <AuditFilter
+          values={filterValues}
+          onChange={handleFilterChange}
+          users={userOptions}
+          usersLoading={usersLoading}
+          onSearchChange={(v) => setFilters((prev) => ({ ...prev, search: v }))}
+          onClearSearch={clearSearch}
+        />
+
+        {/* Active filter chips (UX helper) */}
+        {filtered ? (
+          <div className={styles.activeFilters}>
+            <span className={styles.activeFiltersLabel}>
+              <SlidersHorizontal size={14} aria-hidden="true" />
+              Đang lọc:
+            </span>
+            {filters.searchApplied ? (
+              <span className={styles.chip}>
+                <SearchIcon size={12} aria-hidden="true" />
+                &ldquo;{filters.searchApplied}&rdquo;
+                <button
+                  type="button"
+                  aria-label="Bỏ từ khoá"
+                  onClick={clearSearch}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
+            {filters.action ? (
+              <span className={styles.chip}>
+                <span>Hành động: {AUDIT_ACTION_LABELS[filters.action] ?? filters.action}</span>
+                <button
+                  type="button"
+                  aria-label="Bỏ action filter"
+                  onClick={() => setFilters((p) => ({ ...p, action: "", page: 1 }))}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
+            {filters.userId !== "" ? (
+              <span className={styles.chip}>
+                <span>
+                  User: {users.find((u) => u.id === filters.userId)?.fullName ?? `#${filters.userId}`}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Bỏ user filter"
+                  onClick={() => setFilters((p) => ({ ...p, userId: "", page: 1 }))}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
+            {filters.module ? (
+              <span className={styles.chip}>
+                <span>Module: {AUDIT_MODULE_LABELS[filters.module] ?? filters.module}</span>
+                <button
+                  type="button"
+                  aria-label="Bỏ module filter"
+                  onClick={() => setFilters((p) => ({ ...p, module: "", page: 1 }))}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
+            {(filters.from || filters.to) ? (
+              <span className={styles.chip}>
+                <span>
+                  {filters.from || "—"} → {filters.to || "—"}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Bỏ date filter"
+                  onClick={() => setFilters((p) => ({ ...p, from: "", to: "", page: 1 }))}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
+            <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+              Xoá tất cả
+            </Button>
+          </div>
+        ) : null}
+
+        {/* Error state */}
         {loadError ? (
           <div className={styles.errorWrap}>
             <Alert variant="error">{loadError}</Alert>
@@ -494,8 +623,22 @@ export function AuditLogPage() {
               Thử lại
             </Button>
           </div>
+        ) : filters.view === "timeline" ? (
+          <>
+            {/* Timeline view */}
+            {loading || items.length > 0 ? (
+              <AuditTimeline
+                items={items}
+                loading={loading}
+                onOpenDetail={openDetail}
+              />
+            ) : (
+              emptyState
+            )}
+          </>
         ) : (
           <>
+            {/* Table view */}
             <Table
               columns={columns}
               data={items}
@@ -504,22 +647,34 @@ export function AuditLogPage() {
               rowKey={(log) => log.id}
               emptyState={emptyState}
             />
-
-            {!loading && items.length > 0 ? (
-              <div className={styles.tableFooter}>
-                <span className={styles.totalLabel}>
-                  Hiển thị <b>{items.length}</b> / <b>{total}</b> bản ghi
-                </span>
-                <Pagination
-                  currentPage={filters.page}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            ) : null}
           </>
         )}
-      </div>
+
+        {/* Footer — pagination chung cho cả 2 view */}
+        {!loading && items.length > 0 ? (
+          <div className={styles.tableFooter}>
+            <span className={styles.totalLabel}>
+              Hiển thị <b>{items.length}</b> / <b>{total}</b> bản ghi
+              <span className={styles.viewHint}>
+                {filters.view === "timeline" ? (
+                  <>
+                    <ChevronDown size={12} aria-hidden="true" /> Timeline · click để xem chi tiết
+                  </>
+                ) : (
+                  <>
+                    <ListIcon size={12} aria-hidden="true" /> Bảng
+                  </>
+                )}
+              </span>
+            </span>
+            <Pagination
+              currentPage={filters.page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        ) : null}
+      </Card>
 
       <AuditLogDetailModal
         open={detailOpen}

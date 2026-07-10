@@ -1,0 +1,95 @@
+/* AuditFilter — toolbar (search + dropdowns + date range).
+ * Dùng chung token với AuditLogPage. */
+
+.toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  background-color: var(--bg-surface-alt);
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  flex: 1 1 280px;
+  min-width: 220px;
+}
+
+.filterLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-width: 160px;
+}
+
+.select {
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-width: 160px;
+  font-family: inherit;
+}
+
+.select:hover {
+  border-color: var(--border-strong);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.select:disabled {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.dateInput {
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-width: 150px;
+}
+
+.dateInput:hover {
+  border-color: var(--border-strong);
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+@media (max-width: 1024px) {
+  .toolbar {
+    align-items: stretch;
+  }
+  .searchWrap,
+  .filterLabel {
+    width: 100%;
+    min-width: 0;
+  }
+  .select,
+  .dateInput {
+    width: 100%;
+  }
+}
