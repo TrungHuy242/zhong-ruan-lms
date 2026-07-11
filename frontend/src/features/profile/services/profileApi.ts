@@ -17,7 +17,8 @@
  * Public avatar URL: BE serve static ở /uploads/<storedName>. FE tự build URL này.
  */
 
-import { apiFetch } from "../../../shared/api";
+import { authStorage } from "../../../shared/storage/authStorage";
+import { ApiError, apiFetch } from "../../../shared/api";
 import type {
   ChangePasswordPayload,
   LoginHistoryEntry,
@@ -148,18 +149,9 @@ export function uploadAvatar(
       (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "/api";
     xhr.open("POST", `${RAW_BASE.replace(/\/$/, "")}/auth/me/avatar`);
 
-    // Tự lấy token từ authStorage (giống apiFetch).
-    // Avoid importing util nặng — duplicate logic nhỏ ở đây cho gọn.
-    let token: string | null = null;
-    try {
-      const sessionJson = localStorage.getItem("zrlms_session");
-      if (sessionJson) {
-        const session = JSON.parse(sessionJson) as { accessToken?: string };
-        token = session.accessToken ?? null;
-      }
-    } catch {
-      token = null;
-    }
+    // Lấy token qua authStorage (không hard-code localStorage key ở đây —
+    // nếu authStorage đổi key trong tương lai thì upload avatar vẫn hoạt động).
+    const token = authStorage.getAccessToken();
     if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
     // KHÔNG set Content-Type — trình duyệt tự thêm multipart boundary.
 
@@ -182,21 +174,22 @@ export function uploadAvatar(
           reject(err instanceof Error ? err : new Error("Phản hồi không hợp lệ"));
         }
       } else {
-        // Parse error JSON
+        // Parse error JSON → throw ApiError để component phân biệt 401/403/...
         let msg = `Yêu cầu thất bại (${xhr.status})`;
+        let payload: unknown = null;
         try {
           const data = JSON.parse(xhr.responseText || "{}");
+          payload = data;
           if (typeof data?.message === "string") msg = data.message;
         } catch {
-          // ignore
+          // ignore parse error
         }
-        const err = new Error(msg);
-        (err as Error & { status?: number }).status = xhr.status;
-        reject(err);
+        reject(new ApiError(msg, xhr.status, payload));
       }
     };
 
-    xhr.onerror = () => reject(new Error("Lỗi mạng — không upload được"));
+    xhr.onerror = () =>
+      reject(new Error("Lỗi mạng — không upload được. Vui lòng thử lại."));
     xhr.onabort = () => reject(new Error("Upload bị huỷ"));
 
     if (signal) {
