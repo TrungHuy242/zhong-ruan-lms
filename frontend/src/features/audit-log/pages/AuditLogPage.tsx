@@ -283,11 +283,21 @@ export function AuditLogPage() {
     setFilters((prev) => ({ ...prev, search: "", searchApplied: "", page: 1 }));
   }
   function handleFilterChange(next: typeof EMPTY_AUDIT_FILTERS) {
+    // Normalize userId: AuditFilter dùng string|number (vì dropdown dùng id gốc từ User),
+    // còn FiltersState chỉ chấp nhận number|"". Ép về number, fallback "" nếu rỗng/không phải số.
+    const rawUser = next.userId;
+    let normalizedUser: number | "" = "";
+    if (typeof rawUser === "number" && Number.isFinite(rawUser)) {
+      normalizedUser = rawUser;
+    } else if (typeof rawUser === "string" && rawUser !== "") {
+      const n = Number(rawUser);
+      if (Number.isFinite(n)) normalizedUser = n;
+    }
     setFilters((prev) => ({
       ...prev,
       search: next.search,
       action: next.action,
-      userId: next.userId,
+      userId: normalizedUser,
       module: next.module,
       from: next.from,
       to: next.to,
@@ -297,7 +307,13 @@ export function AuditLogPage() {
   function clearAllFilters() {
     setFilters((prev) => ({
       ...prev,
-      ...EMPTY_AUDIT_FILTERS,
+      search: "",
+      searchApplied: "",
+      action: "",
+      userId: "",
+      module: "",
+      from: "",
+      to: "",
       view: prev.view,
       page: 1,
     }));

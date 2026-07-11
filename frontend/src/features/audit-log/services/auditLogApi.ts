@@ -15,8 +15,12 @@
  *   - pageSize  (number)
  *
  * Response shape:
- *   List  → apiFetch unwrap `data` → items (AuditLog[]) + pagination
- *   Detail → apiFetch unwrap `data.log` → AuditLog
+ *   List  → { message, data: AuditLog[], pagination: {...} }
+ *   Detail → { message, data: { log: AuditLog } }
+ *
+ * Vì các endpoint controller trả `pagination` ở **top-level** (không lẫn
+ * trong `data`), FE dùng `raw: true` để `apiFetch` KHÔNG unwrap → giữ nguyên
+ * cả response để đọc `response.data.items` + `response.pagination`.
  *
  * `meta` được redact ở BE (password / refreshToken / ...), không lộ field nhạy cảm.
  *
@@ -78,21 +82,27 @@ export async function listAuditLogs(
   if (params.pageSize) qs.set("pageSize", String(params.pageSize));
 
   const path = `/admin/audit-logs${qs.toString() ? `?${qs}` : ""}`;
+  // BE trả `{ message, data: AuditLog[], pagination }` — pagination nằm
+  // top-level bên ngoài `data`, nên dùng raw để apiFetch KHÔNG unwrap.
   const response = await apiFetch<{
+    message?: string;
     data: AuditLog[];
     pagination: { page: number; pageSize: number; total: number; totalPages: number };
-  }>(path);
+  }>(path, { raw: true });
+
+  const items = response && Array.isArray(response.data) ? response.data : [];
+  const pagination = response?.pagination ?? null;
 
   return {
-    items: Array.isArray(response.data) ? response.data : [],
-    total: response.pagination?.total ?? 0,
-    page: response.pagination?.page ?? 1,
-    pageSize: response.pagination?.pageSize ?? AUDIT_PAGE_SIZE,
+    items,
+    total: pagination?.total ?? 0,
+    page: pagination?.page ?? 1,
+    pageSize: pagination?.pageSize ?? AUDIT_PAGE_SIZE,
     totalPages:
-      response.pagination?.totalPages ??
+      pagination?.totalPages ??
       Math.max(
         1,
-        Math.ceil((response.pagination?.total ?? 0) / (response.pagination?.pageSize ?? AUDIT_PAGE_SIZE))
+        Math.ceil((pagination?.total ?? 0) / (pagination?.pageSize ?? AUDIT_PAGE_SIZE))
       ),
   };
 }
@@ -100,13 +110,18 @@ export async function listAuditLogs(
 /**
  * Lấy chi tiết 1 audit log theo id.
  * Trả null nếu BE trả 404.
+ *
+ * BE response: `{ message, data: { log: AuditLog } }`. Dùng `raw: true` để giữ
+ * nguyên envelope → đọc `response.data.log`. (Bug trước: để apiFetch unwrap
+ * xong `response` chỉ còn là `{ log }`, làm `response.data?.log` ra undefined.)
  */
 export async function getAuditLog(id: number | string): Promise<AuditLog | null> {
   const numericId = Number(id);
   if (!Number.isFinite(numericId) || numericId <= 0) return null;
   try {
-    const response = await apiFetch<{ data: { log: AuditLog } }>(
-      `/admin/audit-logs/${numericId}`
+    const response = await apiFetch<{ message?: string; data: { log: AuditLog } }>(
+      `/admin/audit-logs/${numericId}`,
+      { raw: true }
     );
     return response?.data?.log ?? null;
   } catch (err) {

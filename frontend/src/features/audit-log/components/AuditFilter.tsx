@@ -11,13 +11,14 @@ import type {
   AuditLog,
   AuditModule,
 } from "../services/auditLogApi";
+import type { UserOption } from "./UserOption";
 import { Search, X as XIcon } from "lucide-react";
 import styles from "./AuditFilter.module.css";
 
 export interface AuditFilterValues {
   search: string;
   action: "" | AuditAction;
-  userId: "" | number;
+  userId: "" | number | string;
   module: "" | AuditModule;
   from: string;
   to: string;
@@ -31,12 +32,6 @@ export const EMPTY_AUDIT_FILTERS: AuditFilterValues = {
   from: "",
   to: "",
 };
-
-export interface UserOption {
-  id: number | string;
-  fullName: string;
-  email: string;
-}
 
 export interface AuditFilterProps {
   values: AuditFilterValues;
@@ -57,10 +52,6 @@ export interface AuditFilterProps {
  *
  * Component này **dumb** (controlled): chỉ render UI và emit event qua `onChange`
  * mỗi khi user đổi filter. Đồng bộ URL + debounce search đặt ở page cha.
- *
- * Lý do tách riêng:
- *   - Tránh page chính quá tải (file đã lớn).
- *   - Có thể tái sử dụng nếu sau này muốn hiển thị filter ở sidebar hoặc modal.
  */
 export function AuditFilter({
   values,
@@ -181,5 +172,5 @@ export function AuditFilter({
   );
 }
 
-// Re-export để type khác dùng nếu cần.
+// Re-export type ra ngoài (không gây Fast Refresh invalidation).
 export type { AuditLog };
