@@ -1,58 +1,58 @@
 ﻿/**
  * trashApi — giao tiếp với backend cho màn Trash Manager.
  *
- * ⚠️ Lưu ý kiến trúc: BE KHÔNG có module /trash thống nhất.
- * Mỗi module có endpoint riêng, mỗi endpoint list/restore/force-delete khác nhau:
+ * Có 2 lớp API:
+ *   1. Legacy functions (listTrashedUsers/Notifications/Files, restoreX, forceDeleteX):
+ *      dùng endpoint riêng của từng module. Giữ để không phá các caller cũ.
  *
- *   Users (Admin only):
- *     - list   : GET    /api/admin/users?onlyDeleted=true
- *                → trả { data: { users: User[] } } (KHÔNG phân trang server-side,
- *                  không hỗ trợ search; FE xử lý cả hai phía client)
- *     - restore: POST   /api/admin/users/:id/restore
- *     - force  : DELETE /api/admin/users/:id/force
+ *   2. V2 functions (listTrashV2, restoreItem, forceDeleteItem, bulkRestore, bulkForceDelete):
+ *      dùng endpoint thống nhất /api/trash do module trash mới cung cấp
+ *      (xem backend/src/modules/trash/trash.service.js). Trả payload đã được
+ *      BE enrich sẵn (module, deletedBy, label) — FE không cần tự serialize.
  *
- *   Notifications:
- *     - list   : GET    /api/notifications?onlyDeleted=true&page=&pageSize=
- *                → trả { data: Notification[], pagination: { page, pageSize, total } }
- *                (có phân trang server-side, KHÔNG search)
- *     - restore: POST   /api/notifications/:id/restore (Admin hoặc chủ sở hữu)
- *     - force  : DELETE /api/notifications/:id/force (chỉ Admin)
- *
- *   Files:
- *     - list   : GET    /api/files?onlyDeleted=true&page=&pageSize=
- *                → trả { data: File[], pagination: { page, pageSize, total } }
- *                (có phân trang server-side, KHÔNG search)
- *     - restore: POST   /api/files/:id/restore (Admin hoặc uploader)
- *     - force  : DELETE /api/files/:id/force (chỉ Admin; xóa cả file vật lý)
- *
- * FE gộp cả 3 module thành 1 danh sách thống nhất, sau đó filter/search/paginate
- * phía client.
+ * TrashManagerPage sẽ dùng V2 (gọn hơn, có Settings + filter + bulk).
  */
 
 import { apiFetch } from "../../../shared/api";
-import { TRASH_LARGE_PAGE_SIZE } from "../constants/trash.constants";
+import {
+  TRASH_LARGE_PAGE_SIZE,
+  TRASH_PAGE_SIZE_DEFAULT,
+} from "../constants/trash.constants";
 import type {
-  FileTrashItem,
+  BulkResponse,
+  BulkTrashItem,
+  ListTrashV2Params,
   LoadTrashParams,
   LoadTrashResult,
-  NotificationTrashItem,
   PaginatedListResponse,
   TrashedFile,
   TrashedNotification,
+  TrashedSetting,
   TrashedUser,
-  UserTrashItem,
+  TrashItemV2,
+  TrashListResponse,
+  TrashModule,
 } from "../types/trash.types";
 
 export type {
+  BulkResponse,
+  BulkResultRow,
+  BulkTrashItem,
   FileTrashItem,
+  ListTrashV2Params,
   LoadTrashParams,
   LoadTrashResult,
   NotificationTrashItem,
   PaginatedListResponse,
+  SettingTrashItem,
+  TrashActor,
   TrashItem,
+  TrashItemV2,
+  TrashListResponse,
   TrashModule,
   TrashedFile,
   TrashedNotification,
+  TrashedSetting,
   TrashedUser,
   UserTrashItem,
   NotificationType,
@@ -61,14 +61,14 @@ export {
   TRASH_LARGE_PAGE_SIZE,
   TRASH_MODULES,
   TRASH_MODULE_LABELS,
+  TRASH_PAGE_SIZE_DEFAULT,
 } from "../constants/trash.constants";
 
-// ===================== Users =====================
-/**
- * Lấy TẤT CẢ user đã soft-delete.
- * BE mount user router ở /api/admin/users và KHÔNG phân trang; trả phẳng.
- * apiFetch unwrap field `data` nên ta nhận { users: User[] }.
- */
+// =====================================================================
+// ==================== LEGACY: per-module endpoints ====================
+// =====================================================================
+
+/** Users: lấy tất cả user đã soft-delete. */
 export async function listTrashedUsers(): Promise<TrashedUser[]> {
   const data = await apiFetch<{ users: TrashedUser[] }>(
     "/admin/users?onlyDeleted=true"
@@ -76,7 +76,6 @@ export async function listTrashedUsers(): Promise<TrashedUser[]> {
   if (!data || !Array.isArray(data.users)) {
     throw new Error("Phản hồi từ máy chủ không hợp lệ");
   }
-  // Chỉ giữ những record có deletedAt khác null (BE có thể trả nhầm include cả null).
   return data.users.filter((u) => u.deletedAt);
 }
 
@@ -88,12 +87,6 @@ export async function forceDeleteUser(id: number | string): Promise<{ id: number
   return apiFetch(`/admin/users/${id}/force`, { method: "DELETE" });
 }
 
-// ===================== Notifications =====================
-/**
- * BE trả { data: [...], pagination: { page, pageSize, total } }. apiFetch unwrap
- * `data` thôi, không unwrap `pagination`. Dùng `raw: true` để nhận trọn object,
- * sau đó tự map lại.
- */
 async function fetchPaginatedTrashed<T>(
   basePath: string,
   page: number,
@@ -133,7 +126,6 @@ export async function forceDeleteNotification(id: number | string): Promise<{ id
   return apiFetch(`/notifications/${id}/force`, { method: "DELETE" });
 }
 
-// ===================== Files =====================
 export async function listTrashedFiles(
   page: number,
   pageSize: number
@@ -149,10 +141,12 @@ export async function forceDeleteFile(id: number | string): Promise<{ id: number
   return apiFetch(`/files/${id}/force`, { method: "DELETE" });
 }
 
-export function toUserTrashItem(u: TrashedUser): UserTrashItem {
+// ===== Adapters (legacy → TrashItem) =====
+
+export function toUserTrashItem(u: TrashedUser) {
   return {
     compositeKey: `users-${u.id}`,
-    module: "users",
+    module: "users" as const,
     id: u.id,
     name: u.fullName,
     description: u.email,
@@ -161,10 +155,10 @@ export function toUserTrashItem(u: TrashedUser): UserTrashItem {
   };
 }
 
-export function toNotificationTrashItem(n: TrashedNotification): NotificationTrashItem {
+export function toNotificationTrashItem(n: TrashedNotification) {
   return {
     compositeKey: `notifications-${n.id}`,
-    module: "notifications",
+    module: "notifications" as const,
     id: n.id,
     name: n.title,
     description: n.message,
@@ -174,10 +168,10 @@ export function toNotificationTrashItem(n: TrashedNotification): NotificationTra
   };
 }
 
-export function toFileTrashItem(f: TrashedFile): FileTrashItem {
+export function toFileTrashItem(f: TrashedFile) {
   return {
     compositeKey: `files-${f.id}`,
-    module: "files",
+    module: "files" as const,
     id: f.id,
     name: f.originalName,
     description: f.mimeType || "unknown",
@@ -187,15 +181,21 @@ export function toFileTrashItem(f: TrashedFile): FileTrashItem {
   };
 }
 
+export function toSettingTrashItem(s: TrashedSetting) {
+  return {
+    compositeKey: `settings-${s.key}`,
+    module: "settings" as const,
+    id: s.id,
+    name: s.key,
+    description: s.description ?? "",
+    deletedAt: s.deletedAt,
+    raw: s,
+  };
+}
+
 /**
- * Load các bản ghi đã soft-delete theo module (hoặc tất cả).
- *
- * - Users: 1 request flat (BE không phân trang), FE tự slice theo page.
- * - Notif/File: phân trang server-side.
- *
- * @param module  nếu không truyền → load cả 3 module.
- * @param page    dùng cho pagination client (users) hoặc server (notif/files).
- * @param pageSize
+ * Legacy load: gộp 3 module → 1 danh sách.
+ * Trang TrashManager cũ dùng hàm này.
  */
 export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrashResult> {
   const module = params.module;
@@ -205,29 +205,28 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
   if (module === "users") {
     const users = await listTrashedUsers();
     const items = users.map(toUserTrashItem);
-    return { items, totals: { users: items.length, notifications: 0, files: 0 } };
+    return {
+      items,
+      totals: { users: items.length, notifications: 0, files: 0, settings: 0 },
+    };
   }
   if (module === "notifications") {
     const notifs = await listTrashedNotifications(page, pageSize);
-    const items = notifs.items
-      .filter((n) => n.deletedAt)
-      .map(toNotificationTrashItem);
+    const items = notifs.items.filter((n) => n.deletedAt).map(toNotificationTrashItem);
     return {
       items,
-      totals: { users: 0, notifications: notifs.total, files: 0 },
+      totals: { users: 0, notifications: notifs.total, files: 0, settings: 0 },
     };
   }
   if (module === "files") {
     const files = await listTrashedFiles(page, pageSize);
-    const items = files.items
-      .filter((f) => f.deletedAt)
-      .map(toFileTrashItem);
+    const items = files.items.filter((f) => f.deletedAt).map(toFileTrashItem);
     return {
       items,
-      totals: { users: 0, notifications: 0, files: files.total },
+      totals: { users: 0, notifications: 0, files: files.total, settings: 0 },
     };
   }
-  // module = undefined → load tất cả.
+  // module = undefined → load tất cả (3 module).
   const [users, notifs, files] = await Promise.all([
     listTrashedUsers(),
     listTrashedNotifications(page, pageSize),
@@ -245,6 +244,114 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
       users: userItems.length,
       notifications: notifs.total,
       files: files.total,
+      settings: 0,
     },
   };
+}
+
+// =====================================================================
+// =============== V2: endpoint thống nhất /api/trash ===================
+// =====================================================================
+//
+// Các function dưới đây dùng BE module trash mới. TrashManagerPage V2 dùng
+// nhóm này để tận dụng:
+//   - 4 module (có cả Settings)
+//   - filter deletedById / from / to / keyword (server-side)
+//   - bulk restore + bulk force-delete (1 request)
+//   - payload đã include deletedBy + label — không cần tự adapter.
+
+function buildListQuery(params: ListTrashV2Params): string {
+  const sp = new URLSearchParams();
+  if (params.module) sp.set("module", params.module);
+  if (params.deletedById) sp.set("deletedById", String(params.deletedById));
+  if (params.from) sp.set("from", params.from);
+  if (params.to) sp.set("to", params.to);
+  if (params.keyword && params.keyword.trim()) sp.set("keyword", params.keyword.trim());
+  sp.set("page", String(params.page ?? 1));
+  sp.set("limit", String(params.limit ?? TRASH_PAGE_SIZE_DEFAULT));
+  return `?${sp.toString()}`;
+}
+
+/**
+ * List đã xoá thống nhất qua /api/trash.
+ * Trả { items: TrashItemV2[], pagination, filters }.
+ */
+export async function listTrashV2(
+  params: ListTrashV2Params = {}
+): Promise<TrashListResponse> {
+  const query = buildListQuery(params);
+  const payload = await apiFetch<{
+    items: TrashItemV2[];
+    pagination: TrashListResponse["pagination"];
+    filters: TrashListResponse["filters"];
+  }>(`/trash${query}`, { raw: true });
+  if (!payload) {
+    throw new Error("Phản hồi từ máy chủ không hợp lệ");
+  }
+  return {
+    items: Array.isArray(payload.items) ? payload.items : [],
+    pagination: payload.pagination ?? {
+      page: params.page ?? 1,
+      limit: params.limit ?? TRASH_PAGE_SIZE_DEFAULT,
+      total: 0,
+      totalPages: 1,
+    },
+    filters: payload.filters ?? {
+      module: params.module ?? null,
+      deletedById: params.deletedById ?? null,
+      from: params.from ?? null,
+      to: params.to ?? null,
+      keyword: params.keyword ?? null,
+    },
+  };
+}
+
+/**
+ * Khôi phục 1 bản ghi. Với settings truyền key, các module khác truyền id.
+ */
+export async function restoreItem(
+  module: TrashModule,
+  idOrKey: number | string
+): Promise<{ module: TrashModule; id: number; key?: string; deletedAt: string | null; restored: boolean }> {
+  return apiFetch(`/trash/${encodeURIComponent(module)}/${encodeURIComponent(String(idOrKey))}/restore`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Force-delete 1 bản ghi. Với settings truyền key, các module khác truyền id.
+ */
+export async function forceDeleteItem(
+  module: TrashModule,
+  idOrKey: number | string
+): Promise<{ module: TrashModule; id: number; key?: string; forceDeleted: boolean }> {
+  return apiFetch(`/trash/${encodeURIComponent(module)}/${encodeURIComponent(String(idOrKey))}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Bulk restore. items: [{module, id? | key?}].
+ */
+export async function bulkRestore(items: BulkTrashItem[]): Promise<BulkResponse> {
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error("Danh sách item không được rỗng");
+  }
+  return apiFetch<BulkResponse>("/trash/bulk-restore", {
+    method: "POST",
+    body: { items },
+  });
+}
+
+/**
+ * Bulk force-delete. items: [{module, id? | key?}].
+ */
+export async function bulkForceDelete(items: BulkTrashItem[]): Promise<BulkResponse> {
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error("Danh sách item không được rỗng");
+  }
+  return apiFetch<BulkResponse>("/trash/bulk-force-delete", {
+    method: "POST",
+    body: { items },
+  });
 }

@@ -6,9 +6,10 @@
  *   await softDelete("User", { id: req.params.id }, { req, userId: req.user.id });
  *
  * Quy tắc:
- *  - Helper tự map label "User"/"Notification"/"UploadFile" → prismaInternal.<delegate>
+ *  - Helper tự map label "User"/"Notification"/"UploadFile"/"Setting" → prismaInternal.<delegate>.
  *  - prismaInternal KHÔNG có extension, nên có thể tìm được cả record đã soft-delete
  *    (cần thiết cho restore + force-delete, và cho idempotent soft-delete).
+ *  - Soft-delete đồng thời ghi `deletedAt` + `deletedById` (actor) để audit trail.
  *  - Audit ghi qua audit.service nếu truyền `req`.
  */
 
@@ -19,25 +20,28 @@ const SOFT_DELETE_ACTIONS = {
   user: "USER_SOFT_DELETE",
   notification: "NOTIFICATION_SOFT_DELETE",
   uploadFile: "UPLOAD_SOFT_DELETE",
+  setting: "SETTING_SOFT_DELETE",
 };
 
 const RESTORE_ACTIONS = {
   user: "USER_RESTORE",
   notification: "NOTIFICATION_RESTORE",
   uploadFile: "UPLOAD_RESTORE",
+  setting: "SETTING_RESTORE",
 };
 
 const FORCE_DELETE_ACTIONS = {
   user: "USER_FORCE_DELETE",
   notification: "NOTIFICATION_FORCE_DELETE",
   uploadFile: "UPLOAD_FORCE_DELETE",
+  setting: "SETTING_FORCE_DELETE",
 };
 
 // Map "User" → "user" (prismaInternal.user), "Notification" → "notification", "UploadFile" → "uploadFile"
 // Vì Prisma camelCase các model name nên phải giữ camelCase, không chỉ .toLowerCase()
 function toCamelCase(label) {
   if (!label) return label;
-  // "UploadFile" → "uploadFile", "User" → "user", "Notification" → "notification"
+  // "UploadFile" → "uploadFile", "User" → "user", "Notification" → "notification", "Setting" → "setting"
   return label.charAt(0).toLowerCase() + label.slice(1);
 }
 
@@ -54,14 +58,15 @@ function resolveActionKey(label) {
   if (lower === "user") return "user";
   if (lower === "notification") return "notification";
   if (lower === "uploadfile" || lower === "upload") return "uploadFile";
+  if (lower === "setting" || lower === "settings") return "setting";
   return null;
 }
 
 /**
- * Soft delete: set deletedAt = now.
+ * Soft delete: set deletedAt = now + deletedById = userId (actor).
  * Idempotent: nếu đã deletedAt rồi thì trả về record luôn (không throw, không update lại).
  *
- * @param {string} label      - "User" | "Notification" | "UploadFile"
+ * @param {string} label      - "User" | "Notification" | "UploadFile" | "Setting"
  * @param {Object} where      - Điều kiện tìm, vd: { id: 5 }
  * @param {Object} [opts]
  * @param {Object} [opts.req] - Express req (để ghi AuditLog tự động)
@@ -76,7 +81,10 @@ async function softDelete(label, where, { req = null, userId = null } = {}) {
 
   const updated = await model.update({
     where: { id: exist.id },
-    data: { deletedAt: new Date() },
+    data: {
+      deletedAt: new Date(),
+      deletedById: userId ?? null,
+    },
   });
 
   if (req) {
@@ -87,7 +95,11 @@ async function softDelete(label, where, { req = null, userId = null } = {}) {
         userId,
         action,
         target: `${label}:${exist.id}`,
-        meta: { id: exist.id, deletedAt: updated.deletedAt },
+        meta: {
+          id: exist.id,
+          deletedAt: updated.deletedAt,
+          deletedById: updated.deletedById,
+        },
       });
     }
   }
@@ -109,7 +121,7 @@ async function restore(label, where, { req = null, userId = null } = {}) {
 
   const updated = await model.update({
     where: { id: exist.id },
-    data: { deletedAt: null },
+    data: { deletedAt: null, deletedById: null },
   });
 
   if (req) {
@@ -120,7 +132,7 @@ async function restore(label, where, { req = null, userId = null } = {}) {
         userId,
         action,
         target: `${label}:${exist.id}`,
-        meta: { id: exist.id },
+        meta: { id: exist.id, restoredFromDeletedAt: exist.deletedAt },
       });
     }
   }
@@ -163,7 +175,7 @@ async function forceDelete(label, where, { req = null, userId = null } = {}) {
 function snapshotFields(obj) {
   if (!obj) return null;
   const snap = {};
-  for (const k of ["id", "email", "fullName", "title", "storedName", "originalName"]) {
+  for (const k of ["id", "email", "fullName", "title", "storedName", "originalName", "key"]) {
     if (obj[k] !== undefined) snap[k] = obj[k];
   }
   return snap;

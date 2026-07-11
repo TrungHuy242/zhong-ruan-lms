@@ -15,7 +15,7 @@
  * hãy dùng `prismaInternal` từ `config/database.js` thay vì client mặc định.
  */
 
-const SOFT_DELETE_MODELS = new Set(["User", "Notification", "UploadFile"]);
+const SOFT_DELETE_MODELS = new Set(["User", "Notification", "UploadFile", "Setting"]);
 
 const READ_OPERATIONS = new Set([
   "findUnique",

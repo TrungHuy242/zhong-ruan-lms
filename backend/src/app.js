@@ -12,6 +12,7 @@ const filesRoutes = require("./modules/files/files.routes");
 const settingsRouter = require("./modules/settings/setting.routes");
 const dashboardRouter = require("./modules/dashboard/dashboard.routes");
 const searchRouter = require("./modules/search/search.routes");
+const trashRouter = require("./modules/trash/trash.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -103,6 +104,7 @@ app.use("/api", filesRoutes);
 app.use("/api/settings", settingsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/search", searchRouter);
+app.use("/api/trash", trashRouter);
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);

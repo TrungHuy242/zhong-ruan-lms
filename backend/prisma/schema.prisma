@@ -25,13 +25,19 @@ model User {
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   deletedAt             DateTime?
+  /// User thực hiện soft-delete (admin/support). Nullable vì record cũ chưa track.
+  deletedById           Int?
   auditLogs             AuditLog[]
   notifications         Notification[]
   uploads               UploadFile[]   @relation("UserUploads")
   avatarFile            UploadFile?    @relation("UserAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
   searchHistories       SearchHistory[]
+  deletedNotifications  Notification[] @relation("NotificationDeletedBy")
+  deletedUploads        UploadFile[]   @relation("UploadFileDeletedBy")
+  deletedSettings       Setting[]      @relation("SettingDeletedBy")
 
   @@index([avatarFileId])
+  @@index([deletedById])
 }
 
 /// Lịch sử từ khóa Global Search của từng user — dùng để gợi ý recent keywords.
@@ -87,21 +93,24 @@ model AuditLog {
 }
 
 model Notification {
-  id        Int              @id @default(autoincrement())
-  userId    Int
-  type      NotificationType @default(INFO)
-  title     String
-  message   String
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  deletedAt DateTime?
+  id          Int              @id @default(autoincrement())
+  userId      Int
+  type        NotificationType @default(INFO)
+  title       String
+  message     String
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+  deletedById Int?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deletedBy   User? @relation("NotificationDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([isRead])
   @@index([deletedAt])
+  @@index([deletedById])
   @@map("notifications")
 }
 
@@ -116,10 +125,13 @@ model UploadFile {
   uploadedBy   User      @relation("UserUploads", fields: [uploadedById], references: [id])
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
+  deletedById  Int?
   avatarOf     User[]    @relation("UserAvatar")
+  deletedBy    User?     @relation("UploadFileDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
 
   @@index([uploadedById])
   @@index([deletedAt])
+  @@index([deletedById])
   @@map("upload_files")
 }
 
@@ -133,8 +145,13 @@ model Setting {
   group       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+  deletedById Int?
+  deletedBy   User?    @relation("SettingDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
 
   @@index([key])
   @@index([group])
+  @@index([deletedAt])
+  @@index([deletedById])
   @@map("settings")
 }

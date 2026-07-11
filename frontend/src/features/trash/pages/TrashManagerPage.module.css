@@ -269,3 +269,170 @@
   .summary { margin-left: 0; }
   .actionCell { flex-direction: column; align-items: stretch; }
 }
+
+/* ===== Filter row (4 filters + clear) ===== */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  align-items: center;
+}
+
+.searchWrap {
+  flex: 1 1 260px;
+  min-width: 240px;
+}
+
+.filterLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.filterLabel svg {
+  color: var(--text-secondary);
+}
+
+.select {
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.select:hover { border-color: var(--brand-primary); }
+
+.select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
+}
+
+.input {
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease;
+  width: 130px;
+}
+
+.input:hover { border-color: var(--brand-primary); }
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.12);
+}
+
+/* ===== Bulk action bar ===== */
+.bulkBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--brand-primary-light);
+  border-bottom: 1px solid var(--border-default);
+  flex-wrap: wrap;
+}
+
+.bulkLabel {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.bulkLabel b {
+  color: var(--brand-primary);
+  font-weight: 700;
+  margin: 0 0.2rem;
+}
+
+.bulkActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* ===== Checkbox (header + cell) ===== */
+.checkboxBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.checkboxBtn:hover {
+  background-color: var(--bg-surface-alt);
+  color: var(--brand-primary);
+}
+
+.checkboxBtn:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 1px;
+}
+
+/* ===== Actor cell (Người xoá) ===== */
+.actorCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.actorName {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.actorEmail {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* ===== Floating error pre ===== */
+.errorPre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  color: inherit;
+}
+
+/* ===== Setting badge tone (bổ sung — page cũ chưa có) ===== */
+.badgeSetting {
+  background-color: var(--brand-accent-light);
+  color: var(--brand-accent-hover);
+  border-color: rgba(212, 175, 55, 0.25);
+}
+
+/* ===== Responsive cho bulk bar ===== */
+@media (max-width: 720px) {
+  .bulkBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .bulkActions {
+    width: 100%;
+  }
+}

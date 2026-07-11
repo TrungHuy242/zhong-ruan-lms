@@ -1,15 +1,23 @@
-﻿import {
-  ChangeEvent,
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+﻿/**
+ * TrashManagerPage — trang quản lý thùng rác hệ thống (SaaS-style).
+ *
+ * Tính năng (theo yêu cầu nâng cấp):
+ *   - 4 module: Users / Notifications / Files / Settings (endpoint thống nhất /api/trash).
+ *   - Filter: module, người xoá (deletedById), khoảng thời gian (from/to), keyword.
+ *   - Bulk action: chọn nhiều → restore / force-delete 1 lần (qua ConfirmDialog).
+ *   - Audit log: BE tự ghi cho Restore / Bulk Restore / Force Delete / Bulk Force Delete.
+ *   - Hiển thị: Module, Label, Người xoá (actor email/role), Thời gian xoá.
+ *   - Loading skeleton, empty state (chưa có gì / không match filter), error + Retry.
+ *
+ * Dùng V2 API (listTrashV2, restoreItem, forceDeleteItem, bulkRestore, bulkForceDelete).
+ * API cũ (loadTrash + restoreX/forceDeleteX) vẫn export nhưng không dùng ở đây.
+ */
+
+import { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Button,
+  Card,
   ConfirmDialog,
   Input,
   Pagination,
@@ -18,30 +26,36 @@ import {
 } from "../../../shared/components/ui";
 import { ApiError } from "../../../shared/api";
 import {
-  TRASH_MODULE_LABELS,
   TRASH_MODULES,
-  forceDeleteFile,
-  forceDeleteNotification,
-  forceDeleteUser,
-  loadTrash,
-  restoreFile,
-  restoreNotification,
-  restoreUser,
-  type LoadTrashResult,
-  type TrashItem,
+  TRASH_MODULE_LABELS,
+  TRASH_PAGE_SIZE_DEFAULT,
+  bulkForceDelete,
+  bulkRestore,
+  forceDeleteItem,
+  listTrashV2,
+  restoreItem,
+  type BulkTrashItem,
+  type ListTrashV2Params,
+  type TrashItemV2,
   type TrashModule,
 } from "../services/trashApi";
 import { authStorage } from "../../../shared/storage/authStorage";
 import {
   Bell,
+  Calendar,
+  CheckSquare,
+  Filter,
   FileText,
+  Inbox,
   RotateCcw,
   Search as SearchIcon,
+  Settings as SettingsIcon,
+  Square,
   Trash2,
   User as UserIcon,
   X as XIcon,
-  Inbox,
   AlertTriangle,
+  RotateCcw as RestoreIcon,
 } from "lucide-react";
 import styles from "./TrashManagerPage.module.css";
 
@@ -61,21 +75,26 @@ function formatDateTime(value: string | null | undefined): string {
   }
 }
 
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: "Quản trị viên",
+  TEACHER: "Giảng viên",
+  STUDENT: "Học viên",
+};
+
 const MODULE_TONE: Record<TrashModule, string> = {
   users: styles.badgeUser,
   notifications: styles.badgeNotification,
   files: styles.badgeFile,
+  settings: styles.badgeSetting,
 };
 
 const MODULE_ICON: Record<TrashModule, React.ReactNode> = {
-  users: <UserIcon size={14} />,
-  notifications: <Bell size={14} />,
-  files: <FileText size={14} />,
+  users: <UserIcon size={14} aria-hidden="true" />,
+  notifications: <Bell size={14} aria-hidden="true" />,
+  files: <FileText size={14} aria-hidden="true" />,
+  settings: <SettingsIcon size={14} aria-hidden="true" />,
 };
 
-/**
- * Highlight từ khoá xuất hiện trong `text`.
- */
 function highlight(text: string, keyword: string): React.ReactNode {
   if (!text) return text;
   const kw = keyword.trim();
@@ -95,75 +114,80 @@ function highlight(text: string, keyword: string): React.ReactNode {
   });
 }
 
-// ===== Constants =====
-const PAGE_SIZE = 10;
-const DEBOUNCE_MS = 350;
+// ===== Component =====
+const DEBOUNCE_MS = 400;
 
-type ConfirmKind = "restore" | "force" | null;
+type ConfirmKind = "single-restore" | "single-force" | "bulk-restore" | "bulk-force" | null;
 
 export function TrashManagerPage() {
   const currentUser = authStorage.getUser();
   const isAdmin = currentUser?.role === "ADMIN";
 
   // ===== Filter state =====
-  const [module, setModule] = useState<TrashModule | "all">("all");
-  const [search, setSearch] = useState("");
-  const [searchApplied, setSearchApplied] = useState("");
+  const [moduleFilter, setModuleFilter] = useState<TrashModule | "all">("all");
+  const [keyword, setKeyword] = useState("");
+  const [keywordApplied, setKeywordApplied] = useState("");
+  const [deletedById, setDeletedById] = useState<string>("");
+  const [fromDate, setFromDate] = useState<string>(""); // YYYY-MM-DD
+  const [toDate, setToDate] = useState<string>("");
   const [page, setPage] = useState(1);
 
   // ===== Data state =====
-  const [raw, setRaw] = useState<TrashItem[]>([]);
-  const [totals, setTotals] = useState<Record<TrashModule, number>>({
-    users: 0,
-    notifications: 0,
-    files: 0,
-  });
+  const [items, setItems] = useState<TrashItemV2[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // ===== Selection =====
+  const [selected, setSelected] = useState<Set<string>>(new Set()); // key = `${module}:${idOrKey}`
+
   // ===== Action state =====
-  const [actionItem, setActionItem] = useState<TrashItem | null>(null);
   const [confirmKind, setConfirmKind] = useState<ConfirmKind>(null);
+  const [singleTarget, setSingleTarget] = useState<TrashItemV2 | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // ===== Server-paged mode (cho notif/file khi lọc theo module) =====
-  // Khi module=notifications/files: server-side phân trang, search vẫn FE.
-  // Khi module=users/all: client-side phân trang toàn bộ.
-
-  const isServerPaged = module === "notifications" || module === "files";
-
-  // Debounce search.
+  // ===== Debounce keyword =====
   const debounceRef = useRef<number | null>(null);
   useEffect(() => {
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      setSearchApplied((prev) => (prev === search ? prev : search));
+      setKeywordApplied((prev) => (prev === keyword ? prev : keyword));
       setPage(1);
     }, DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) window.clearTimeout(debounceRef.current);
     };
-  }, [search]);
+  }, [keyword]);
 
-  // Reset page khi đổi module.
+  // Reset page khi filter chính đổi.
   useEffect(() => {
     setPage(1);
-  }, [module]);
+  }, [moduleFilter, deletedById, fromDate, toDate]);
+
+  // Reset selection khi data thay đổi (tránh selection rỗng trỏ vào item cũ).
+  useEffect(() => {
+    setSelected(new Set());
+  }, [items.length, moduleFilter, keywordApplied, deletedById, fromDate, toDate]);
 
   // ===== Load =====
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
-      const result: LoadTrashResult = await loadTrash({
-        module: module === "all" ? undefined : module,
-        page: isServerPaged ? page : 1,
-        pageSize: PAGE_SIZE,
-      });
-      setRaw(result.items);
-      setTotals(result.totals);
+      const params: ListTrashV2Params = {
+        module: moduleFilter === "all" ? null : moduleFilter,
+        keyword: keywordApplied || null,
+        deletedById: deletedById ? Number(deletedById) : null,
+        from: fromDate ? `${fromDate}T00:00:00.000Z` : null,
+        to: toDate ? `${toDate}T23:59:59.999Z` : null,
+        page,
+        limit: TRASH_PAGE_SIZE_DEFAULT,
+      };
+      const result = await listTrashV2(params);
+      setItems(result.items);
+      setTotal(result.pagination.total);
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -172,155 +196,259 @@ export function TrashManagerPage() {
           ? err.message
           : "Không tải được thùng rác";
       setLoadError(message);
-      setRaw([]);
+      setItems([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [module, page, isServerPaged]);
+  }, [moduleFilter, keywordApplied, deletedById, fromDate, toDate, page]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  // ===== Client-side filter + paginate cho all/users =====
-  const filteredItems = useMemo(() => {
-    if (isServerPaged) return raw;
-    const kw = searchApplied.trim().toLowerCase();
-    let list = raw;
-    if (kw) {
-      list = list.filter((it) => {
-        const haystack = `${it.name} ${it.description}`.toLowerCase();
-        return haystack.includes(kw);
-      });
-    }
-    return list;
-  }, [raw, searchApplied, isServerPaged]);
-
-  const clientTotal = filteredItems.length;
-  const clientTotalPages = Math.max(1, Math.ceil(clientTotal / PAGE_SIZE));
-  const safePage = Math.min(Math.max(1, page), clientTotalPages);
-  const pagedItems = useMemo(() => {
-    if (isServerPaged) return raw;
-    const start = (safePage - 1) * PAGE_SIZE;
-    return filteredItems.slice(start, start + PAGE_SIZE);
-  }, [filteredItems, safePage, isServerPaged, raw]);
-
-  // Total đang hiển thị:
-  // - Server-paged: tổng module tương ứng (BE trả)
-  // - Client-paged: clientTotal
-  const displayTotal = isServerPaged
-    ? module === "notifications"
-      ? totals.notifications
-      : totals.files
-    : clientTotal;
-  const totalPages = isServerPaged ? Math.max(1, Math.ceil(displayTotal / PAGE_SIZE)) : clientTotalPages;
-
-  // ===== Handlers =====
-  function handleModuleChange(e: ChangeEvent<HTMLSelectElement>) {
-    const v = e.target.value;
-    if (v === "all") setModule("all");
-    else setModule(v as TrashModule);
-  }
-  function clearSearch() {
-    setSearch("");
-    setSearchApplied("");
-    setPage(1);
-  }
-  function handlePageChange(p: number) {
-    setPage(p);
-  }
-
-  function askRestore(item: TrashItem) {
-    setActionItem(item);
-    setActionError(null);
-    setConfirmKind("restore");
-  }
-  function askForce(item: TrashItem) {
-    setActionItem(item);
-    setActionError(null);
-    setConfirmKind("force");
-  }
-  function closeConfirm() {
-    if (actionLoading) return;
-    setActionItem(null);
-    setConfirmKind(null);
-    setActionError(null);
-  }
-
-  async function doRestore() {
-    if (!actionItem) return;
-    setActionLoading(true);
-    setActionError(null);
-    try {
-      let msg = "";
-      if (actionItem.module === "users") {
-        await restoreUser(actionItem.id);
-        msg = "Khôi phục người dùng thành công";
-      } else if (actionItem.module === "notifications") {
-        await restoreNotification(actionItem.id);
-        msg = "Khôi phục thông báo thành công";
-      } else {
-        await restoreFile(actionItem.id);
-        msg = "Khôi phục tệp thành công";
-      }
-      setSuccessMsg(msg);
-      closeConfirm();
-      await load();
-    } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-          ? err.message
-          : "Không thể khôi phục";
-      setActionError(message);
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  async function doForceDelete() {
-    if (!actionItem) return;
-    setActionLoading(true);
-    setActionError(null);
-    try {
-      let msg = "";
-      if (actionItem.module === "users") {
-        await forceDeleteUser(actionItem.id);
-        msg = "Đã xóa cứng người dùng";
-      } else if (actionItem.module === "notifications") {
-        await forceDeleteNotification(actionItem.id);
-        msg = "Đã xóa cứng thông báo";
-      } else {
-        await forceDeleteFile(actionItem.id);
-        msg = "Đã xóa cứng tệp";
-      }
-      setSuccessMsg(msg);
-      closeConfirm();
-      await load();
-    } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-          ? err.message
-          : "Không thể xóa cứng";
-      setActionError(message);
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  // Tự động ẩn success sau 4s.
+  // Auto-clear success after 4s.
   useEffect(() => {
     if (!successMsg) return;
     const t = window.setTimeout(() => setSuccessMsg(null), 4000);
     return () => window.clearTimeout(t);
   }, [successMsg]);
 
+  // ===== Filter helpers =====
+  const totalPages = total > 0 ? Math.ceil(total / TRASH_PAGE_SIZE_DEFAULT) : 1;
+  const safePage = Math.min(Math.max(1, page), totalPages);
+
+  function handleModuleChange(e: ChangeEvent<HTMLSelectElement>) {
+    setModuleFilter(e.target.value as TrashModule | "all");
+  }
+  function handleDeletedByChange(e: ChangeEvent<HTMLInputElement>) {
+    setDeletedById(e.target.value);
+  }
+  function handleFromChange(e: ChangeEvent<HTMLInputElement>) {
+    setFromDate(e.target.value);
+  }
+  function handleToChange(e: ChangeEvent<HTMLInputElement>) {
+    setToDate(e.target.value);
+  }
+  function clearAllFilters() {
+    setModuleFilter("all");
+    setKeyword("");
+    setKeywordApplied("");
+    setDeletedById("");
+    setFromDate("");
+    setToDate("");
+    setPage(1);
+  }
+  function handlePageChange(p: number) {
+    setPage(p);
+  }
+
+  // ===== Selection =====
+  function rowKey(it: TrashItemV2): string {
+    return `${it.module}:${it.key ?? it.id}`;
+  }
+  function toggleRow(it: TrashItemV2) {
+    const k = rowKey(it);
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      return next;
+    });
+  }
+  function toggleAll() {
+    if (selected.size === items.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(items.map(rowKey)));
+    }
+  }
+  function clearSelection() {
+    setSelected(new Set());
+  }
+
+  // ===== Action =====
+  function askSingleRestore(it: TrashItemV2) {
+    setSingleTarget(it);
+    setActionError(null);
+    setConfirmKind("single-restore");
+  }
+  function askSingleForce(it: TrashItemV2) {
+    setSingleTarget(it);
+    setActionError(null);
+    setConfirmKind("single-force");
+  }
+  function askBulkRestore() {
+    if (selected.size === 0) return;
+    setActionError(null);
+    setConfirmKind("bulk-restore");
+  }
+  function askBulkForce() {
+    if (selected.size === 0) return;
+    setActionError(null);
+    setConfirmKind("bulk-force");
+  }
+  function closeConfirm() {
+    if (actionLoading) return;
+    setConfirmKind(null);
+    setSingleTarget(null);
+    setActionError(null);
+  }
+
+  function buildBulkItems(): BulkTrashItem[] {
+    const list: BulkTrashItem[] = [];
+    for (const it of items) {
+      const k = rowKey(it);
+      if (!selected.has(k)) continue;
+      if (it.module === "settings") {
+        list.push({ module: "settings", key: it.key ?? String(it.id) });
+      } else {
+        list.push({ module: it.module, id: it.id });
+      }
+    }
+    return list;
+  }
+
+  async function doSingleRestore() {
+    if (!singleTarget) return;
+    const it = singleTarget;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const lookup = it.module === "settings" ? (it.key ?? String(it.id)) : it.id;
+      await restoreItem(it.module, lookup);
+      setSuccessMsg(`Khôi phục "${it.label}" thành công`);
+      closeConfirm();
+      clearSelection();
+      await load();
+    } catch (err) {
+      setActionError(errorMessage(err, "Không thể khôi phục"));
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function doSingleForceDelete() {
+    if (!singleTarget) return;
+    const it = singleTarget;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const lookup = it.module === "settings" ? (it.key ?? String(it.id)) : it.id;
+      await forceDeleteItem(it.module, lookup);
+      setSuccessMsg(`Đã xoá vĩnh viễn "${it.label}"`);
+      closeConfirm();
+      clearSelection();
+      await load();
+    } catch (err) {
+      setActionError(errorMessage(err, "Không thể xoá vĩnh viễn"));
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function doBulkRestore() {
+    const items = buildBulkItems();
+    if (items.length === 0) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const result = await bulkRestore(items);
+      const failedDetail = (result.results ?? []).filter((r) => !r.ok);
+      if (result.failed === 0) {
+        setSuccessMsg(`Khôi phục hàng loạt thành công ${result.success}/${result.total} bản ghi`);
+      } else {
+        setSuccessMsg(
+          `Khôi phục hàng loạt: ${result.success} thành công, ${result.failed} thất bại`
+        );
+        setActionError(
+          failedDetail.length > 0
+            ? failedDetail.map((r) => `${r.module}:${r.key ?? r.id} — ${r.error}`).join("\n")
+            : null
+        );
+      }
+      closeConfirm();
+      clearSelection();
+      await load();
+    } catch (err) {
+      setActionError(errorMessage(err, "Không thể khôi phục hàng loạt"));
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function doBulkForceDelete() {
+    const items = buildBulkItems();
+    if (items.length === 0) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const result = await bulkForceDelete(items);
+      const failedDetail = (result.results ?? []).filter((r) => !r.ok);
+      if (result.failed === 0) {
+        setSuccessMsg(`Đã xoá vĩnh viễn ${result.success}/${result.total} bản ghi`);
+      } else {
+        setSuccessMsg(
+          `Xoá vĩnh viễn hàng loạt: ${result.success} thành công, ${result.failed} thất bại`
+        );
+        setActionError(
+          failedDetail.length > 0
+            ? failedDetail.map((r) => `${r.module}:${r.key ?? r.id} — ${r.error}`).join("\n")
+            : null
+        );
+      }
+      closeConfirm();
+      clearSelection();
+      await load();
+    } catch (err) {
+      setActionError(errorMessage(err, "Không thể xoá hàng loạt"));
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
   // ===== Columns =====
-  const columns: TableColumn<TrashItem>[] = useMemo(
+  const columns: TableColumn<TrashItemV2>[] = useMemo(
     () => [
+      {
+        key: "select",
+        header: (
+          <button
+            type="button"
+            className={styles.checkboxBtn}
+            onClick={toggleAll}
+            aria-label={
+              items.length > 0 && selected.size === items.length
+                ? "Bỏ chọn tất cả"
+                : "Chọn tất cả"
+            }
+          >
+            {items.length > 0 && selected.size === items.length ? (
+              <CheckSquare size={16} aria-hidden="true" />
+            ) : (
+              <Square size={16} aria-hidden="true" />
+            )}
+          </button>
+        ),
+        render: (it) => {
+          const k = rowKey(it);
+          const checked = selected.has(k);
+          return (
+            <button
+              type="button"
+              className={styles.checkboxBtn}
+              onClick={() => toggleRow(it)}
+              aria-label={checked ? `Bỏ chọn ${it.label}` : `Chọn ${it.label}`}
+            >
+              {checked ? (
+                <CheckSquare size={16} aria-hidden="true" />
+              ) : (
+                <Square size={16} aria-hidden="true" />
+              )}
+            </button>
+          );
+        },
+      },
       {
         key: "module",
         header: "Module",
@@ -332,14 +460,19 @@ export function TrashManagerPage() {
         ),
       },
       {
-        key: "name",
-        header: "Tên đối tượng",
+        key: "label",
+        header: "Đối tượng",
         render: (it) => (
           <div className={styles.nameCell}>
-            <span className={styles.name}>{highlight(it.name, searchApplied)}</span>
-            <span className={styles.description}>
-              {highlight(it.description, searchApplied)}
-            </span>
+            <span className={styles.name}>{highlight(it.label, keywordApplied)}</span>
+            {it.module === "settings" ? (
+              <span className={styles.description}>key: {it.key}</span>
+            ) : (
+              <span className={styles.description}>
+                #{it.id}
+                {it.createdAt ? ` · tạo ${formatDateTime(it.createdAt)}` : ""}
+              </span>
+            )}
           </div>
         ),
       },
@@ -347,9 +480,17 @@ export function TrashManagerPage() {
         key: "deletedBy",
         header: "Người xoá",
         render: (it) => {
-          if (it.module === "users") return <span className={styles.dim}>—</span>;
-          const id = it.deletedBy ?? null;
-          return <span className={styles.cellText}>#{id ?? "—"}</span>;
+          if (!it.deletedBy) {
+            return <span className={styles.dim}>—</span>;
+          }
+          return (
+            <div className={styles.actorCell}>
+              <span className={styles.actorName}>{highlight(it.deletedBy.fullName, keywordApplied)}</span>
+              <span className={styles.actorEmail}>
+                {ROLE_LABEL[it.deletedBy.role] ?? it.deletedBy.role} · #{it.deletedBy.id}
+              </span>
+            </div>
+          );
         },
       },
       {
@@ -368,8 +509,8 @@ export function TrashManagerPage() {
             <Button
               variant="secondary"
               size="sm"
-              leftIcon={<RotateCcw size={14} />}
-              onClick={() => askRestore(it)}
+              leftIcon={<RestoreIcon size={14} />}
+              onClick={() => askSingleRestore(it)}
             >
               Khôi phục
             </Button>
@@ -377,26 +518,32 @@ export function TrashManagerPage() {
               variant="danger"
               size="sm"
               leftIcon={<Trash2 size={14} />}
-              onClick={() => askForce(it)}
+              onClick={() => askSingleForce(it)}
             >
-              Xóa cứng
+              Xoá cứng
             </Button>
           </div>
         ),
       },
     ],
-    [searchApplied]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [keywordApplied, items, selected]
   );
 
   // ===== Empty state =====
-  const isFiltered = module !== "all" || searchApplied.trim() !== "";
+  const isFiltered =
+    moduleFilter !== "all" ||
+    keywordApplied.trim() !== "" ||
+    deletedById !== "" ||
+    fromDate !== "" ||
+    toDate !== "";
   const initialEmpty = (
     <div className={styles.emptyState}>
       <Inbox size={48} aria-hidden="true" />
       <p className={styles.emptyTitle}>Thùng rác đang trống</p>
       <p className={styles.emptyHint}>
-        Khi người dùng, thông báo hoặc tệp bị xoá mềm, chúng sẽ xuất hiện ở đây
-        để bạn khôi phục hoặc xoá vĩnh viễn.
+        Khi người dùng, thông báo, tệp hoặc cấu hình bị xoá mềm, chúng sẽ xuất hiện
+        ở đây để bạn khôi phục hoặc xoá vĩnh viễn. Mỗi hành động đều được ghi Audit Log.
       </p>
     </div>
   );
@@ -405,40 +552,50 @@ export function TrashManagerPage() {
       <Inbox size={48} aria-hidden="true" />
       <p className={styles.emptyTitle}>
         Không có bản ghi trong thùng rác
-        {searchApplied.trim() ? ` khớp với "${searchApplied.trim()}"` : ""}
+        {keywordApplied.trim() ? ` khớp với "${keywordApplied.trim()}"` : ""}
       </p>
       <p className={styles.emptyHint}>
-        Thử bỏ bộ lọc, đổi module hoặc xoá từ khoá để xem các mục khác.
+        Thử bỏ bộ lọc, đổi module, khoảng thời gian hoặc xoá từ khoá.
       </p>
     </div>
   );
 
-  const showEmpty =
-    !loading &&
-    !loadError &&
-    pagedItems.length === 0 &&
-    (isFiltered ? noResultEmpty : initialEmpty);
+  const showEmpty = !loading && !loadError && items.length === 0;
+  const emptyContent = isFiltered ? noResultEmpty : initialEmpty;
 
-  // ===== Confirm messages =====
-  const restoreConfirm = actionItem ? (
+  // ===== Confirm content =====
+  const restoreConfirm = singleTarget ? (
     <>
-      Khôi phục <b>{actionItem.name}</b> ({TRASH_MODULE_LABELS[actionItem.module]})?
+      Khôi phục <b>{singleTarget.label}</b> ({TRASH_MODULE_LABELS[singleTarget.module]})?
       Bản ghi sẽ xuất hiện lại trong danh sách tương ứng.
     </>
   ) : null;
-  const forceConfirm = actionItem ? (
+  const forceConfirm = singleTarget ? (
     <>
       <span className={styles.dangerLine}>
         <AlertTriangle size={16} aria-hidden="true" />
         Hành động này KHÔNG thể hoàn tác.
       </span>
-      Bạn sắp xoá vĩnh viễn <b>{actionItem.name}</b> (
-      {TRASH_MODULE_LABELS[actionItem.module]}) khỏi hệ thống.
-      {actionItem.module === "files"
-        ? " File vật lý trên ổ đĩa cũng sẽ bị xoá."
-        : null}
+      Bạn sắp xoá vĩnh viễn <b>{singleTarget.label}</b> (
+      {TRASH_MODULE_LABELS[singleTarget.module]}) khỏi hệ thống.
     </>
   ) : null;
+
+  const bulkRestoreConfirm = (
+    <>
+      Khôi phục <b>{selected.size}</b> bản ghi đã chọn? Các bản ghi sẽ xuất hiện lại
+      trong danh sách tương ứng. Hành động này được ghi Audit Log.
+    </>
+  );
+  const bulkForceConfirm = (
+    <>
+      <span className={styles.dangerLine}>
+        <AlertTriangle size={16} aria-hidden="true" />
+        Hành động này KHÔNG thể hoàn tác.
+      </span>
+      Bạn sắp xoá vĩnh viễn <b>{selected.size}</b> bản ghi đã chọn khỏi hệ thống.
+    </>
+  );
 
   return (
     <div className={styles.page}>
@@ -449,36 +606,38 @@ export function TrashManagerPage() {
             Thùng rác hệ thống
           </h1>
           <p className={styles.subtitle}>
-            Khôi phục hoặc xoá vĩnh viễn các bản ghi đã bị soft-delete trên toàn
-            hệ thống. Mỗi hành động đều được xác nhận trước khi thực thi.
+            Khôi phục hoặc xoá vĩnh viễn các bản ghi đã soft-delete trên toàn hệ thống.
+            Hỗ trợ 4 module (Người dùng · Thông báo · Tệp · Cấu hình), filter theo
+            người xoá / khoảng thời gian / từ khoá, và bulk action.
           </p>
         </div>
         {!isAdmin ? (
           <Alert variant="warning">
-            Bạn chỉ có thể khôi phục/xoá cứng thông báo và tệp của chính mình.
+            Bạn cần quyền Admin để truy cập Thùng rác hệ thống. Vui lòng liên hệ admin.
           </Alert>
         ) : null}
       </header>
 
-      <div className={styles.tableCard}>
-        {/* Toolbar */}
+      <Card padding="md" className={styles.tableCard}>
+        {/* Toolbar — Filter row */}
         <div className={styles.toolbar}>
           <div className={styles.searchWrap}>
             <Input
-              placeholder="Tìm theo tên, email, nội dung thông báo, tên tệp..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              leftIcon={<SearchIcon size={16} />}
-              rightIcon={search ? <XIcon size={14} /> : undefined}
-              onRightIconClick={search ? clearSearch : undefined}
+              placeholder="Tìm theo tên, email, tiêu đề, tên tệp hoặc key cấu hình..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              leftIcon={<SearchIcon size={16} aria-hidden="true" />}
+              rightIcon={keyword ? <XIcon size={14} aria-hidden="true" /> : undefined}
+              onRightIconClick={keyword ? () => setKeyword("") : undefined}
             />
           </div>
 
           <label className={styles.filterLabel}>
+            <Filter size={14} aria-hidden="true" />
             <span>Module</span>
             <select
               className={styles.select}
-              value={module}
+              value={moduleFilter}
               onChange={handleModuleChange}
             >
               <option value="all">Tất cả</option>
@@ -490,21 +649,77 @@ export function TrashManagerPage() {
             </select>
           </label>
 
-          <div className={styles.summary}>
-            <span className={styles.summaryChip}>
-              <UserIcon size={12} />
-              <b>{totals.users}</b> người dùng
-            </span>
-            <span className={styles.summaryChip}>
-              <Bell size={12} />
-              <b>{totals.notifications}</b> thông báo
-            </span>
-            <span className={styles.summaryChip}>
-              <FileText size={12} />
-              <b>{totals.files}</b> tệp
-            </span>
-          </div>
+          <label className={styles.filterLabel}>
+            <UserIcon size={14} aria-hidden="true" />
+            <span>Người xoá (ID)</span>
+            <input
+              type="number"
+              min={1}
+              className={styles.input}
+              placeholder="VD: 8"
+              value={deletedById}
+              onChange={handleDeletedByChange}
+            />
+          </label>
+
+          <label className={styles.filterLabel}>
+            <Calendar size={14} aria-hidden="true" />
+            <span>Từ ngày</span>
+            <input
+              type="date"
+              className={styles.input}
+              value={fromDate}
+              onChange={handleFromChange}
+            />
+          </label>
+
+          <label className={styles.filterLabel}>
+            <Calendar size={14} aria-hidden="true" />
+            <span>Đến ngày</span>
+            <input
+              type="date"
+              className={styles.input}
+              value={toDate}
+              onChange={handleToChange}
+            />
+          </label>
+
+          {isFiltered ? (
+            <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+              Xoá bộ lọc
+            </Button>
+          ) : null}
         </div>
+
+        {/* Bulk action bar */}
+        {selected.size > 0 ? (
+          <div className={styles.bulkBar}>
+            <span className={styles.bulkLabel}>
+              Đã chọn <b>{selected.size}</b> bản ghi
+            </span>
+            <div className={styles.bulkActions}>
+              <Button
+                variant="secondary"
+                size="sm"
+                leftIcon={<RotateCcw size={14} aria-hidden="true" />}
+                onClick={askBulkRestore}
+              >
+                Khôi phục ({selected.size})
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                leftIcon={<Trash2 size={14} aria-hidden="true" />}
+                onClick={askBulkForce}
+              >
+                Xoá cứng ({selected.size})
+              </Button>
+              <Button variant="ghost" size="sm" onClick={clearSelection}>
+                Bỏ chọn
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         {/* Success toast */}
         {successMsg ? (
@@ -517,31 +732,31 @@ export function TrashManagerPage() {
         {loadError ? (
           <div className={styles.errorWrap}>
             <Alert variant="error">{loadError}</Alert>
-            <Button variant="secondary" size="sm" onClick={load}>
+            <Button variant="secondary" size="sm" onClick={() => void load()}>
               Thử lại
             </Button>
           </div>
         ) : showEmpty ? (
-          <div className={styles.emptyWrap}>{showEmpty}</div>
+          <div className={styles.emptyWrap}>{emptyContent}</div>
         ) : (
           <>
             <Table
               columns={columns}
-              data={pagedItems}
+              data={items}
               loading={loading}
               skeletonRows={6}
-              rowKey={(it) => it.compositeKey}
+              rowKey={(it) => rowKey(it)}
               emptyState={null}
             />
 
-            {displayTotal > 0 ? (
+            {total > 0 ? (
               <div className={styles.tableFooter}>
                 <span className={styles.totalLabel}>
-                  Hiển thị <b>{pagedItems.length}</b> / <b>{displayTotal}</b> bản
-                  ghi
+                  Hiển thị <b>{items.length}</b> / <b>{total}</b> bản ghi
+                  {isFiltered ? " (đang lọc)" : ""}
                 </span>
                 <Pagination
-                  currentPage={isServerPaged ? page : safePage}
+                  currentPage={safePage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
@@ -549,34 +764,64 @@ export function TrashManagerPage() {
             ) : null}
           </>
         )}
-      </div>
+      </Card>
 
       {/* Confirm dialogs */}
       <ConfirmDialog
-        open={confirmKind === "restore" && actionItem !== null}
+        open={confirmKind === "single-restore" && singleTarget !== null}
         title="Khôi phục bản ghi"
         message={restoreConfirm}
         confirmText="Khôi phục"
         confirmVariant="primary"
         loading={actionLoading}
-        onConfirm={doRestore}
+        onConfirm={() => void doSingleRestore()}
         onCancel={closeConfirm}
       />
       <ConfirmDialog
-        open={confirmKind === "force" && actionItem !== null}
+        open={confirmKind === "single-force" && singleTarget !== null}
         title="Xoá vĩnh viễn"
         message={forceConfirm}
-        confirmText="Xóa cứng"
+        confirmText="Xoá cứng"
         confirmVariant="danger"
         loading={actionLoading}
-        onConfirm={doForceDelete}
+        onConfirm={() => void doSingleForceDelete()}
         onCancel={closeConfirm}
       />
+      <ConfirmDialog
+        open={confirmKind === "bulk-restore"}
+        title={`Khôi phục ${selected.size} bản ghi`}
+        message={bulkRestoreConfirm}
+        confirmText={`Khôi phục (${selected.size})`}
+        confirmVariant="primary"
+        loading={actionLoading}
+        onConfirm={() => void doBulkRestore()}
+        onCancel={closeConfirm}
+      />
+      <ConfirmDialog
+        open={confirmKind === "bulk-force"}
+        title={`Xoá vĩnh viễn ${selected.size} bản ghi`}
+        message={bulkForceConfirm}
+        confirmText={`Xoá cứng (${selected.size})`}
+        confirmVariant="danger"
+        loading={actionLoading}
+        onConfirm={() => void doBulkForceDelete()}
+        onCancel={closeConfirm}
+      />
+
       {actionError ? (
         <div className={styles.floatingError}>
-          <Alert variant="error">{actionError}</Alert>
+          <Alert variant="error">
+            <pre className={styles.errorPre}>{actionError}</pre>
+          </Alert>
         </div>
       ) : null}
     </div>
   );
+}
+
+// ===== Helpers =====
+function errorMessage(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) return err.message;
+  if (err instanceof Error) return err.message;
+  return fallback;
 }

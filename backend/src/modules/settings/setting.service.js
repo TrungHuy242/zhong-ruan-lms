@@ -1,6 +1,11 @@
 const repo = require("./setting.repository");
 const { SETTING_GROUPS, normalizeGroup, SYSTEM_PROTECTED_KEYS } = require("./setting.constants");
 const audit = require("../audit/audit.service");
+const {
+  softDelete,
+  restore,
+  forceDelete,
+} = require("../../utils/softDelete");
 
 // ===== Error helpers =====
 
@@ -165,23 +170,73 @@ async function updateSetting(key, data, req = null) {
 }
 
 // DELETE /settings/:key
+//
+// Từ bản Trash Manager: chuyển từ hard-delete sang soft-delete để có thể
+// restore / force-delete sau này qua module trash. Idempotent — nếu đã xoá
+// thì trả về luôn không throw.
 async function deleteSetting(key, req = null) {
   const normalized = validateKey(key);
-  const existing = await repo.findByKey(normalized);
+  const existing = await repo.findByKeyIncludeDeleted(normalized);
   if (!existing) throw notFound(`Không tìm thấy cấu hình với key "${normalized}"`);
 
-  await repo.removeByKey(normalized);
+  const userId = req?.user?.id ?? null;
 
-  await audit.logFromRequest(req, {
-    userId: req?.user?.id ?? null,
-    action: "SETTING_DELETED",
-    target: `Setting:${normalized}`,
-    meta: {
-      group: existing.group,
-    },
-  });
+  // Nếu đã xoá mềm rồi → trả idempotent, không ghi log lặp.
+  if (existing.deletedAt) {
+    return {
+      key: existing.key,
+      alreadyDeleted: true,
+      deletedAt: existing.deletedAt,
+    };
+  }
 
-  return { key: existing.key };
+  const deleted = await softDelete(
+    "Setting",
+    { key: normalized },
+    { req, userId }
+  );
+
+  if (!deleted) {
+    throw notFound(`Không tìm thấy cấu hình với key "${normalized}"`);
+  }
+
+  return {
+    key: deleted.key,
+    deletedAt: deleted.deletedAt,
+    deletedById: deleted.deletedById,
+  };
+}
+
+// ===== Restore / Force-delete wrappers =====
+//
+// Service-level API cho module trash (và cho backward-compat nếu cần).
+// Controller setting hiện không gọi trực tiếp — trash sẽ tự gọi.
+
+async function restoreSetting(key, req = null) {
+  const normalized = validateKey(key);
+  const existing = await repo.findByKeyIncludeDeleted(normalized);
+  if (!existing) throw notFound(`Không tìm thấy cấu hình với key "${normalized}"`);
+  if (!existing.deletedAt) {
+    return { key: existing.key, alreadyRestored: true };
+  }
+  const restored = await restore(
+    "Setting",
+    { key: normalized },
+    { req, userId: req?.user?.id ?? null }
+  );
+  return { key: restored.key };
+}
+
+async function forceDeleteSetting(key, req = null) {
+  const normalized = validateKey(key);
+  const existing = await repo.findByKeyIncludeDeleted(normalized);
+  if (!existing) throw notFound(`Không tìm thấy cấu hình với key "${normalized}"`);
+  const removed = await forceDelete(
+    "Setting",
+    { key: normalized },
+    { req, userId: req?.user?.id ?? null }
+  );
+  return { key: removed.key };
 }
 
 // ===== Export / Import =====
@@ -301,6 +356,8 @@ module.exports = {
   createSetting,
   updateSetting,
   deleteSetting,
+  restoreSetting,
+  forceDeleteSetting,
   exportSettings,
   importSettings,
   // Export helpers cho controller unit-test nếu cần
