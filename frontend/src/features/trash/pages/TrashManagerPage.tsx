@@ -1,25 +1,56 @@
 ﻿/**
- * TrashManagerPage — trang quản lý thùng rác hệ thống (SaaS-style).
+ * TrashManagerPage — trung tâm quản lý dữ liệu đã xoá (SaaS-style).
  *
- * Tính năng (theo yêu cầu nâng cấp):
- *   - 4 module: Users / Notifications / Files / Settings (endpoint thống nhất /api/trash).
- *   - Filter: module, người xoá (deletedById), khoảng thời gian (from/to), keyword.
- *   - Bulk action: chọn nhiều → restore / force-delete 1 lần (qua ConfirmDialog).
- *   - Audit log: BE tự ghi cho Restore / Bulk Restore / Force Delete / Bulk Force Delete.
- *   - Hiển thị: Module, Label, Người xoá (actor email/role), Thời gian xoá.
- *   - Loading skeleton, empty state (chưa có gì / không match filter), error + Retry.
+ * Luồng tổng thể:
+ *   ┌─────────────────────────┐
+ *   │ KPI / Stats (TrashStats)│  ← 6 card (Tổng · Hôm nay · 7 ngày · ×4 module)
+ *   ├─────────────────────────┤
+ *   │ Filter (TrashFilter)    │  ← 4 trục (Module · Người xoá · Khoảng TG · Keyword)
+ *   │   Active filter chips   │  ← UX helper hiển thị filter đang áp dụng
+ *   │   Bulk action bar       │  ← Khi ≥1 row được chọn
+ *   ├─────────────────────────┤
+ *   │ Table (shared Table)    │  ← Danh sách + select-all + skeleton
+ *   │   Pagination (shared)   │
+ *   └─────────────────────────┘
  *
- * Dùng V2 API (listTrashV2, restoreItem, forceDeleteItem, bulkRestore, bulkForceDelete).
- * API cũ (loadTrash + restoreX/forceDeleteX) vẫn export nhưng không dùng ở đây.
+ * State tổ chức:
+ *   - `filters` (FiltersState): 1 state lưu tất cả filter cố định + searchApplied + page.
+ *   - `keyword` (raw) tách riêng để input controlled + debounce 450ms → `filters.searchApplied`.
+ *
+ * Đồng bộ URL (useSearchParams):
+ *   - Tất cả filter + page đều sync URL.
+ *   - URL là single source of truth khi user back/forward.
+ *
+ * Bulk action (xác nhận bằng ConfirmDialog):
+ *   - Bulk Restore: confirmVariant=primary.
+ *   - Bulk Force Delete: confirmVariant=danger (luôn có dòng cảnh báo).
+ *
+ * TrashDetailModal hiển thị khi click action "Xem chi tiết" → lazy fetch detail
+ * (snapshot đầy đủ) qua getTrashDetail().
+ *
+ * Loading / Empty / Error:
+ *   - Loading: Table dùng skeletonRows (Table đã tích hợp skeleton inline).
+ *   - Empty (filtered): gợi ý "Xoá bộ lọc".
+ *   - Empty (no data at all): CTA giải thích khi nào thùng rác có data.
+ *   - Error: Alert + nút Thử lại (gọi lại loadList).
+ *
+ * Audit log:
+ *   - BE tự ghi cho Restore / Force Delete / Bulk Restore / Bulk Force Delete.
+ *   - FE không cần làm gì ngoài gọi API.
  */
 
-import { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   Button,
   Card,
   ConfirmDialog,
-  Input,
   Pagination,
   Table,
   type TableColumn,
@@ -32,31 +63,40 @@ import {
   bulkForceDelete,
   bulkRestore,
   forceDeleteItem,
+  getTrashStats,
   listTrashV2,
   restoreItem,
   type BulkTrashItem,
   type ListTrashV2Params,
   type TrashItemV2,
   type TrashModule,
+  type TrashStats as TrashStatsData,
 } from "../services/trashApi";
+import { TrashFilter, EMPTY_TRASH_FILTERS } from "../components/TrashFilter";
+import { TrashStats } from "../components/TrashStats";
+import { TrashDetailModal } from "../components/TrashDetailModal";
+import type { UserOption } from "../components/UserOption";
+import { listUsers, type User } from "../../users";
 import { authStorage } from "../../../shared/storage/authStorage";
 import {
+  AlertTriangle,
   Bell,
   Calendar,
   CheckSquare,
-  Filter,
+  Eye,
   FileText,
+  Filter as FilterIcon,
   Inbox,
   RotateCcw,
   Search as SearchIcon,
   Settings as SettingsIcon,
+  SlidersHorizontal,
   Square,
   Trash2,
   User as UserIcon,
   X as XIcon,
-  AlertTriangle,
-  RotateCcw as RestoreIcon,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import styles from "./TrashManagerPage.module.css";
 
 // ===== Helpers =====
@@ -82,10 +122,10 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 const MODULE_TONE: Record<TrashModule, string> = {
-  users: styles.badgeUser,
-  notifications: styles.badgeNotification,
-  files: styles.badgeFile,
-  settings: styles.badgeSetting,
+  users: "badgeUser",
+  notifications: "badgeNotification",
+  files: "badgeFile",
+  settings: "badgeSetting",
 };
 
 const MODULE_ICON: Record<TrashModule, React.ReactNode> = {
@@ -95,48 +135,104 @@ const MODULE_ICON: Record<TrashModule, React.ReactNode> = {
   settings: <SettingsIcon size={14} aria-hidden="true" />,
 };
 
-function highlight(text: string, keyword: string): React.ReactNode {
-  if (!text) return text;
-  const kw = keyword.trim();
-  if (!kw) return text;
-  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const re = new RegExp(`(${escaped})`, "gi");
-  const parts = text.split(re);
-  return parts.map((part, idx) => {
-    if (part.toLowerCase() === kw.toLowerCase()) {
-      return (
-        <mark key={idx} className={styles.highlight}>
-          {part}
-        </mark>
-      );
-    }
-    return <Fragment key={idx}>{part}</Fragment>;
-  });
+const DEBOUNCE_MS = 450;
+
+// ===== Filters (single source of truth, sync URL) =====
+interface FiltersState {
+  search: string;
+  searchApplied: string;
+  module: TrashModule | "all";
+  deletedById: "" | number;
+  from: string;
+  to: string;
+  page: number;
+}
+
+const INITIAL_FILTERS: FiltersState = {
+  search: "",
+  searchApplied: "",
+  module: "all",
+  deletedById: "",
+  from: "",
+  to: "",
+  page: 1,
+};
+
+function isFiltersActive(f: FiltersState): boolean {
+  return (
+    Boolean(f.searchApplied) ||
+    f.module !== "all" ||
+    f.deletedById !== "" ||
+    Boolean(f.from) ||
+    Boolean(f.to)
+  );
 }
 
 // ===== Component =====
-const DEBOUNCE_MS = 400;
-
 type ConfirmKind = "single-restore" | "single-force" | "bulk-restore" | "bulk-force" | null;
 
 export function TrashManagerPage() {
   const currentUser = authStorage.getUser();
   const isAdmin = currentUser?.role === "ADMIN";
 
-  // ===== Filter state =====
-  const [moduleFilter, setModuleFilter] = useState<TrashModule | "all">("all");
-  const [keyword, setKeyword] = useState("");
-  const [keywordApplied, setKeywordApplied] = useState("");
-  const [deletedById, setDeletedById] = useState<string>("");
-  const [fromDate, setFromDate] = useState<string>(""); // YYYY-MM-DD
-  const [toDate, setToDate] = useState<string>("");
-  const [page, setPage] = useState(1);
+  // ===== URL sync =====
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [filters, setFilters] = useState<FiltersState>(() => {
+    const initial: FiltersState = { ...INITIAL_FILTERS };
+    const module = searchParams.get("module");
+    if (module && [...TRASH_MODULES, "all"].includes(module)) {
+      initial.module = module as TrashModule | "all";
+    }
+    const deletedById = searchParams.get("deletedById");
+    if (deletedById) initial.deletedById = Number(deletedById) || "";
+    const from = searchParams.get("from");
+    if (from) initial.from = from;
+    const to = searchParams.get("to");
+    if (to) initial.to = to;
+    const search = searchParams.get("search");
+    if (search) {
+      initial.search = search;
+      initial.searchApplied = search;
+    }
+    const page = Number(searchParams.get("page") ?? "1");
+    if (page > 1) initial.page = page;
+    return initial;
+  });
+
+  useEffect(() => {
+    const next: Record<string, string> = {};
+    if (filters.searchApplied) next.search = filters.searchApplied;
+    if (filters.module !== "all") next.module = filters.module;
+    if (filters.deletedById !== "") next.deletedById = String(filters.deletedById);
+    if (filters.from) next.from = filters.from;
+    if (filters.to) next.to = filters.to;
+    if (filters.page > 1) next.page = String(filters.page);
+    setSearchParams(next, { replace: true });
+  }, [
+    filters.searchApplied,
+    filters.module,
+    filters.deletedById,
+    filters.from,
+    filters.to,
+    filters.page,
+    setSearchParams,
+  ]);
 
   // ===== Data state =====
   const [items, setItems] = useState<TrashItemV2[]>([]);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // ===== Stats =====
+  const [stats, setStats] = useState<TrashStatsData | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // ===== Users dropdown =====
+  const [users, setUsers] = useState<User[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   // ===== Selection =====
   const [selected, setSelected] = useState<Set<string>>(new Set()); // key = `${module}:${idOrKey}`
@@ -144,50 +240,53 @@ export function TrashManagerPage() {
   // ===== Action state =====
   const [confirmKind, setConfirmKind] = useState<ConfirmKind>(null);
   const [singleTarget, setSingleTarget] = useState<TrashItemV2 | null>(null);
+  const [detailItem, setDetailItem] = useState<TrashItemV2 | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // ===== Debounce keyword =====
+  // ===== Debounce search =====
   const debounceRef = useRef<number | null>(null);
   useEffect(() => {
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      setKeywordApplied((prev) => (prev === keyword ? prev : keyword));
-      setPage(1);
+      setFilters((prev) =>
+        prev.search === prev.searchApplied
+          ? prev
+          : { ...prev, searchApplied: prev.search, page: 1 }
+      );
     }, DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) window.clearTimeout(debounceRef.current);
     };
-  }, [keyword]);
+  }, [filters.search]);
 
-  // Reset page khi filter chính đổi.
+  // Auto-clear banner after 4s.
   useEffect(() => {
-    setPage(1);
-  }, [moduleFilter, deletedById, fromDate, toDate]);
+    if (!banner) return;
+    const t = window.setTimeout(() => setBanner(null), 4000);
+    return () => window.clearTimeout(t);
+  }, [banner]);
 
-  // Reset selection khi data thay đổi (tránh selection rỗng trỏ vào item cũ).
-  useEffect(() => {
-    setSelected(new Set());
-  }, [items.length, moduleFilter, keywordApplied, deletedById, fromDate, toDate]);
-
-  // ===== Load =====
-  const load = useCallback(async () => {
+  // ===== Load list =====
+  const loadList = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
       const params: ListTrashV2Params = {
-        module: moduleFilter === "all" ? null : moduleFilter,
-        keyword: keywordApplied || null,
-        deletedById: deletedById ? Number(deletedById) : null,
-        from: fromDate ? `${fromDate}T00:00:00.000Z` : null,
-        to: toDate ? `${toDate}T23:59:59.999Z` : null,
-        page,
+        module: filters.module === "all" ? null : filters.module,
+        keyword: filters.searchApplied || null,
+        deletedById: filters.deletedById === "" ? null : filters.deletedById,
+        from: filters.from ? `${filters.from}T00:00:00.000Z` : null,
+        to: filters.to ? `${filters.to}T23:59:59.999Z` : null,
+        page: filters.page,
         limit: TRASH_PAGE_SIZE_DEFAULT,
       };
       const result = await listTrashV2(params);
       setItems(result.items);
       setTotal(result.pagination.total);
+      setTotalPages(result.pagination.totalPages);
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -198,55 +297,90 @@ export function TrashManagerPage() {
       setLoadError(message);
       setItems([]);
       setTotal(0);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
-  }, [moduleFilter, keywordApplied, deletedById, fromDate, toDate, page]);
+  }, [
+    filters.module,
+    filters.searchApplied,
+    filters.deletedById,
+    filters.from,
+    filters.to,
+    filters.page,
+  ]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadList();
+  }, [loadList]);
 
-  // Auto-clear success after 4s.
+  // ===== Load stats (1 lần + refresh sau mỗi action) =====
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const result = await getTrashStats();
+      setStats(result);
+    } catch {
+      // Stats lỗi → fallback null (page vẫn hoạt động được).
+      setStats(null);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (!successMsg) return;
-    const t = window.setTimeout(() => setSuccessMsg(null), 4000);
-    return () => window.clearTimeout(t);
-  }, [successMsg]);
+    void loadStats();
+  }, [loadStats]);
 
-  // ===== Filter helpers =====
-  const totalPages = total > 0 ? Math.ceil(total / TRASH_PAGE_SIZE_DEFAULT) : 1;
-  const safePage = Math.min(Math.max(1, page), totalPages);
+  // ===== Load users cho dropdown =====
+  useEffect(() => {
+    let cancelled = false;
+    async function loadUsers() {
+      setUsersLoading(true);
+      try {
+        const result = await listUsers({});
+        if (cancelled) return;
+        const list = Array.isArray(result.users) ? result.users : [];
+        // Chỉ lấy user CHƯA bị xoá mềm.
+        const active = list.filter((u) => !u.deletedAt);
+        active.sort((a, b) => a.fullName.localeCompare(b.fullName, "vi"));
+        setUsers(active);
+      } catch {
+        // Không block UI nếu user list fail.
+      } finally {
+        if (!cancelled) setUsersLoading(false);
+      }
+    }
+    loadUsers();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  function handleModuleChange(e: ChangeEvent<HTMLSelectElement>) {
-    setModuleFilter(e.target.value as TrashModule | "all");
-  }
-  function handleDeletedByChange(e: ChangeEvent<HTMLInputElement>) {
-    setDeletedById(e.target.value);
-  }
-  function handleFromChange(e: ChangeEvent<HTMLInputElement>) {
-    setFromDate(e.target.value);
-  }
-  function handleToChange(e: ChangeEvent<HTMLInputElement>) {
-    setToDate(e.target.value);
-  }
-  function clearAllFilters() {
-    setModuleFilter("all");
-    setKeyword("");
-    setKeywordApplied("");
-    setDeletedById("");
-    setFromDate("");
-    setToDate("");
-    setPage(1);
-  }
-  function handlePageChange(p: number) {
-    setPage(p);
+  // Reset selection khi filter/page đổi.
+  useEffect(() => {
+    setSelected(new Set());
+  }, [
+    items.length,
+    filters.module,
+    filters.searchApplied,
+    filters.deletedById,
+    filters.from,
+    filters.to,
+    filters.page,
+  ]);
+
+  // ===== Handlers =====
+  function errorMessage(err: unknown, fallback: string): string {
+    if (err instanceof ApiError) return err.message;
+    if (err instanceof Error) return err.message;
+    return fallback;
   }
 
-  // ===== Selection =====
   function rowKey(it: TrashItemV2): string {
     return `${it.module}:${it.key ?? it.id}`;
   }
+
   function toggleRow(it: TrashItemV2) {
     const k = rowKey(it);
     setSelected((prev) => {
@@ -256,6 +390,7 @@ export function TrashManagerPage() {
       return next;
     });
   }
+
   function toggleAll() {
     if (selected.size === items.length) {
       setSelected(new Set());
@@ -263,11 +398,49 @@ export function TrashManagerPage() {
       setSelected(new Set(items.map(rowKey)));
     }
   }
+
   function clearSelection() {
     setSelected(new Set());
   }
 
-  // ===== Action =====
+  function handleSearchChange(raw: string) {
+    setFilters((prev) => ({ ...prev, search: raw }));
+  }
+
+  function clearSearch() {
+    setFilters((prev) => ({ ...prev, search: "", searchApplied: "", page: 1 }));
+  }
+
+  function handleFilterChange(next: typeof EMPTY_TRASH_FILTERS) {
+    setFilters((prev) => ({
+      ...prev,
+      search: next.keyword,
+      module: next.module,
+      deletedById: next.deletedById === "" ? "" : Number(next.deletedById) || "",
+      from: next.from,
+      to: next.to,
+      page: 1,
+    }));
+  }
+
+  function clearAllFilters() {
+    setFilters((prev) => ({
+      ...prev,
+      search: "",
+      searchApplied: "",
+      module: "all",
+      deletedById: "",
+      from: "",
+      to: "",
+      page: 1,
+    }));
+  }
+
+  function handlePageChange(page: number) {
+    setFilters((prev) => ({ ...prev, page }));
+  }
+
+  // ===== Action handlers =====
   function askSingleRestore(it: TrashItemV2) {
     setSingleTarget(it);
     setActionError(null);
@@ -287,6 +460,10 @@ export function TrashManagerPage() {
     if (selected.size === 0) return;
     setActionError(null);
     setConfirmKind("bulk-force");
+  }
+  function openDetail(it: TrashItemV2) {
+    setDetailItem(it);
+    setDetailOpen(true);
   }
   function closeConfirm() {
     if (actionLoading) return;
@@ -317,10 +494,10 @@ export function TrashManagerPage() {
     try {
       const lookup = it.module === "settings" ? (it.key ?? String(it.id)) : it.id;
       await restoreItem(it.module, lookup);
-      setSuccessMsg(`Khôi phục "${it.label}" thành công`);
+      setBanner({ type: "success", text: `Khôi phục "${it.label}" thành công` });
       closeConfirm();
       clearSelection();
-      await load();
+      await Promise.all([loadList(), loadStats()]);
     } catch (err) {
       setActionError(errorMessage(err, "Không thể khôi phục"));
     } finally {
@@ -336,10 +513,10 @@ export function TrashManagerPage() {
     try {
       const lookup = it.module === "settings" ? (it.key ?? String(it.id)) : it.id;
       await forceDeleteItem(it.module, lookup);
-      setSuccessMsg(`Đã xoá vĩnh viễn "${it.label}"`);
+      setBanner({ type: "success", text: `Đã xoá vĩnh viễn "${it.label}"` });
       closeConfirm();
       clearSelection();
-      await load();
+      await Promise.all([loadList(), loadStats()]);
     } catch (err) {
       setActionError(errorMessage(err, "Không thể xoá vĩnh viễn"));
     } finally {
@@ -356,11 +533,15 @@ export function TrashManagerPage() {
       const result = await bulkRestore(items);
       const failedDetail = (result.results ?? []).filter((r) => !r.ok);
       if (result.failed === 0) {
-        setSuccessMsg(`Khôi phục hàng loạt thành công ${result.success}/${result.total} bản ghi`);
+        setBanner({
+          type: "success",
+          text: `Khôi phục hàng loạt thành công ${result.success}/${result.total} bản ghi`,
+        });
       } else {
-        setSuccessMsg(
-          `Khôi phục hàng loạt: ${result.success} thành công, ${result.failed} thất bại`
-        );
+        setBanner({
+          type: "success",
+          text: `Khôi phục hàng loạt: ${result.success} thành công, ${result.failed} thất bại`,
+        });
         setActionError(
           failedDetail.length > 0
             ? failedDetail.map((r) => `${r.module}:${r.key ?? r.id} — ${r.error}`).join("\n")
@@ -369,7 +550,7 @@ export function TrashManagerPage() {
       }
       closeConfirm();
       clearSelection();
-      await load();
+      await Promise.all([loadList(), loadStats()]);
     } catch (err) {
       setActionError(errorMessage(err, "Không thể khôi phục hàng loạt"));
     } finally {
@@ -386,11 +567,15 @@ export function TrashManagerPage() {
       const result = await bulkForceDelete(items);
       const failedDetail = (result.results ?? []).filter((r) => !r.ok);
       if (result.failed === 0) {
-        setSuccessMsg(`Đã xoá vĩnh viễn ${result.success}/${result.total} bản ghi`);
+        setBanner({
+          type: "success",
+          text: `Đã xoá vĩnh viễn ${result.success}/${result.total} bản ghi`,
+        });
       } else {
-        setSuccessMsg(
-          `Xoá vĩnh viễn hàng loạt: ${result.success} thành công, ${result.failed} thất bại`
-        );
+        setBanner({
+          type: "success",
+          text: `Xoá vĩnh viễn hàng loạt: ${result.success} thành công, ${result.failed} thất bại`,
+        });
         setActionError(
           failedDetail.length > 0
             ? failedDetail.map((r) => `${r.module}:${r.key ?? r.id} — ${r.error}`).join("\n")
@@ -399,13 +584,40 @@ export function TrashManagerPage() {
       }
       closeConfirm();
       clearSelection();
-      await load();
+      await Promise.all([loadList(), loadStats()]);
     } catch (err) {
       setActionError(errorMessage(err, "Không thể xoá hàng loạt"));
     } finally {
       setActionLoading(false);
     }
   }
+
+  // ===== Derived =====
+  const userOptions = useMemo<UserOption[]>(
+    () => users.map((u) => ({ id: u.id, fullName: u.fullName, email: u.email })),
+    [users]
+  );
+
+  // Module user fullName từ dropdown (để hiển thị chip filter).
+  const selectedUser = useMemo(
+    () => users.find((u) => u.id === filters.deletedById),
+    [users, filters.deletedById]
+  );
+
+  // Lấy phần filter cố định (không search) để truyền xuống TrashFilter.
+  const filterValues = useMemo(
+    () => ({
+      keyword: filters.search,
+      module: filters.module,
+      deletedById: filters.deletedById,
+      from: filters.from,
+      to: filters.to,
+    }),
+    [filters.search, filters.module, filters.deletedById, filters.from, filters.to]
+  );
+
+  const filtered = isFiltersActive(filters);
+  const showEmpty = !loading && !loadError && items.length === 0;
 
   // ===== Columns =====
   const columns: TableColumn<TrashItemV2>[] = useMemo(
@@ -453,7 +665,7 @@ export function TrashManagerPage() {
         key: "module",
         header: "Module",
         render: (it) => (
-          <span className={[styles.badge, MODULE_TONE[it.module]].join(" ")}>
+          <span className={[styles.badge, styles[MODULE_TONE[it.module]]].join(" ")}>
             {MODULE_ICON[it.module]}
             {TRASH_MODULE_LABELS[it.module]}
           </span>
@@ -464,7 +676,7 @@ export function TrashManagerPage() {
         header: "Đối tượng",
         render: (it) => (
           <div className={styles.nameCell}>
-            <span className={styles.name}>{highlight(it.label, keywordApplied)}</span>
+            <span className={styles.name}>{it.label}</span>
             {it.module === "settings" ? (
               <span className={styles.description}>key: {it.key}</span>
             ) : (
@@ -485,7 +697,7 @@ export function TrashManagerPage() {
           }
           return (
             <div className={styles.actorCell}>
-              <span className={styles.actorName}>{highlight(it.deletedBy.fullName, keywordApplied)}</span>
+              <span className={styles.actorName}>{it.deletedBy.fullName}</span>
               <span className={styles.actorEmail}>
                 {ROLE_LABEL[it.deletedBy.role] ?? it.deletedBy.role} · #{it.deletedBy.id}
               </span>
@@ -507,9 +719,18 @@ export function TrashManagerPage() {
         render: (it) => (
           <div className={styles.actionCell}>
             <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<Eye size={14} aria-hidden="true" />}
+              onClick={() => openDetail(it)}
+              title="Xem chi tiết"
+            >
+              Chi tiết
+            </Button>
+            <Button
               variant="secondary"
               size="sm"
-              leftIcon={<RestoreIcon size={14} />}
+              leftIcon={<RotateCcw size={14} aria-hidden="true" />}
               onClick={() => askSingleRestore(it)}
             >
               Khôi phục
@@ -517,7 +738,7 @@ export function TrashManagerPage() {
             <Button
               variant="danger"
               size="sm"
-              leftIcon={<Trash2 size={14} />}
+              leftIcon={<Trash2 size={14} aria-hidden="true" />}
               onClick={() => askSingleForce(it)}
             >
               Xoá cứng
@@ -527,17 +748,11 @@ export function TrashManagerPage() {
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [keywordApplied, items, selected]
+    [items, selected]
   );
 
   // ===== Empty state =====
-  const isFiltered =
-    moduleFilter !== "all" ||
-    keywordApplied.trim() !== "" ||
-    deletedById !== "" ||
-    fromDate !== "" ||
-    toDate !== "";
-  const initialEmpty = (
+  const emptyInitial = (
     <div className={styles.emptyState}>
       <Inbox size={48} aria-hidden="true" />
       <p className={styles.emptyTitle}>Thùng rác đang trống</p>
@@ -547,21 +762,21 @@ export function TrashManagerPage() {
       </p>
     </div>
   );
-  const noResultEmpty = (
+  const emptyFiltered = (
     <div className={styles.emptyState}>
       <Inbox size={48} aria-hidden="true" />
       <p className={styles.emptyTitle}>
         Không có bản ghi trong thùng rác
-        {keywordApplied.trim() ? ` khớp với "${keywordApplied.trim()}"` : ""}
+        {filters.searchApplied ? ` khớp với "${filters.searchApplied}"` : ""}
       </p>
       <p className={styles.emptyHint}>
         Thử bỏ bộ lọc, đổi module, khoảng thời gian hoặc xoá từ khoá.
       </p>
+      <Button variant="secondary" size="sm" onClick={clearAllFilters}>
+        Xoá bộ lọc
+      </Button>
     </div>
   );
-
-  const showEmpty = !loading && !loadError && items.length === 0;
-  const emptyContent = isFiltered ? noResultEmpty : initialEmpty;
 
   // ===== Confirm content =====
   const restoreConfirm = singleTarget ? (
@@ -597,6 +812,7 @@ export function TrashManagerPage() {
     </>
   );
 
+  // ===== Render =====
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -611,87 +827,112 @@ export function TrashManagerPage() {
             người xoá / khoảng thời gian / từ khoá, và bulk action.
           </p>
         </div>
-        {!isAdmin ? (
-          <Alert variant="warning">
-            Bạn cần quyền Admin để truy cập Thùng rác hệ thống. Vui lòng liên hệ admin.
-          </Alert>
-        ) : null}
       </header>
 
+      {!isAdmin ? (
+        <Alert variant="warning">
+          Bạn cần quyền Admin để truy cập Thùng rác hệ thống. Vui lòng liên hệ admin.
+        </Alert>
+      ) : null}
+
+      {/* ===== KPI / Stats ===== */}
+      <TrashStats data={stats} loading={statsLoading} />
+
+      {/* ===== Banner (success / error) ===== */}
+      {banner ? (
+        <Alert
+          variant={banner.type === "success" ? "success" : "error"}
+          onClose={() => setBanner(null)}
+        >
+          {banner.text}
+        </Alert>
+      ) : null}
+
       <Card padding="md" className={styles.tableCard}>
-        {/* Toolbar — Filter row */}
-        <div className={styles.toolbar}>
-          <div className={styles.searchWrap}>
-            <Input
-              placeholder="Tìm theo tên, email, tiêu đề, tên tệp hoặc key cấu hình..."
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              leftIcon={<SearchIcon size={16} aria-hidden="true" />}
-              rightIcon={keyword ? <XIcon size={14} aria-hidden="true" /> : undefined}
-              onRightIconClick={keyword ? () => setKeyword("") : undefined}
-            />
-          </div>
+        {/* ===== Filter row ===== */}
+        <TrashFilter
+          values={filterValues}
+          onChange={handleFilterChange}
+          users={userOptions}
+          usersLoading={usersLoading}
+          onSearchChange={handleSearchChange}
+          onClearSearch={clearSearch}
+        />
 
-          <label className={styles.filterLabel}>
-            <Filter size={14} aria-hidden="true" />
-            <span>Module</span>
-            <select
-              className={styles.select}
-              value={moduleFilter}
-              onChange={handleModuleChange}
-            >
-              <option value="all">Tất cả</option>
-              {TRASH_MODULES.map((m) => (
-                <option key={m} value={m}>
-                  {TRASH_MODULE_LABELS[m]}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className={styles.filterLabel}>
-            <UserIcon size={14} aria-hidden="true" />
-            <span>Người xoá (ID)</span>
-            <input
-              type="number"
-              min={1}
-              className={styles.input}
-              placeholder="VD: 8"
-              value={deletedById}
-              onChange={handleDeletedByChange}
-            />
-          </label>
-
-          <label className={styles.filterLabel}>
-            <Calendar size={14} aria-hidden="true" />
-            <span>Từ ngày</span>
-            <input
-              type="date"
-              className={styles.input}
-              value={fromDate}
-              onChange={handleFromChange}
-            />
-          </label>
-
-          <label className={styles.filterLabel}>
-            <Calendar size={14} aria-hidden="true" />
-            <span>Đến ngày</span>
-            <input
-              type="date"
-              className={styles.input}
-              value={toDate}
-              onChange={handleToChange}
-            />
-          </label>
-
-          {isFiltered ? (
+        {/* ===== Active filter chips ===== */}
+        {filtered ? (
+          <div className={styles.activeFilters}>
+            <span className={styles.activeFiltersLabel}>
+              <SlidersHorizontal size={14} aria-hidden="true" />
+              Đang lọc:
+            </span>
+            {filters.searchApplied ? (
+              <span className={styles.chip}>
+                <SearchIcon size={12} aria-hidden="true" />
+                &ldquo;{filters.searchApplied}&rdquo;
+                <button
+                  type="button"
+                  aria-label="Bỏ từ khoá"
+                  onClick={clearSearch}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
+            {filters.module !== "all" ? (
+              <span className={styles.chip}>
+                <FilterIcon size={12} aria-hidden="true" />
+                <span>Module: {TRASH_MODULE_LABELS[filters.module]}</span>
+                <button
+                  type="button"
+                  aria-label="Bỏ module filter"
+                  onClick={() => setFilters((p) => ({ ...p, module: "all", page: 1 }))}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
+            {filters.deletedById !== "" ? (
+              <span className={styles.chip}>
+                <UserIcon size={12} aria-hidden="true" />
+                <span>
+                  Người xoá: {selectedUser?.fullName ?? `#${filters.deletedById}`}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Bỏ người xoá filter"
+                  onClick={() => setFilters((p) => ({ ...p, deletedById: "", page: 1 }))}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
+            {(filters.from || filters.to) ? (
+              <span className={styles.chip}>
+                <Calendar size={12} aria-hidden="true" />
+                <span>
+                  {filters.from || "—"} → {filters.to || "—"}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Bỏ date filter"
+                  onClick={() => setFilters((p) => ({ ...p, from: "", to: "", page: 1 }))}
+                  className={styles.chipClose}
+                >
+                  <XIcon size={12} />
+                </button>
+              </span>
+            ) : null}
             <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-              Xoá bộ lọc
+              Xoá tất cả
             </Button>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
 
-        {/* Bulk action bar */}
+        {/* ===== Bulk action bar ===== */}
         {selected.size > 0 ? (
           <div className={styles.bulkBar}>
             <span className={styles.bulkLabel}>
@@ -721,23 +962,18 @@ export function TrashManagerPage() {
           </div>
         ) : null}
 
-        {/* Success toast */}
-        {successMsg ? (
-          <div className={styles.successWrap}>
-            <Alert variant="success">{successMsg}</Alert>
-          </div>
-        ) : null}
-
-        {/* Error */}
+        {/* ===== Error state ===== */}
         {loadError ? (
           <div className={styles.errorWrap}>
             <Alert variant="error">{loadError}</Alert>
-            <Button variant="secondary" size="sm" onClick={() => void load()}>
+            <Button variant="secondary" size="sm" onClick={() => void loadList()}>
               Thử lại
             </Button>
           </div>
         ) : showEmpty ? (
-          <div className={styles.emptyWrap}>{emptyContent}</div>
+          <div className={styles.emptyWrap}>
+            {filtered ? emptyFiltered : emptyInitial}
+          </div>
         ) : (
           <>
             <Table
@@ -753,10 +989,10 @@ export function TrashManagerPage() {
               <div className={styles.tableFooter}>
                 <span className={styles.totalLabel}>
                   Hiển thị <b>{items.length}</b> / <b>{total}</b> bản ghi
-                  {isFiltered ? " (đang lọc)" : ""}
+                  {filtered ? " (đang lọc)" : ""}
                 </span>
                 <Pagination
-                  currentPage={safePage}
+                  currentPage={filters.page}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
@@ -766,7 +1002,7 @@ export function TrashManagerPage() {
         )}
       </Card>
 
-      {/* Confirm dialogs */}
+      {/* ===== Confirm dialogs ===== */}
       <ConfirmDialog
         open={confirmKind === "single-restore" && singleTarget !== null}
         title="Khôi phục bản ghi"
@@ -808,6 +1044,14 @@ export function TrashManagerPage() {
         onCancel={closeConfirm}
       />
 
+      {/* ===== Detail modal ===== */}
+      <TrashDetailModal
+        open={detailOpen}
+        item={detailItem}
+        onClose={() => setDetailOpen(false)}
+      />
+
+      {/* ===== Floating action error ===== */}
       {actionError ? (
         <div className={styles.floatingError}>
           <Alert variant="error">
@@ -817,11 +1061,4 @@ export function TrashManagerPage() {
       ) : null}
     </div>
   );
-}
-
-// ===== Helpers =====
-function errorMessage(err: unknown, fallback: string): string {
-  if (err instanceof ApiError) return err.message;
-  if (err instanceof Error) return err.message;
-  return fallback;
 }

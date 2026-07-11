@@ -21,6 +21,12 @@ router.post("/bulk-force-delete", ctrl.bulkForceDelete);
 // ===== List =====
 router.get("/", ctrl.list);
 
+// ===== Stats (đặt trước route detail động) =====
+router.get("/stats", ctrl.getStats);
+
+// ===== Detail (route động có prefix /detail/) =====
+router.get("/:module/detail/:idOrKey", ctrl.getDetail);
+
 // ===== Single restore / force-delete (route động — đặt cuối) =====
 router.post("/:module/:id/restore", ctrl.restore);
 router.delete("/:module/:id", ctrl.forceDelete);

@@ -121,10 +121,47 @@ async function bulkForceDelete(req, res) {
   }
 }
 
+// ===== GET /trash/stats =====
+async function getStats(req, res) {
+  try {
+    const result = await service.getTrashStats();
+    res.json({
+      message: "Lấy thống kê thùng rác thành công",
+      data: result,
+    });
+  } catch (error) {
+    console.error("[trash.controller] getStats error:", error.message);
+    res
+      .status(statusFromError(error))
+      .json({ message: error.message || "Lỗi hệ thống" });
+  }
+}
+
+// ===== GET /trash/:module/detail/:idOrKey =====
+// Đặt dynamic phải có prefix `/detail/` để không conflict với
+// POST /:module/:id/restore và DELETE /:module/:id (cũng dynamic).
+async function getDetail(req, res) {
+  try {
+    const { module: mod, idOrKey } = req.params;
+    const result = await service.getTrashDetail(mod, idOrKey);
+    res.json({
+      message: "Lấy chi tiết bản ghi thành công",
+      data: result,
+    });
+  } catch (error) {
+    console.error("[trash.controller] getDetail error:", error.message);
+    res
+      .status(statusFromError(error))
+      .json({ message: error.message || "Lỗi hệ thống" });
+  }
+}
+
 module.exports = {
   list,
   restore,
   forceDelete,
   bulkRestore,
   bulkForceDelete,
+  getStats,
+  getDetail,
 };

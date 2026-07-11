@@ -29,9 +29,11 @@ import type {
   TrashedNotification,
   TrashedSetting,
   TrashedUser,
+  TrashDetail,
   TrashItemV2,
   TrashListResponse,
   TrashModule,
+  TrashStats,
 } from "../types/trash.types";
 
 export type {
@@ -46,10 +48,13 @@ export type {
   PaginatedListResponse,
   SettingTrashItem,
   TrashActor,
+  TrashDetail,
   TrashItem,
   TrashItemV2,
   TrashListResponse,
   TrashModule,
+  TrashModuleStats,
+  TrashStats,
   TrashedFile,
   TrashedNotification,
   TrashedSetting,
@@ -354,4 +359,25 @@ export async function bulkForceDelete(items: BulkTrashItem[]): Promise<BulkRespo
     method: "POST",
     body: { items },
   });
+}
+
+/**
+ * Thống kê tổng quan cho Trash Manager.
+ * Returns tổng số bản ghi đã xoá, chi tiết theo module, today + last7Days, top actors.
+ */
+export async function getTrashStats(): Promise<TrashStats> {
+  return apiFetch<TrashStats>("/trash/stats");
+}
+
+/**
+ * Chi tiết 1 bản ghi đã xoá, kèm snapshot trước khi xoá + creator.
+ * Với settings truyền key, các module khác truyền id.
+ */
+export async function getTrashDetail(
+  module: TrashModule,
+  idOrKey: number | string
+): Promise<TrashDetail> {
+  return apiFetch<TrashDetail>(
+    `/trash/${encodeURIComponent(module)}/detail/${encodeURIComponent(String(idOrKey))}`,
+  );
 }

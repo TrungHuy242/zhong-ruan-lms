@@ -203,3 +203,41 @@ export interface BulkResponse {
   failed: number;
   results: BulkResultRow[];
 }
+
+// ===================== Stats (KPI) =====================
+
+/**
+ * Per-module thống kê. `total` bao gồm tất cả record đang ở trạng thái xoá mềm,
+ * `today` là đếm trong ngày hôm nay (UTC+7), `last7Days` trong 7 ngày gần nhất.
+ */
+export interface TrashModuleStats {
+  total: number;
+  today: number;
+  last7Days: number;
+}
+
+export interface TrashStats {
+  total: number;
+  today: number;
+  last7Days: number;
+  /** Key là TrashModule — chỉ chứa module có data. */
+  byModule: Partial<Record<TrashModule, TrashModuleStats>>;
+  /** Top 5 actor xoá nhiều nhất (chỉ 3 module users/notifications/files có deletedById). */
+  topActors: Array<{ actorId: number; count: number }>;
+  /** ISO timestamp lúc thống kê sinh ra (BE set). */
+  generatedAt: string;
+}
+
+// ===================== Detail =====================
+
+/**
+ * TrashDetail — thông tin đầy đủ 1 bản ghi đã xoá.
+ * - `snapshot`: row Prisma gốc (toàn bộ field không nhạy cảm) → chính là "thông tin
+ *   trước khi xoá" vì soft-delete giữ nguyên row, chỉ set deletedAt + deletedById.
+ * - `creator`: user tạo record (User: chính nó; Notification: userId; UploadFile: uploadedById; Settings: null).
+ *   Cũng là người sở hữu record trong ngữ cảnh quản lý.
+ */
+export interface TrashDetail extends TrashItemV2 {
+  snapshot: Record<string, unknown> | null;
+  creator: TrashActor | null;
+}

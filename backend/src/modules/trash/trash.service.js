@@ -472,6 +472,179 @@ async function bulkForceDelete(items, currentUserId, req = null) {
   return { total: items.length, success, failed, results };
 }
 
+// ===== 6. STATS =====
+
+/**
+ * Thống kê tổng quan cho Trash Manager:
+ *   - Tổng bản ghi đã xoá (toàn hệ thống)
+ *   - Số lượng theo từng module
+ *   - Hôm nay (>= 00:00 hôm nay UTC+7 — Việt Nam)
+ *   - 7 ngày gần nhất
+ *
+ * Lưu ý: dùng 1 query per module (findMany với select id) → đếm trên Node.
+ * Khi data lớn có thể thay bằng `prisma.X.count({ where: { deletedAt: { not: null } } })`
+ * rồi gộp; hiện tại ước lượng tổng số record đã xoá < vài nghìn → đủ nhanh.
+ *
+ * Vì 3 model (User/Notification/UploadFile) track deletedById nhưng Setting
+ * KHÔNG track → actorStats chỉ thống kê từ 3 model có deletedById.
+ */
+async function getTrashStats() {
+  // Khoảng thời gian Việt Nam (UTC+7).
+  const nowVn = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
+  const startOfTodayVn = new Date(nowVn);
+  startOfTodayVn.setHours(0, 0, 0, 0);
+  const startOf7DaysAgoVn = new Date(startOfTodayVn);
+  startOf7DaysAgoVn.setDate(startOf7DaysAgoVn.getDate() - 7);
+
+  const baseWhere = { deletedAt: { not: null } };
+  const todayWhere = { deletedAt: { gte: startOfTodayVn } };
+  const last7Where = { deletedAt: { gte: startOf7DaysAgoVn } };
+
+  // Đếm per module. Dùng findMany id để tránh Prisma issue với count nặng
+  // (an toàn cho mọi phiên bản). Với 4 module × 2 query (tổng + 7 ngày) là 8 query nhỏ.
+  const counts = await Promise.all(
+    MODULES.map(async (mod) => {
+      const delegate = pickDelegate(mod);
+      // Lấy deletedAt + deletedById để count + actor thống kê.
+      const allRows = await delegate.findMany({
+        where: baseWhere,
+        select: { deletedAt: true, deletedById: true },
+      });
+      const rows7 = allRows.filter(
+        (r) => r.deletedAt && new Date(r.deletedAt) >= startOf7DaysAgoVn
+      );
+      const rowsToday = rows7.filter(
+        (r) => r.deletedAt && new Date(r.deletedAt) >= startOfTodayVn
+      );
+      return {
+        module: mod,
+        total: allRows.length,
+        today: rowsToday.length,
+        last7Days: rows7.length,
+        // Chỉ 3 model có deletedById; setting thì bỏ qua.
+        deletedByCounts: countByActor(allRows),
+      };
+    })
+  );
+
+  const byModule = counts.reduce((acc, c) => {
+    acc[c.module] = {
+      total: c.total,
+      today: c.today,
+      last7Days: c.last7Days,
+    };
+    return acc;
+  }, {});
+
+  const total = counts.reduce((sum, c) => sum + c.total, 0);
+  const today = counts.reduce((sum, c) => sum + c.today, 0);
+  const last7Days = counts.reduce((sum, c) => sum + c.last7Days, 0);
+
+  // Gộp top actors từ 3 module có deletedById (users/notifications/files).
+  const actorMap = new Map(); // actorId → count
+  for (const c of counts) {
+    if (!c.deletedByCounts) continue;
+    for (const [id, cnt] of Object.entries(c.deletedByCounts)) {
+      const key = Number(id);
+      actorMap.set(key, (actorMap.get(key) ?? 0) + cnt);
+    }
+  }
+  const topActors = Array.from(actorMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([id, count]) => ({ actorId: id, count }));
+
+  return {
+    total,
+    today,
+    last7Days,
+    byModule,
+    topActors,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+function countByActor(rows) {
+  const map = {};
+  for (const r of rows) {
+    if (r.deletedById && Number.isFinite(r.deletedById)) {
+      map[r.deletedById] = (map[r.deletedById] ?? 0) + 1;
+    }
+  }
+  return map;
+}
+
+// ===== 7. DETAIL =====
+
+/**
+ * Lấy chi tiết 1 bản ghi đã xoá kèm snapshot trước khi xoá (nếu còn) + thông tin actor.
+ *
+ * `raw` chính là record Prisma — đã là "before" trong ngữ cảnh (vì record
+ * hiện tại đang ở trạng thái deleted). BE soft-delete giữ nguyên dữ liệu
+ * row, chỉ set deletedAt + deletedById, nên toàn bộ row là "thông tin trước khi xoá".
+ *
+ * Trả thêm: `creator` (user tạo record — chỉ support cho module có field
+ * tạo bởi user như Notification/UploadFile; với User thì chính nó là creator).
+ */
+async function getTrashDetail(mod, idOrKey) {
+  assertModule(mod);
+  const delegate = pickDelegate(mod);
+  const label = MODULE_TO_LABEL[mod];
+
+  let row;
+  if (mod === "settings") {
+    row = await delegate.findUnique({ where: { key: String(idOrKey) } });
+  } else {
+    const numericId = Number(idOrKey);
+    if (!Number.isFinite(numericId) || numericId <= 0) {
+      throw badRequest("id không hợp lệ");
+    }
+    row = await delegate.findUnique({ where: { id: numericId } });
+  }
+
+  if (!row || !row.deletedAt) {
+    throw notFound(`Không tìm thấy ${label} đã xoá`);
+  }
+
+  const base = serialize(mod, row);
+  if (row.deletedById) {
+    const actor = await prismaInternal.user.findUnique({
+      where: { id: row.deletedById },
+      select: { id: true, email: true, fullName: true, role: true },
+    });
+    if (actor) base.deletedBy = actor;
+  }
+
+  // Creator — chỉ support 3 model có field phù hợp.
+  let creator = null;
+  if (mod === "users") {
+    creator = { id: row.id, fullName: row.fullName, email: row.email, role: row.role };
+  } else if (mod === "notifications") {
+    if (row.userId) {
+      creator = await prismaInternal.user.findUnique({
+        where: { id: row.userId },
+        select: { id: true, email: true, fullName: true, role: true },
+      });
+    }
+  } else if (mod === "files") {
+    if (row.uploadedById) {
+      creator = await prismaInternal.user.findUnique({
+        where: { id: row.uploadedById },
+        select: { id: true, email: true, fullName: true, role: true },
+      });
+    }
+  }
+  // settings: không có creator, để null.
+
+  // Snapshot = toàn bộ row (trừ các field nội bộ nhạy cảm nếu có).
+  // Ở 4 model này không có field password/token → trả full row là an toàn.
+  return {
+    ...base,
+    snapshot: row,
+    creator,
+  };
+}
+
 // ===== Helpers exposed =====
 const RESTORE_ACTIONS_BY_MODULE = RESTORE_ACTIONS;
 const FORCE_DELETE_ACTIONS_BY_MODULE = FORCE_DELETE_ACTIONS;
@@ -484,6 +657,8 @@ module.exports = {
   forceDeleteOne,
   bulkRestore,
   bulkForceDelete,
+  getTrashStats,
+  getTrashDetail,
   resolveActors,
   serialize,
   RESTORE_ACTIONS_BY_MODULE,
