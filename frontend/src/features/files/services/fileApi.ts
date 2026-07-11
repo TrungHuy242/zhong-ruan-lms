@@ -68,9 +68,20 @@ export async function getFiles(params: FileListParams = {}): Promise<FileListRes
   if (params.sortBy) qs.set("sortBy", params.sortBy);
   if (params.sortOrder) qs.set("sortOrder", params.sortOrder);
 
-  const response = await apiFetch<FileListResponse>(`/files?${qs.toString()}`);
-  const items = Array.isArray(response.data) ? response.data : [];
-  const total = response.pagination?.total ?? items.length;
+  // Dùng `raw: true` để giữ nguyên toàn bộ envelope BE trả về
+  // ({ message, data, pagination }). Nếu không, apiFetch sẽ unwrap `data` thành
+  // mảng, ta mất `pagination` -> total = 0 -> Table hiển thị empty state.
+  const response = await apiFetch<FileListResponse | {
+    message?: string;
+    data?: UploadedFile[];
+    pagination?: { page?: number; pageSize?: number; total?: number };
+  }>(`/files?${qs.toString()}`, { raw: true });
+
+  const items = Array.isArray(response?.data) ? response.data : [];
+  const total =
+    typeof response?.pagination?.total === "number"
+      ? response.pagination.total
+      : items.length;
   return {
     items,
     total,

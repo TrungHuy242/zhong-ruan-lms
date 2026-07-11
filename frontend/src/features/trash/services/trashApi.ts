@@ -281,27 +281,46 @@ function buildListQuery(params: ListTrashV2Params): string {
  * List đã xoá thống nhất qua /api/trash.
  * Trả { items: TrashItemV2[], pagination, filters }.
  */
+// BE /api/trash trả envelope { message, data: { items, pagination:{page,limit,total,totalPages}, filters } }.
+// Vì `apiFetch` không unwrap khi `raw: true`, ta đọc payload.data.* thay vì payload.*.
 export async function listTrashV2(
   params: ListTrashV2Params = {}
 ): Promise<TrashListResponse> {
   const query = buildListQuery(params);
   const payload = await apiFetch<{
-    items: TrashItemV2[];
-    pagination: TrashListResponse["pagination"];
-    filters: TrashListResponse["filters"];
+    message?: string;
+    data?: {
+      items?: TrashItemV2[];
+      pagination?: {
+        page?: number;
+        limit?: number;
+        total?: number;
+        totalPages?: number;
+      };
+      filters?: TrashListResponse["filters"];
+    };
   }>(`/trash${query}`, { raw: true });
   if (!payload) {
     throw new Error("Phản hồi từ máy chủ không hợp lệ");
   }
+  const data = payload.data ?? {};
+  const pagination = data.pagination ?? {};
+  const page = pagination.page ?? params.page ?? 1;
+  const pageSize = pagination.limit ?? params.limit ?? TRASH_PAGE_SIZE_DEFAULT;
+  const total = typeof pagination.total === "number" ? pagination.total : 0;
+  const totalPages =
+    typeof pagination.totalPages === "number"
+      ? pagination.totalPages
+      : Math.max(1, Math.ceil(total / pageSize));
   return {
-    items: Array.isArray(payload.items) ? payload.items : [],
-    pagination: payload.pagination ?? {
-      page: params.page ?? 1,
-      limit: params.limit ?? TRASH_PAGE_SIZE_DEFAULT,
-      total: 0,
-      totalPages: 1,
+    items: Array.isArray(data.items) ? data.items : [],
+    pagination: {
+      page,
+      limit: pageSize,
+      total,
+      totalPages,
     },
-    filters: payload.filters ?? {
+    filters: data.filters ?? {
       module: params.module ?? null,
       deletedById: params.deletedById ?? null,
       from: params.from ?? null,
