@@ -83,15 +83,15 @@ model Notification {
 }
 
 model UploadFile {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   originalName String
-  storedName   String   @unique
+  storedName   String    @unique
   mimeType     String
   size         Int
   path         String
   uploadedById Int
-  uploadedBy   User     @relation("UserUploads", fields: [uploadedById], references: [id])
-  createdAt    DateTime @default(now())
+  uploadedBy   User      @relation("UserUploads", fields: [uploadedById], references: [id])
+  createdAt    DateTime  @default(now())
   deletedAt    DateTime?
 
   @@index([uploadedById])
@@ -102,11 +102,15 @@ model UploadFile {
 model Setting {
   id          Int      @id @default(autoincrement())
   key         String   @unique
-  value       String   // Lưu JSON string để linh hoạt (true/false, số, chuỗi đa ngôn ngữ)
+  value       String // Lưu JSON string để linh hoạt (true/false, số, chuỗi đa ngôn ngữ)
   description String?
+  /// Nhóm cấu hình (General | Security | Upload | Notification | System).
+  /// Nullable để giữ backward-compatible với row đã tạo trước khi phân nhóm.
+  group       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([key])
+  @@index([group])
   @@map("settings")
 }

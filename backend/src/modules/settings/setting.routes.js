@@ -8,6 +8,11 @@ const authorizeRoles = require("../../middlewares/role.middleware");
 // Tất cả API setting đều yêu cầu đăng nhập + quyền ADMIN
 router.use(authenticate, authorizeRoles("ADMIN"));
 
+// ===== Specific routes (phải khai báo TRƯỚC route động /:key) =====
+router.get("/export", ctrl.exportSettings);
+router.post("/import", ctrl.importSettings);
+
+// ===== CRUD (giữ nguyên) =====
 router.get("/", ctrl.list);
 router.get("/:key", ctrl.getOne);
 router.post("/", ctrl.create);
