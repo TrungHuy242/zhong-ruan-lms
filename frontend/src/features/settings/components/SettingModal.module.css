@@ -48,6 +48,38 @@
 
 .textareaShort { min-height: 56px; }
 
+.select {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'><path fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 16px;
+  padding-right: var(--space-10);
+}
+
+.select:hover { border-color: var(--border-strong); }
+.select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-focus-ring);
+}
+.select:disabled {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
 .textarea:hover { border-color: var(--border-strong); }
 
 .textarea:focus {

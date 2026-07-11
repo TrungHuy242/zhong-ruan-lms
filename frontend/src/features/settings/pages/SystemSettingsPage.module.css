@@ -4,6 +4,8 @@
   gap: var(--space-5);
 }
 
+/* ===== Header ===== */
+
 .header {
   display: flex;
   align-items: flex-start;
@@ -36,7 +38,26 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  flex-wrap: wrap;
 }
+
+/* ===== Layout 2 cột ===== */
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+
+.main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ===== Table card ===== */
 
 .tableCard {
   background-color: var(--bg-surface);
@@ -80,7 +101,10 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-4);
+  align-items: flex-start;
 }
+
+/* ===== Empty state ===== */
 
 .emptyState {
   display: flex;
@@ -106,6 +130,8 @@
   text-align: center;
 }
 
+/* ===== Cell styling ===== */
+
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
@@ -115,8 +141,15 @@
   border-radius: var(--radius-sm);
 }
 
+.keyCell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
 .cellKey {
-  max-width: 280px;
+  max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -124,16 +157,16 @@
   vertical-align: middle;
 }
 
-.valueCell {
-  font-size: 13px;
-  color: var(--text-primary);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  display: inline-block;
-  max-width: 320px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
+.groupBadgeInline {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  flex-shrink: 0;
 }
 
 .descCell {
@@ -156,6 +189,8 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* ===== Action buttons ===== */
 
 .actionCell {
   display: inline-flex;
@@ -189,12 +224,6 @@
   background-color: var(--brand-primary-light);
 }
 
-.iconBtnEdit:hover {
-  border-color: var(--brand-primary);
-  color: var(--brand-primary);
-  background-color: var(--brand-primary-light);
-}
-
 .iconBtnDanger:hover {
   border-color: var(--color-error);
   color: var(--color-error);
@@ -206,7 +235,56 @@
   box-shadow: var(--shadow-focus-ring);
 }
 
-@media (max-width: 1024px) {
+/* ===== Import confirm ===== */
+
+.importConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.importConfirm code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  background-color: var(--bg-surface-alt);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.replaceToggle {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-alt);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.replaceToggle input {
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--brand-primary);
+  cursor: pointer;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 1023px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .toolbar { align-items: stretch; }
   .searchWrap { width: 100%; min-width: 0; }
+}
+
+@media (max-width: 600px) {
+  .header { gap: var(--space-3); }
+  .headerActions { width: 100%; }
+  .headerActions > * { flex: 1 1 auto; }
 }

@@ -3,10 +3,12 @@ import { Button, Input, Modal } from "../../../shared/components/ui";
 import {
   createSetting,
   updateSetting,
+  SETTING_GROUPS,
   validateSettingDescription,
   validateSettingKey,
   validateSettingValue,
   type Setting,
+  type SettingGroup,
 } from "../services/settingApi";
 import { ApiError } from "../../../shared/api";
 import styles from "./SettingModal.module.css";
@@ -16,7 +18,6 @@ export type SettingModalMode = "create" | "edit";
 export interface SettingModalProps {
   open: boolean;
   mode: SettingModalMode;
-  /** Khi edit, truyền vào setting cần sửa. Khi create, bỏ qua. */
   setting?: Setting | null;
   /**
    * Callback báo parent là cần refresh lại danh sách (đã được parent tự xử lý
@@ -32,17 +33,27 @@ interface FormState {
   key: string;
   value: string;
   description: string;
+  group: SettingGroup | "";
 }
 
 interface FormErrors {
   key?: string;
   value?: string;
   description?: string;
+  group?: string;
   /** Lỗi từ BE (VD key trùng → 409). */
   submit?: string;
 }
 
-const INITIAL_FORM: FormState = { key: "", value: "", description: "" };
+const INITIAL_FORM: FormState = { key: "", value: "", description: "", group: "" };
+
+const GROUP_LABELS: Record<SettingGroup, string> = {
+  General: "Chung",
+  Security: "Bảo mật",
+  Upload: "Tải lên",
+  Notification: "Thông báo",
+  System: "Hệ thống",
+};
 
 export function SettingModal({
   open,
@@ -64,6 +75,7 @@ export function SettingModal({
         key: setting.key,
         value: setting.value,
         description: setting.description ?? "",
+        group: setting.group ?? "",
       });
     } else {
       setForm(INITIAL_FORM);
@@ -98,6 +110,10 @@ export function SettingModal({
     const descCheck = validateSettingDescription(form.description);
     if (!descCheck.ok) next.description = descCheck.error;
 
+    if (form.group !== "" && !SETTING_GROUPS.includes(form.group as SettingGroup)) {
+      next.group = "Nhóm không hợp lệ";
+    }
+
     return next;
   }
 
@@ -111,17 +127,22 @@ export function SettingModal({
     setSubmitting(true);
     setErrors({});
     try {
+      const groupValue: SettingGroup | null =
+        form.group !== "" ? (form.group as SettingGroup) : null;
+
       if (mode === "create") {
         const created = await createSetting({
           key: form.key.trim(),
           value: form.value,
           description: form.description.trim() ? form.description.trim() : null,
+          group: groupValue,
         });
         onSaved(created, "create");
       } else if (setting) {
         const updated = await updateSetting(setting.key, {
           value: form.value,
           description: form.description.trim() ? form.description.trim() : null,
+          group: groupValue,
         });
         onSaved(updated, "edit");
       }
@@ -229,6 +250,35 @@ export function SettingModal({
             </span>
           ) : (
             <span className={styles.hintText}>Tuỳ chọn, tối đa 500 ký tự.</span>
+          )}
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="setting-group" className={styles.label}>
+            Nhóm cấu hình
+          </label>
+          <select
+            id="setting-group"
+            className={styles.select}
+            value={form.group}
+            onChange={(e) => handleChange("group", e.target.value as SettingGroup | "")}
+            disabled={submitting}
+          >
+            <option value="">— Chưa phân nhóm —</option>
+            {SETTING_GROUPS.map((g) => (
+              <option key={g} value={g}>
+                {GROUP_LABELS[g]} ({g})
+              </option>
+            ))}
+          </select>
+          {errors.group ? (
+            <span className={styles.errorText} role="alert">
+              {errors.group}
+            </span>
+          ) : (
+            <span className={styles.hintText}>
+              Phân nhóm giúp lọc/tìm cấu hình nhanh hơn. Có thể bỏ trống.
+            </span>
           )}
         </div>
 

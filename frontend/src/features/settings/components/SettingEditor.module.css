@@ -1,0 +1,197 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  width: 100%;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:hover { border-color: var(--border-strong); }
+.input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-focus-ring);
+}
+.input:disabled {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 60px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.textarea:hover { border-color: var(--border-strong); }
+.textarea:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-focus-ring);
+}
+.textarea:disabled {
+  background-color: var(--bg-surface-alt);
+  cursor: not-allowed;
+}
+
+.jsonBox {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 80px;
+  overflow: auto;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.iconBtn:hover:not(:disabled) {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-primary);
+}
+
+.iconBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.iconBtnSave {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+.iconBtnSave:hover:not(:disabled) {
+  background-color: var(--color-success-bg);
+}
+
+.iconBtnCancel {
+  border-color: var(--border-strong);
+  color: var(--text-secondary);
+}
+
+.iconBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+/* ===== Switch (boolean) ===== */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switchTrack {
+  position: absolute;
+  inset: 0;
+  background-color: var(--border-strong);
+  border-radius: var(--radius-full);
+  transition: background-color 0.15s ease;
+}
+
+.switchThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: var(--bg-surface);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease;
+}
+
+.switch input:checked + .switchTrack {
+  background-color: var(--brand-primary);
+}
+
+.switch input:checked + .switchTrack .switchThumb {
+  transform: translateX(18px);
+}
+
+.switch input:disabled + .switchTrack {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.switch input:focus-visible + .switchTrack {
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.switchLabel {
+  margin-left: var(--space-3);
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.valueReadonly {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  word-break: break-word;
+  flex: 1;
+  min-width: 0;
+}

@@ -64,6 +64,28 @@
   font-style: italic;
 }
 
+.typeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.groupBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;
