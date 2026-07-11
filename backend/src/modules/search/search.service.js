@@ -371,6 +371,28 @@ async function clearSearchHistory(userId) {
   return { deleted: result.count };
 }
 
+/**
+ * Xoá 1 mục trong lịch sử của user (DELETE /api/search/history/:id).
+ *
+ * Đảm bảo chỉ xoá được mục thuộc về `userId` (không cho user khác xoá chéo).
+ * Trả { deleted: true|false, reason } để controller có thể trả 404 / 403 hợp lý.
+ */
+async function deleteSearchHistoryItem(userId, historyId) {
+  const numericId = Number(historyId);
+  if (!Number.isFinite(numericId) || numericId <= 0) {
+    return { deleted: false, reason: "INVALID_ID" };
+  }
+  // Ownership check: phải match userId, không được xoá của người khác.
+  const row = await prisma.searchHistory.findUnique({
+    where: { id: numericId },
+    select: { id: true, userId: true },
+  });
+  if (!row) return { deleted: false, reason: "NOT_FOUND" };
+  if (row.userId !== userId) return { deleted: false, reason: "FORBIDDEN" };
+  await prisma.searchHistory.delete({ where: { id: numericId } });
+  return { deleted: true };
+}
+
 // ===== Hàm search chính =====
 
 async function search(currentUser, query = {}, req = null) {
@@ -529,6 +551,7 @@ module.exports = {
   search,
   getSearchHistory,
   clearSearchHistory,
+  deleteSearchHistoryItem,
   // Export cho test (không dùng ở controller thường).
   recordSearchHistory,
 };

@@ -66,8 +66,46 @@ async function clearHistory(req, res) {
   }
 }
 
+// DELETE /api/search/history/:id
+//
+// Xoá 1 mục lịch sử. Đảm bảo chỉ self có thể xoá mục của mình.
+//   - 400: id không hợp lệ
+//   - 403: mục thuộc user khác
+//   - 404: mục không tồn tại
+//   - 200: xoá thành công
+async function deleteHistoryItem(req, res) {
+  try {
+    const result = await searchService.deleteSearchHistoryItem(
+      req.user.id,
+      req.params.id
+    );
+    if (result.deleted) {
+      return res.json({
+        message: "Đã xoá mục lịch sử",
+        data: { id: Number(req.params.id) },
+      });
+    }
+    if (result.reason === "INVALID_ID") {
+      return res.status(400).json({ message: "ID lịch sử không hợp lệ" });
+    }
+    if (result.reason === "FORBIDDEN") {
+      return res
+        .status(403)
+        .json({ message: "Bạn không có quyền xoá mục lịch sử này" });
+    }
+    return res.status(404).json({ message: "Không tìm thấy mục lịch sử" });
+  } catch (error) {
+    console.error(
+      "[search.controller] deleteHistoryItem error:",
+      error && error.message ? error.message : error
+    );
+    res.status(500).json({ message: error.message || "Lỗi hệ thống" });
+  }
+}
+
 module.exports = {
   search,
   getHistory,
   clearHistory,
+  deleteHistoryItem,
 };

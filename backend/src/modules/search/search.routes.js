@@ -10,6 +10,7 @@ router.use(authMiddleware);
 // nhưng vẫn khai báo rõ ràng cho tương lai).
 router.get("/history", searchController.getHistory);
 router.delete("/history", searchController.clearHistory);
+router.delete("/history/:id", searchController.deleteHistoryItem);
 
 // Tìm kiếm toàn hệ thống (giữ nguyên contract cũ + enrich payload).
 router.get("/", searchController.search);

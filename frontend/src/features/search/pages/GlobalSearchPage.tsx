@@ -1,7 +1,30 @@
-﻿import {
+﻿/**
+ * GlobalSearchPage — trang tìm kiếm toàn hệ thống (SaaS-style).
+ *
+ * Cấu trúc:
+ *   - Page chính:
+ *       SearchBar + filter (phạm vi) + button "Lệnh nhanh" (Ctrl+K)
+ *       RecentSearch (khi chưa có keyword)
+ *       Summary kết quả + SearchResultGroup[] khi đã search
+ *
+ *   - Command Palette Modal (Ctrl+K):
+ *       Phiên bản rút gọn — chỉ SearchBar + RecentSearch → nhấn Enter
+ *       hoặc click recent → đóng modal + mở page chính với keyword đó.
+ *       Lý do: giữ page chính là nơi "xem kết quả", modal chỉ là launcher
+ *       (đỡ spam data khi user chỉ muốn chọn nhanh 1 recent keyword).
+ *
+ * Phím tắt:
+ *   - Ctrl+K (hoặc Cmd+K trên macOS): mở/đóng Command Palette.
+ *   - ESC: đóng Command Palette.
+ *
+ * URL state (sync với ?keyword=&type=&page=):
+ *   - keyword: từ khoá
+ *   - type: 'all' | 'users' | 'notifications' | 'files' | 'settings'
+ *   - page: chỉ dùng khi type != 'all'
+ */
+import {
   ChangeEvent,
   Fragment,
-  KeyboardEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -13,20 +36,22 @@ import {
   Alert,
   Button,
   Card,
-  Input,
-  Pagination,
-  Table,
+  ConfirmDialog,
+  Modal,
   type TableColumn,
 } from "../../../shared/components/ui";
 import { ApiError } from "../../../shared/api";
 import {
-  SEARCH_LIMIT_DEFAULT,
+  SEARCH_HISTORY_LIMIT,
   SEARCH_TYPE_LABELS,
   SEARCH_TYPES,
+  clearSearchHistory,
+  deleteSearchHistoryItem,
+  getSearchHistory,
   globalSearch,
-  totalPagesOf,
   validateKeyword,
   type SearchFile,
+  type SearchHistoryItem,
   type SearchNotification,
   type SearchResult,
   type SearchSetting,
@@ -34,12 +59,16 @@ import {
   type SearchUser,
 } from "../services/searchApi";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { SearchBar } from "../components/SearchBar";
+import { RecentSearch } from "../components/RecentSearch";
+import { SearchResultGroup } from "../components/SearchResultGroup";
 import {
   Bell,
+  Command,
   FileText,
   Search as SearchIcon,
+  Settings as SettingsIcon,
   User as UserIcon,
-  X as XIcon,
   SearchX,
   Eye,
 } from "lucide-react";
@@ -88,6 +117,14 @@ const TYPE_TONE: Record<SearchType, string> = {
   settings: styles.badgeSetting,
 };
 
+const TYPE_ICON: Record<SearchType, React.ReactNode> = {
+  all: <SearchIcon size={16} aria-hidden="true" />,
+  users: <UserIcon size={16} aria-hidden="true" />,
+  notifications: <Bell size={16} aria-hidden="true" />,
+  files: <FileText size={16} aria-hidden="true" />,
+  settings: <SettingsIcon size={16} aria-hidden="true" />,
+};
+
 /**
  * Highlight từ khoá xuất hiện trong `text`.
  * Trả về danh sách ReactNode; match không phân biệt hoa/thường.
@@ -96,7 +133,6 @@ function highlight(text: string, keyword: string): React.ReactNode {
   if (!text) return text;
   const kw = keyword.trim();
   if (!kw) return text;
-  // Escape regex meta chars trong keyword.
   const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const re = new RegExp(`(${escaped})`, "gi");
   const parts = text.split(re);
@@ -118,6 +154,10 @@ const DEBOUNCE_MS = 450;
 export function GlobalSearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const mainInputRef = useRef<HTMLInputElement>(null);
+
+  // ===== Modal Ctrl+K =====
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   // URL → state khởi tạo (cho phép share link).
   const [keyword, setKeyword] = useState<string>(() => {
@@ -133,7 +173,6 @@ export function GlobalSearchPage() {
     const p = Number(searchParams.get("page") ?? "1");
     return p > 0 ? p : 1;
   });
-  // keyword đã được apply (sau debounce / Enter)
   const [keywordApplied, setKeywordApplied] = useState<string>(
     () => searchParams.get("keyword") ?? ""
   );
@@ -143,6 +182,14 @@ export function GlobalSearchPage() {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Recent search state
+  const [recent, setRecent] = useState<SearchHistoryItem[]>([]);
+  const [recentLoading, setRecentLoading] = useState(false);
+  const [recentError, setRecentError] = useState<string | null>(null);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
+  const [removingId, setRemovingId] = useState<number | null>(null);
+
   // Sync URL khi filter thay đổi.
   useEffect(() => {
     const next: Record<string, string> = {};
@@ -151,6 +198,11 @@ export function GlobalSearchPage() {
     if (page > 1) next.page = String(page);
     setSearchParams(next, { replace: true });
   }, [keywordApplied, type, page, setSearchParams]);
+
+  // Auto focus input khi mount.
+  useEffect(() => {
+    mainInputRef.current?.focus();
+  }, []);
 
   // Debounce keyword → keywordApplied.
   const debounceRef = useRef<number | null>(null);
@@ -170,7 +222,7 @@ export function GlobalSearchPage() {
     setPage(1);
   }, [type]);
 
-  // ===== Load =====
+  // ===== Load kết quả =====
   const load = useCallback(async () => {
     const v = validateKeyword(keywordApplied);
     if (!v.ok) {
@@ -185,9 +237,12 @@ export function GlobalSearchPage() {
         keyword: v.value,
         type,
         page,
-        limit: SEARCH_LIMIT_DEFAULT,
+        limit: type === "all" ? undefined : 10,
       });
       setData(result);
+      // Sau khi search thành công (có data) → refresh recent để item mới nhất lên đầu.
+      // Best-effort: không await để không block UI.
+      void loadRecent();
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -203,7 +258,6 @@ export function GlobalSearchPage() {
   }, [keywordApplied, type, page]);
 
   useEffect(() => {
-    // Chỉ gọi API khi đã có keyword applied (tránh spam 400 khi user chưa nhập gì).
     if (keywordApplied.trim().length > 0) {
       void load();
     } else {
@@ -213,22 +267,73 @@ export function GlobalSearchPage() {
     }
   }, [load, keywordApplied]);
 
-  // ===== Handlers =====
-  function handleKeywordChange(e: ChangeEvent<HTMLInputElement>) {
-    setKeyword(e.target.value);
-  }
-  function handleKeywordKey(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (debounceRef.current) window.clearTimeout(debounceRef.current);
-      setKeywordApplied(keyword);
-      setPage(1);
+  // ===== Load Recent =====
+  const loadRecent = useCallback(async () => {
+    setRecentLoading(true);
+    setRecentError(null);
+    try {
+      const items = await getSearchHistory({ limit: SEARCH_HISTORY_LIMIT });
+      setRecent(items);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+          ? err.message
+          : "Không thể tải lịch sử tìm kiếm";
+      setRecentError(message);
+      setRecent([]);
+    } finally {
+      setRecentLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    void loadRecent();
+  }, [loadRecent]);
+
+  // ===== Ctrl+K shortcut (open/close command palette) =====
+  useEffect(() => {
+    function onKey(e: globalThis.KeyboardEvent) {
+      // Ctrl+K hoặc Cmd+K (macOS).
+      if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+        return;
+      }
+      // ESC đóng modal (Modal component đã tự handle, nhưng đây là fallback).
+      if (e.key === "Escape" && paletteOpen) {
+        e.preventDefault();
+        setPaletteOpen(false);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [paletteOpen]);
+
+  // ===== Handlers =====
+  function handleKeywordChange(next: string) {
+    setKeyword(next);
+  }
+  function applyKeywordImmediate(value: string) {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    setKeyword(value);
+    setKeywordApplied(value);
+    setPage(1);
+  }
+  function handleSubmit() {
+    applyKeywordImmediate(keyword);
+  }
+  function handlePickRecent(value: string) {
+    applyKeywordImmediate(value);
+    setPaletteOpen(false);
+    mainInputRef.current?.focus();
   }
   function clearKeyword() {
     setKeyword("");
     setKeywordApplied("");
     setPage(1);
+    mainInputRef.current?.focus();
   }
   function handleTypeChange(e: ChangeEvent<HTMLSelectElement>) {
     setType(e.target.value as SearchType);
@@ -237,7 +342,45 @@ export function GlobalSearchPage() {
     setPage(p);
   }
 
-  // ===== Auth để biết user hiện tại có phải admin không =====
+  async function handleRemoveOne(id: number) {
+    setRemovingId(id);
+    try {
+      await deleteSearchHistoryItem(id);
+      // Optimistic remove khỏi list, không cần load lại.
+      setRecent((prev) => prev.filter((it) => it.id !== id));
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+          ? err.message
+          : "Không thể xoá mục lịch sử";
+      setRecentError(message);
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  async function handleClearAll() {
+    setClearingAll(true);
+    try {
+      await clearSearchHistory();
+      setRecent([]);
+      setConfirmClearAll(false);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+          ? err.message
+          : "Không thể xoá lịch sử tìm kiếm";
+      setRecentError(message);
+    } finally {
+      setClearingAll(false);
+    }
+  }
+
+  // ===== Auth =====
   const currentUser = authStorage.getUser();
   const isAdmin = currentUser?.role === "ADMIN";
 
@@ -515,8 +658,9 @@ export function GlobalSearchPage() {
       <p className={styles.emptyTitle}>Bắt đầu bằng cách nhập từ khoá</p>
       <p className={styles.emptyHint}>
         Tìm kiếm theo tên, email, tiêu đề thông báo hoặc tên tệp. Có thể chọn
-        phạm vi &quot;Tất cả&quot;, &quot;Người dùng&quot;, &quot;Thông báo&quot;
-        hoặc &quot;Tệp&quot; trước khi tìm.
+        phạm vi &quot;Tất cả&quot;, &quot;Người dùng&quot;, &quot;Thông báo&quot;,
+        &quot;Tệp&quot; hoặc &quot;Cấu hình&quot; trước khi tìm. Nhấn{" "}
+        <kbd className={styles.kbdInline}>Ctrl K</kbd> để mở nhanh.
       </p>
     </div>
   );
@@ -534,6 +678,18 @@ export function GlobalSearchPage() {
     </div>
   );
 
+  const showAll = type === "all";
+  const usersBlock = data?.users;
+  const notifsBlock = data?.notifications;
+  const filesBlock = data?.files;
+  const settingsBlock = data?.settings;
+  const totalAll = hasKeyword
+    ? (usersBlock?.total ?? 0) +
+      (notifsBlock?.total ?? 0) +
+      (filesBlock?.total ?? 0) +
+      (settingsBlock?.total ?? 0)
+    : 0;
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -543,23 +699,30 @@ export function GlobalSearchPage() {
             Tìm kiếm toàn hệ thống
           </h1>
           <p className={styles.subtitle}>
-            Tra cứu nhanh người dùng, thông báo và tệp tin trong một giao diện
-            thống nhất. Từ khoá được highlight trực tiếp trong kết quả.
+            Tra cứu nhanh người dùng, thông báo, tệp tin và cấu hình trong một
+            giao diện thống nhất. Từ khoá được highlight trực tiếp trong kết quả.
           </p>
         </div>
+        <Button
+          variant="secondary"
+          leftIcon={<Command size={16} />}
+          onClick={() => setPaletteOpen(true)}
+          aria-haspopup="dialog"
+        >
+          Lệnh nhanh{" "}
+          <kbd className={styles.kbdInline}>Ctrl K</kbd>
+        </Button>
       </header>
 
-      <div className={styles.searchCard}>
+      <Card padding="md" className={styles.searchCard}>
         <div className={styles.searchRow}>
           <div className={styles.searchInputWrap}>
-            <Input
-              placeholder="Nhập từ khoá cần tìm (tối thiểu 1 ký tự, tối đa 200)..."
+            <SearchBar
+              ref={mainInputRef}
               value={keyword}
               onChange={handleKeywordChange}
-              onKeyDown={handleKeywordKey}
-              leftIcon={<SearchIcon size={16} />}
-              rightIcon={keyword ? <XIcon size={14} /> : undefined}
-              onRightIconClick={keyword ? clearKeyword : undefined}
+              onSubmit={handleSubmit}
+              placeholder="Nhập từ khoá cần tìm (tối thiểu 1 ký tự, tối đa 200)..."
               autoFocus
             />
           </div>
@@ -579,15 +742,16 @@ export function GlobalSearchPage() {
           </label>
           <Button
             variant="primary"
-            onClick={() => {
-              if (debounceRef.current) window.clearTimeout(debounceRef.current);
-              setKeywordApplied(keyword);
-              setPage(1);
-            }}
+            onClick={handleSubmit}
             isLoading={loading}
           >
             Tìm kiếm
           </Button>
+          {keyword ? (
+            <Button variant="ghost" onClick={clearKeyword}>
+              Xoá
+            </Button>
+          ) : null}
         </div>
         {hasKeyword ? (
           <div className={styles.summary}>
@@ -598,243 +762,221 @@ export function GlobalSearchPage() {
               </b>{" "}
               trong{" "}
               <span className={[styles.badge, TYPE_TONE[type]].join(" ")}>
+                {TYPE_ICON[type]}
                 {SEARCH_TYPE_LABELS[type]}
               </span>
+              {showAll && totalAll > 0 ? (
+                <span className={styles.summaryTotal}>
+                  {" "}
+                  · <b>{totalAll}</b> tổng cộng
+                </span>
+              ) : null}
             </span>
           </div>
         ) : null}
-      </div>
+      </Card>
 
       {loadError ? (
         <div className={styles.errorWrap}>
           <Alert variant="error">{loadError}</Alert>
-          <Button variant="secondary" size="sm" onClick={load}>
+          <Button variant="secondary" size="sm" onClick={() => void load()}>
             Thử lại
           </Button>
         </div>
       ) : null}
 
+      {/* ====== Recent Search (chỉ hiện khi chưa search) ====== */}
+      {!hasKeyword ? (
+        <Card padding="md">
+          <RecentSearch
+            items={recent}
+            loading={recentLoading}
+            error={recentError}
+            onPick={handlePickRecent}
+            onRemoveOne={(id) => void handleRemoveOne(id)}
+            onClearAll={() => setConfirmClearAll(true)}
+            onRetry={() => void loadRecent()}
+            disabled={removingId != null || clearingAll}
+          />
+        </Card>
+      ) : null}
+
+      {/* ====== Search Results ====== */}
       {!hasKeyword ? (
         initialEmpty
       ) : loadError ? null : data ? (
-        <SearchResults
-          data={data}
-          type={type}
-          isAdmin={isAdmin}
-          loading={loading}
-          page={page}
-          onPageChange={handlePageChange}
-          userColumns={userColumns}
-          notifColumns={notifColumns}
-          fileColumns={fileColumns}
-          settingColumns={settingColumns}
-          keywordApplied={keywordApplied}
-          emptyState={noResultEmpty}
-        />
+        <div className={styles.results}>
+          {showAll ? null : null /* placeholder cho type=single (1 section) */}
+
+          {(type === "all" || type === "users") ? (
+            <SearchResultGroup
+              tone={TYPE_TONE.users}
+              title={SEARCH_TYPE_LABELS.users}
+              icon={TYPE_ICON.users}
+              block={usersBlock}
+              loading={loading && usersBlock === undefined}
+              page={page}
+              onPageChange={handlePageChange}
+              columns={userColumns}
+              rowKey={(u: SearchUser) => `u-${u.id}`}
+              emptyHint={isAdmin ? undefined : "Bạn không có quyền tìm kiếm người dùng."}
+              keywordApplied={keywordApplied}
+              hidePagination={showAll}
+            />
+          ) : null}
+
+          {(type === "all" || type === "notifications") ? (
+            <SearchResultGroup
+              tone={TYPE_TONE.notifications}
+              title={SEARCH_TYPE_LABELS.notifications}
+              icon={TYPE_ICON.notifications}
+              block={notifsBlock}
+              loading={loading && notifsBlock === undefined}
+              page={page}
+              onPageChange={handlePageChange}
+              columns={notifColumns}
+              rowKey={(n: SearchNotification) => `n-${n.id}`}
+              keywordApplied={keywordApplied}
+              hidePagination={showAll}
+            />
+          ) : null}
+
+          {(type === "all" || type === "files") ? (
+            <SearchResultGroup
+              tone={TYPE_TONE.files}
+              title={SEARCH_TYPE_LABELS.files}
+              icon={TYPE_ICON.files}
+              block={filesBlock}
+              loading={loading && filesBlock === undefined}
+              page={page}
+              onPageChange={handlePageChange}
+              columns={fileColumns}
+              rowKey={(f: SearchFile) => `f-${f.id}`}
+              keywordApplied={keywordApplied}
+              hidePagination={showAll}
+            />
+          ) : null}
+
+          {(type === "all" || type === "settings") ? (
+            <SearchResultGroup
+              tone={TYPE_TONE.settings}
+              title={SEARCH_TYPE_LABELS.settings}
+              icon={TYPE_ICON.settings}
+              block={settingsBlock}
+              loading={loading && settingsBlock === undefined}
+              page={page}
+              onPageChange={handlePageChange}
+              columns={settingColumns}
+              rowKey={(s: SearchSetting) => `s-${s.id}`}
+              emptyHint={isAdmin ? undefined : "Bạn không có quyền tìm kiếm cấu hình."}
+              keywordApplied={keywordApplied}
+              hidePagination={showAll}
+            />
+          ) : null}
+
+          {loading ? null : totalAll === 0 ? (
+            <div className={styles.allEmpty}>{noResultEmpty}</div>
+          ) : null}
+        </div>
       ) : null}
+
+      {/* ====== Command Palette Modal (Ctrl+K) ====== */}
+      <Modal
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        title={
+          <span className={styles.paletteTitle}>
+            <Command size={16} aria-hidden="true" /> Tìm kiếm nhanh
+          </span>
+        }
+        size="md"
+      >
+        <CommandPalette
+          recent={recent}
+          recentLoading={recentLoading}
+          recentError={recentError}
+          onRetryRecent={() => void loadRecent()}
+          onPick={handlePickRecent}
+          onRemoveOne={(id) => void handleRemoveOne(id)}
+          onClearAll={() => setConfirmClearAll(true)}
+        />
+      </Modal>
+
+      {/* ====== Confirm clear all history ====== */}
+      <ConfirmDialog
+        open={confirmClearAll}
+        onCancel={() => setConfirmClearAll(false)}
+        title="Xoá toàn bộ lịch sử tìm kiếm?"
+        message="Hành động này không thể hoàn tác. Toàn bộ từ khoá bạn đã tìm sẽ bị xoá vĩnh viễn."
+        confirmText="Xoá tất cả"
+        cancelText="Huỷ"
+        confirmVariant="danger"
+        loading={clearingAll}
+        onConfirm={() => void handleClearAll()}
+      />
     </div>
   );
 }
 
-// ============== Subcomponent: render 3 sections ==============
-interface SearchResultsProps {
-  data: SearchResult;
-  type: SearchType;
-  isAdmin: boolean;
-  loading: boolean;
-  page: number;
-  onPageChange: (p: number) => void;
-  userColumns: TableColumn<SearchUser>[];
-  notifColumns: TableColumn<SearchNotification>[];
-  fileColumns: TableColumn<SearchFile>[];
-  settingColumns: TableColumn<SearchSetting>[];
-  keywordApplied: string;
-  emptyState: React.ReactNode;
+// ============== Subcomponent: Command Palette body ==============
+interface CommandPaletteProps {
+  recent: SearchHistoryItem[];
+  recentLoading: boolean;
+  recentError: string | null;
+  onRetryRecent: () => void;
+  onPick: (keyword: string) => void;
+  onRemoveOne: (id: number) => void;
+  onClearAll: () => void;
 }
 
-function SearchResults({
-  data,
-  type,
-  isAdmin,
-  loading,
-  page,
-  onPageChange,
-  userColumns,
-  notifColumns,
-  fileColumns,
-  settingColumns,
-  keywordApplied,
-  emptyState,
-}: SearchResultsProps) {
-  const showAll = type === "all";
-  const showUsers = type === "all" || type === "users";
-  const showNotifs = type === "all" || type === "notifications";
-  const showFiles = type === "all" || type === "files";
-  const showSettings = type === "all" || type === "settings";
+function CommandPalette({
+  recent,
+  recentLoading,
+  recentError,
+  onRetryRecent,
+  onPick,
+  onRemoveOne,
+  onClearAll,
+}: CommandPaletteProps) {
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const usersBlock = data.users;
-  const notifsBlock = data.notifications;
-  const filesBlock = data.files;
-  const settingsBlock = data.settings;
+  // Auto-focus input khi mở modal.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
-  // Tính tổng để quyết định có hiển thị "no result" khi type=all nhưng cả blocks đều rỗng.
-  const totalAll =
-    (usersBlock?.total ?? 0) +
-    (notifsBlock?.total ?? 0) +
-    (filesBlock?.total ?? 0) +
-    (settingsBlock?.total ?? 0);
-
-  if (!loading && totalAll === 0) {
-    return <div className={styles.allEmpty}>{emptyState}</div>;
+  function handleSubmit() {
+    const v = draft.trim();
+    if (v) onPick(v);
   }
 
   return (
-    <div className={styles.results}>
-      {showUsers ? (
-        <SearchSection
-          tone={TYPE_TONE.users}
-          title={SEARCH_TYPE_LABELS.users}
-          icon={<UserIcon size={16} />}
-          block={usersBlock}
-          loading={loading && usersBlock === undefined}
-          page={page}
-          onPageChange={onPageChange}
-          columns={userColumns}
-          rowKey={(u: SearchUser) => `u-${u.id}`}
-          emptyHint={isAdmin ? undefined : "Bạn không có quyền tìm kiếm người dùng."}
-          keywordApplied={keywordApplied}
-        />
-      ) : null}
-
-      {showNotifs ? (
-        <SearchSection
-          tone={TYPE_TONE.notifications}
-          title={SEARCH_TYPE_LABELS.notifications}
-          icon={<Bell size={16} />}
-          block={notifsBlock}
-          loading={loading && notifsBlock === undefined}
-          page={page}
-          onPageChange={onPageChange}
-          columns={notifColumns}
-          rowKey={(n: SearchNotification) => `n-${n.id}`}
-          keywordApplied={keywordApplied}
-        />
-      ) : null}
-
-      {showFiles ? (
-        <SearchSection
-          tone={TYPE_TONE.files}
-          title={SEARCH_TYPE_LABELS.files}
-          icon={<FileText size={16} />}
-          block={filesBlock}
-          loading={loading && filesBlock === undefined}
-          page={page}
-          onPageChange={onPageChange}
-          columns={fileColumns}
-          rowKey={(f: SearchFile) => `f-${f.id}`}
-          keywordApplied={keywordApplied}
-        />
-      ) : null}
-
-      {showSettings ? (
-        <SearchSection
-          tone={TYPE_TONE.settings}
-          title={SEARCH_TYPE_LABELS.settings}
-          icon={<SearchIcon size={16} />}
-          block={settingsBlock}
-          loading={loading && settingsBlock === undefined}
-          page={page}
-          onPageChange={onPageChange}
-          columns={settingColumns}
-          rowKey={(s: SearchSetting) => `s-${s.id}`}
-          emptyHint={isAdmin ? undefined : "Bạn không có quyền tìm kiếm cấu hình."}
-          keywordApplied={keywordApplied}
-        />
-      ) : null}
-
-      {/* type=all không dùng pagination trên từng block (BE trả limit cố định) */}
-      {showAll ? null : null}
-    </div>
-  );
-}
-
-interface SectionProps<T> {
-  tone: string;
-  title: string;
-  icon: React.ReactNode;
-  block: { items: T[]; total: number; page: number; limit: number } | undefined;
-  loading: boolean;
-  page: number;
-  onPageChange: (p: number) => void;
-  columns: TableColumn<T>[];
-  rowKey: (row: T) => string | number;
-  keywordApplied: string;
-  emptyHint?: string;
-}
-
-function SearchSection<T extends { id: number }>({
-  tone,
-  title,
-  icon,
-  block,
-  loading,
-  page,
-  onPageChange,
-  columns,
-  rowKey,
-  emptyHint,
-}: SectionProps<T>) {
-  const items = block?.items ?? [];
-  const total = block?.total ?? 0;
-  const totalPages = totalPagesOf(block);
-
-  return (
-    <Card padding="md" className={styles.section}>
-      <div className={styles.sectionHeader}>
-        <h2 className={styles.sectionTitle}>
-          <span className={[styles.badge, tone].join(" ")}>
-            {icon}
-            {title}
-          </span>
-          <span className={styles.sectionCount}>
-            {total > 0 ? `${total} kết quả` : "Không có kết quả"}
-          </span>
-        </h2>
-      </div>
-
-      <Table
-        columns={columns}
-        data={items}
-        loading={loading}
-        skeletonRows={4}
-        rowKey={rowKey}
-        emptyState={
-          <div className={styles.sectionEmpty}>
-            <SearchX size={32} aria-hidden="true" />
-            <p className={styles.emptyTitle}>
-              {emptyHint ?? "Không có kết quả trong mục này"}
-            </p>
-            {emptyHint ? null : (
-              <p className={styles.emptyHint}>
-                Thử mở rộng phạm vi tìm kiếm hoặc đổi từ khoá khác.
-              </p>
-            )}
-          </div>
-        }
+    <div className={styles.palette}>
+      <SearchBar
+        ref={inputRef}
+        value={draft}
+        onChange={setDraft}
+        onSubmit={handleSubmit}
+        placeholder="Gõ từ khoá rồi nhấn Enter để tìm kiếm..."
+        autoFocus
+        size="lg"
       />
-
-      {total > 0 ? (
-        <div className={styles.sectionFooter}>
-          <span className={styles.totalLabel}>
-            Hiển thị <b>{items.length}</b> / <b>{total}</b> bản ghi
-          </span>
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
-        </div>
-      ) : null}
-    </Card>
+      <div className={styles.paletteHint}>
+        Nhấn <kbd className={styles.kbdInline}>Enter</kbd> để áp dụng ·{" "}
+        <kbd className={styles.kbdInline}>ESC</kbd> để đóng
+      </div>
+      <div className={styles.paletteRecent}>
+        <RecentSearch
+          items={recent}
+          loading={recentLoading}
+          error={recentError}
+          onPick={onPick}
+          onRemoveOne={onRemoveOne}
+          onClearAll={onClearAll}
+          onRetry={onRetryRecent}
+        />
+      </div>
+    </div>
   );
 }

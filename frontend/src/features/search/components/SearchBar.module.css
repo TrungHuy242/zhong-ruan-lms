@@ -1,0 +1,47 @@
+.wrapper {
+  width: 100%;
+  display: block;
+}
+
+.lg :global(input) {
+  font-size: 1.05rem;
+  padding: 0.75rem 1rem;
+}
+
+.clearBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0.25rem;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.clearBtn:hover {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-primary);
+}
+
+.clearBtn:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 1px;
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  user-select: none;
+}

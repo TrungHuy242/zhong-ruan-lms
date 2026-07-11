@@ -356,3 +356,53 @@
   .searchInputWrap { min-width: 0; }
   .typeLabel { min-width: 0; }
 }
+
+/* ===== Inline kbd (Ctrl K hint, Enter, ESC) ===== */
+.kbdInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.05rem 0.4rem;
+  margin: 0 0.15rem;
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  user-select: none;
+  vertical-align: middle;
+}
+
+/* ===== Summary tổng (type=all, hiển thị grand total) ===== */
+.summaryTotal {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.summaryTotal b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ===== Command Palette Modal ===== */
+.paletteTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+.paletteTitle svg {
+  color: var(--brand-primary);
+}
+
+.palette {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.paletteHint {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}

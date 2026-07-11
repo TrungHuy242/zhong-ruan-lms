@@ -114,6 +114,20 @@ export async function clearSearchHistory(): Promise<{ deleted: number }> {
   return { deleted: data?.deleted ?? 0 };
 }
 
+/**
+ * Xoá 1 mục trong lịch sử tìm kiếm (chỉ self).
+ * - Trả về true nếu xoá thành công (200)
+ * - Throw ApiError nếu 403/404/400 (component xử lý thông báo phù hợp)
+ */
+export async function deleteSearchHistoryItem(id: number): Promise<boolean> {
+  if (!Number.isFinite(id) || id <= 0) return false;
+  const data = await apiFetch<{ id: number }>(
+    `/search/history/${encodeURIComponent(String(id))}`,
+    { method: "DELETE" }
+  );
+  return data?.id != null;
+}
+
 // Convenience: tính totalPages từ block paginated.
 export function totalPagesOf(block: SearchPaged<unknown> | undefined): number {
   if (!block || block.limit <= 0) return 1;
