@@ -29,6 +29,8 @@ export type {
   ChangePasswordPayload,
   LoginHistoryAction,
   LoginHistoryEntry,
+  PasswordStrength,
+  PasswordStrengthInfo,
   ProfileAvatarFile,
   ProfileUser,
   ProfileValidationResult,
@@ -37,9 +39,12 @@ export type {
   UserStatus,
 } from "../types/profile.types";
 export {
+  ADDRESS_MAX,
   FULL_NAME_MAX,
   PASSWORD_MAX,
   PASSWORD_MIN,
+  evaluatePasswordStrength,
+  validateAddress,
   validateFullName,
   validatePassword,
   validatePhone,
@@ -83,12 +88,18 @@ export async function getMe(): Promise<ProfileUser> {
 export async function updateMe(
   payload: UpdateProfilePayload
 ): Promise<ProfileUser> {
+  const body: Record<string, unknown> = {
+    fullName: payload.fullName.trim(),
+  };
+  if (payload.phone !== undefined) {
+    body.phone = payload.phone === null ? null : payload.phone.trim();
+  }
+  if (payload.address !== undefined) {
+    body.address = payload.address === null ? null : payload.address.trim();
+  }
   const response = await apiFetch<UpdateMeResponse>("/auth/me", {
     method: "PUT",
-    body: {
-      fullName: payload.fullName.trim(),
-      phone: payload.phone === undefined ? undefined : payload.phone ?? null,
-    },
+    body,
   });
   if (!response?.user) {
     throw new Error("Phản hồi từ máy chủ không hợp lệ");

@@ -211,10 +211,27 @@ async function register(payload, req) {
 }
 
 async function updateProfile(userId, payload) {
-  const { fullName, phone } = payload;
+  const { fullName, phone, address } = payload;
 
   if (!fullName || fullName.trim() === "") {
     throw new Error("Vui lòng nhập họ tên");
+  }
+
+  // address: optional. Trim nếu có, set null khi rỗng/trim-rỗng.
+  //   - undefined  → không đổi (giữ nguyên giá trị cũ trong DB)
+  //   - "" (sau trim) → null (clear)
+  //   - string     → trim()
+  let addressUpdate;
+  if (address === undefined) {
+    addressUpdate = undefined;
+  } else if (address === null || (typeof address === "string" && address.trim() === "")) {
+    addressUpdate = null;
+  } else if (typeof address === "string") {
+    const trimmed = address.trim();
+    if (trimmed.length > 255) {
+      throw new Error("Địa chỉ không được dài quá 255 ký tự");
+    }
+    addressUpdate = trimmed;
   }
 
   const updated = await prisma.user.update({
@@ -222,12 +239,14 @@ async function updateProfile(userId, payload) {
     data: {
       fullName: fullName.trim(),
       phone: phone === undefined ? undefined : phone || null,
+      ...(addressUpdate !== undefined ? { address: addressUpdate } : {}),
     },
     select: {
       id: true,
       fullName: true,
       email: true,
       phone: true,
+      address: true,
       role: true,
       status: true,
       updatedAt: true,

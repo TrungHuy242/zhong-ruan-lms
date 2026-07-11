@@ -12,6 +12,13 @@
   flex-wrap: wrap;
 }
 
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 720px;
+}
+
 .title {
   display: inline-flex;
   align-items: center;
@@ -19,17 +26,19 @@
   font-size: 28px;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 var(--space-2);
+  margin: 0;
   letter-spacing: -0.02em;
 }
 
-.titleIcon { color: var(--brand-primary); }
+.titleIcon {
+  color: var(--brand-primary);
+}
 
 .subtitle {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
-  max-width: 720px;
+  line-height: 1.5;
 }
 
 .headerActions {
@@ -38,71 +47,14 @@
   gap: var(--space-2);
 }
 
-.skeletonStack {
+/* ===== Skeleton header ===== */
+.skeletonHeader {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-surface-alt) 0%,
-    var(--bg-surface) 50%,
-    var(--bg-surface-alt) 100%
-  );
-  background-size: 200% 100%;
-  animation: skeletonShimmer 1.4s ease-in-out infinite;
-  border-radius: var(--radius-lg);
-}
-
-.skeletonCard { height: 220px; }
-
-@keyframes skeletonShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* ===== Login history section ===== */
-.historySection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-}
-
-.historyHeader {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.historyTitle {
-  display: inline-flex;
-  align-items: center;
   gap: var(--space-2);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
 }
 
-.historyTitle svg { color: var(--brand-primary); }
-
-.historyHint {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-  max-width: 640px;
-  line-height: 1.4;
-}
-
-.errorWrap {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
+/* ===== Grid: Identity + Form ===== */
 .grid {
   display: grid;
   grid-template-columns: minmax(280px, 360px) 1fr;
@@ -110,7 +62,18 @@
   align-items: start;
 }
 
-.identityCard { display: flex; flex-direction: column; gap: var(--space-5); }
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Identity Card ===== */
+.identityCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
 
 .identityTop {
   display: flex;
@@ -120,25 +83,6 @@
   gap: var(--space-3);
   padding: var(--space-3) 0 var(--space-4);
   border-bottom: 1px solid var(--border-default);
-}
-
-.avatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    var(--brand-primary) 0%,
-    var(--brand-primary-strong, var(--brand-primary)) 100%
-  );
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  box-shadow: var(--shadow-card);
 }
 
 .identityInfo {
@@ -172,10 +116,19 @@
   color: var(--text-secondary);
 }
 
+.mono {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  background: var(--bg-surface-alt);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 .badgeRow {
   display: flex;
   gap: var(--space-2);
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .badge {
@@ -189,24 +142,37 @@
   border: 1px solid transparent;
 }
 
-.badgeAdmin {
-  background-color: var(--color-error-bg);
+.badge_ADMIN {
+  background: var(--color-error-bg);
   color: var(--color-error);
-  border-color: rgba(var(--color-error-rgb, 220, 38, 38), 0.2);
+  border-color: color-mix(in srgb, var(--color-error) 25%, transparent);
 }
 
-.badgeTeacher {
-  background-color: #ecfeff;
+.badge_TEACHER {
+  background: #ecfeff;
   color: #0e7490;
-  border-color: rgba(14, 116, 144, 0.2);
+  border-color: color-mix(in srgb, #0e7490 25%, transparent);
 }
 
-.badgeStudent {
-  background-color: var(--brand-primary-light);
+.badge_STUDENT {
+  background: var(--brand-primary-light);
   color: var(--brand-primary);
-  border-color: rgba(var(--brand-primary-rgb, 99, 102, 241), 0.2);
+  border-color: color-mix(in srgb, var(--brand-primary) 25%, transparent);
 }
 
+.badgeStatusActive {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
+}
+
+.badgeStatusInactive {
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+/* ===== Meta list (in Identity Card) ===== */
 .metaList {
   display: flex;
   flex-direction: column;
@@ -223,27 +189,44 @@
   font-size: 13px;
 }
 
-.metaRow:last-child { border-bottom: none; }
+.metaRow:last-child {
+  border-bottom: none;
+}
 
-.metaLabel { color: var(--text-secondary); }
+.metaLabel {
+  color: var(--text-secondary);
+}
 
 .metaValue {
   color: var(--text-primary);
   font-weight: 500;
   text-align: right;
   word-break: break-word;
+  max-width: 60%;
 }
 
-.statusActive { color: #15803d; }
-
-.statusInactive { color: var(--color-error); }
-
-.formCard { display: flex; flex-direction: column; }
+/* ===== Form Card ===== */
+.formCard {
+  display: flex;
+  flex-direction: column;
+}
 
 .form {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+.formCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .formCols {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field {
@@ -258,6 +241,37 @@
   color: var(--text-primary);
 }
 
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.textarea:disabled {
+  background: var(--bg-surface-alt);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.textareaError {
+  border-color: var(--color-error);
+}
+
 .roleBox {
   display: inline-flex;
   align-items: center;
@@ -269,9 +283,12 @@
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
+  width: max-content;
 }
 
-.roleIcon { color: var(--text-secondary); }
+.roleIcon {
+  color: var(--text-secondary);
+}
 
 .hintText {
   font-size: 12px;
@@ -284,7 +301,7 @@
   background-color: var(--color-error-bg);
   color: var(--color-error);
   font-size: 13px;
-  border: 1px solid var(--color-error);
+  border: 1px solid color-mix(in srgb, var(--color-error) 50%, transparent);
 }
 
 .actions {
@@ -296,8 +313,45 @@
   border-top: 1px solid var(--border-default);
 }
 
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+/* ===== Login history section ===== */
+.historySection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.historyHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.historyTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.historyTitle svg {
+  color: var(--brand-primary);
+}
+
+.historyHint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 640px;
+  line-height: 1.4;
+}
+
+/* ===== Error Wrap ===== */
+.errorWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
 }

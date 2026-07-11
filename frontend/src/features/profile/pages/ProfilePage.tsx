@@ -1,26 +1,42 @@
-﻿import { FormEvent, useEffect, useState } from "react";
+﻿/**
+ * ProfilePage — SaaS-style personal account management.
+ *
+ * Layout:
+ *   - Header (tiêu đề, mô tả + actions: Đổi mật khẩu)
+ *   - Identity Card (avatar + meta + role)
+ *   - Form (Họ tên, Email [read-only], SĐT, Địa chỉ, Role [read-only])
+ *   - Login History section
+ *
+ * Loading/Empty/Error + Skeleton đầy đủ.
+ * Style theo DESIGN.md tokens.
+ */
+
+import { FormEvent, useEffect, useState } from "react";
 import {
   Alert,
   Button,
   Card,
   Input,
+  Skeleton,
 } from "../../../shared/components/ui";
 import { ChangePasswordModal } from "../components/ChangePasswordModal";
-import { AvatarUploader } from "../components/AvatarUploader";
-import { LoginHistoryList } from "../components/LoginHistoryList";
+import { ProfileAvatar } from "../components/ProfileAvatar";
+import { LoginHistory } from "../components/LoginHistory";
 import {
   History as HistoryIcon,
   KeyRound,
   Mail,
   Phone,
+  RefreshCcw,
+  Save,
   Shield,
   User as UserIcon,
-  Save,
-  RefreshCcw,
 } from "lucide-react";
 import {
+  ADDRESS_MAX,
   getMe,
   updateMe,
+  validateAddress,
   validateFullName,
   validatePhone,
   type ProfileUser,
@@ -33,11 +49,13 @@ import styles from "./ProfilePage.module.css";
 interface FormState {
   fullName: string;
   phone: string;
+  address: string;
 }
 
 interface FormErrors {
   fullName?: string;
   phone?: string;
+  address?: string;
   submit?: string;
 }
 
@@ -47,16 +65,14 @@ const ROLE_LABEL: Record<UserRole, string> = {
   STUDENT: "Học viên",
 };
 
-const ROLE_TONE: Record<UserRole, string> = {
-  ADMIN: styles.badgeAdmin,
-  TEACHER: styles.badgeTeacher,
-  STUDENT: styles.badgeStudent,
-};
-
 export function ProfilePage() {
   // ===== State =====
   const [user, setUser] = useState<ProfileUser | null>(null);
-  const [form, setForm] = useState<FormState>({ fullName: "", phone: "" });
+  const [form, setForm] = useState<FormState>({
+    fullName: "",
+    phone: "",
+    address: "",
+  });
   const [errors, setErrors] = useState<FormErrors>({});
 
   const [loading, setLoading] = useState(true);
@@ -80,6 +96,7 @@ export function ProfilePage() {
       setForm({
         fullName: data.fullName ?? "",
         phone: data.phone ?? "",
+        address: data.address ?? "",
       });
     } catch (err) {
       const message =
@@ -113,6 +130,8 @@ export function ProfilePage() {
     if (!fullNameCheck.ok) next.fullName = fullNameCheck.error;
     const phoneCheck = validatePhone(form.phone);
     if (!phoneCheck.ok) next.phone = phoneCheck.error;
+    const addressCheck = validateAddress(form.address);
+    if (!addressCheck.ok) next.address = addressCheck.error;
     return next;
   }
 
@@ -120,7 +139,8 @@ export function ProfilePage() {
     if (!user) return false;
     return (
       form.fullName.trim() !== user.fullName ||
-      (form.phone.trim() || null) !== (user.phone ?? null)
+      (form.phone.trim() || null) !== (user.phone ?? null) ||
+      (form.address.trim() || null) !== (user.address ?? null)
     );
   }
 
@@ -136,11 +156,11 @@ export function ProfilePage() {
     try {
       const updated = await updateMe({
         fullName: form.fullName,
-        // Nếu user để trống phone → null (clear).
         phone: form.phone.trim() === "" ? null : form.phone.trim(),
+        address: form.address.trim() === "" ? null : form.address.trim(),
       });
       setUser(updated);
-      // Đồng bộ lại authStorage.user để header avatar / bell hiển thị đúng.
+      // Đồng bộ lại authStorage.user để header avatar / bell render đúng.
       const stored = authStorage.getUser();
       if (stored) {
         authStorage.setSession({
@@ -175,15 +195,11 @@ export function ProfilePage() {
     setForm({
       fullName: user.fullName ?? "",
       phone: user.phone ?? "",
+      address: user.address ?? "",
     });
     setErrors({});
   }
 
-  /**
-   * Avatar uploader cập nhật state local sau upload/remove thành công.
-   * Đồng thời đồng bộ authStorage.user.fullName (các field khác giữ nguyên) để header luôn
-   * hiển thị tên mới — avatar sẽ được Header render qua storedName nếu có.
-   */
   function handleAvatarChange(updated: ProfileUser) {
     setUser(updated);
     const stored = authStorage.getUser();
@@ -203,39 +219,71 @@ export function ProfilePage() {
     }
   }
 
-  function handleAvatarMessage(type: "success" | "error", text: string) {
+  function handleMessage(type: "success" | "error", text: string) {
     setAlertMessage({ type, text });
   }
 
-  // ===== Render =====
+  // ===== Loading skeleton =====
   if (loading) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>
-            <UserIcon size={24} className={styles.titleIcon} aria-hidden="true" />
-            Hồ sơ cá nhân
-          </h1>
-        </header>
-        <div className={styles.skeletonStack}>
-          <div className={[styles.skeleton, styles.skeletonCard].join(" ")} />
-          <div className={[styles.skeleton, styles.skeletonCard].join(" ")} />
+        <div className={styles.skeletonHeader}>
+          <Skeleton variant="text" width="40%" height={32} />
+          <Skeleton variant="text" width="60%" height={14} />
+        </div>
+
+        <div className={styles.grid}>
+          <Card padding="md" className={styles.identityCard}>
+            <div className={styles.identityTop}>
+              <Skeleton variant="circular" width={112} height={112} />
+              <Skeleton variant="text" width="50%" height={20} />
+              <Skeleton variant="rectangular" width="80%" height={56} />
+            </div>
+          </Card>
+
+          <Card padding="md" className={styles.formCard}>
+            <div className={styles.form}>
+              <Skeleton variant="rectangular" height={64} />
+              <Skeleton variant="rectangular" height={64} />
+              <Skeleton variant="rectangular" height={64} />
+            </div>
+          </Card>
         </div>
       </div>
     );
   }
 
+  // ===== Error retry =====
+  if (loadError && !user) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.errorWrap}>
+          <Alert variant="error">{loadError}</Alert>
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<RefreshCcw size={14} />}
+            onClick={loadProfile}
+          >
+            Thử lại
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== Render =====
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div>
+        <div className={styles.headerInfo}>
           <h1 className={styles.title}>
             <UserIcon size={24} className={styles.titleIcon} aria-hidden="true" />
             Hồ sơ cá nhân
           </h1>
           <p className={styles.subtitle}>
-            Xem và cập nhật thông tin cá nhân của bạn. Email và vai trò được
-            quản lý bởi quản trị viên và không thể thay đổi tại đây.
+            Quản lý thông tin cá nhân, ảnh đại diện và bảo mật tài khoản của bạn.
+            Email và vai trò do quản trị viên cấp và không thể thay đổi tại đây.
           </p>
         </div>
         <div className={styles.headerActions}>
@@ -248,15 +296,6 @@ export function ProfilePage() {
           </Button>
         </div>
       </header>
-
-      {loadError ? (
-        <div className={styles.errorWrap}>
-          <Alert variant="error">{loadError}</Alert>
-          <Button variant="secondary" size="sm" onClick={loadProfile}>
-            Thử lại
-          </Button>
-        </div>
-      ) : null}
 
       {alertMessage ? (
         <Alert
@@ -276,58 +315,67 @@ export function ProfilePage() {
       {user ? (
         <>
           <div className={styles.grid}>
+            {/* ===== Identity Card ===== */}
             <Card padding="md" className={styles.identityCard}>
               <div className={styles.identityTop}>
-                <AvatarUploader
+                <ProfileAvatar
                   user={user}
                   onChange={handleAvatarChange}
-                  onMessage={handleAvatarMessage}
+                  onMessage={handleMessage}
                 />
                 <div className={styles.identityInfo}>
                   <h2 className={styles.identityName}>{user.fullName}</h2>
                   <div className={styles.identityMeta}>
                     <span className={styles.metaItem}>
                       <Mail size={14} aria-hidden="true" />
-                      {user.email}
+                      <span className={styles.mono}>{user.email}</span>
                     </span>
                   </div>
                   <div className={styles.badgeRow}>
                     <span
-                      className={[styles.badge, ROLE_TONE[user.role]].join(" ")}
+                      className={[styles.badge, styles[`badge_${user.role}`]].join(
+                        " "
+                      )}
                     >
                       <Shield size={12} aria-hidden="true" />
                       {ROLE_LABEL[user.role]}
                     </span>
+                    <span
+                      className={[
+                        styles.badge,
+                        user.status === "ACTIVE"
+                          ? styles.badgeStatusActive
+                          : styles.badgeStatusInactive,
+                      ].join(" ")}
+                    >
+                      {user.status}
+                    </span>
                   </div>
                 </div>
               </div>
+
+              {/* Quick meta list */}
               <div className={styles.metaList}>
                 <div className={styles.metaRow}>
                   <span className={styles.metaLabel}>ID</span>
                   <span className={styles.metaValue}>#{user.id}</span>
                 </div>
                 <div className={styles.metaRow}>
-                  <span className={styles.metaLabel}>Trạng thái</span>
-                  <span
-                    className={[
-                      styles.metaValue,
-                      user.status === "ACTIVE"
-                        ? styles.statusActive
-                        : styles.statusInactive,
-                    ].join(" ")}
-                  >
-                    {user.status}
+                  <span className={styles.metaLabel}>Số điện thoại</span>
+                  <span className={styles.metaValue}>
+                    {user.phone?.trim() ? user.phone : "Chưa cập nhật"}
                   </span>
                 </div>
                 <div className={styles.metaRow}>
-                  <span className={styles.metaLabel}>Số điện thoại</span>
+                  <span className={styles.metaLabel}>Địa chỉ</span>
                   <span className={styles.metaValue}>
-                    {user.phone?.trim() ? user.phone : "—"}
+                    {user.address?.trim() ? user.address : "Chưa cập nhật"}
                   </span>
                 </div>
               </div>
             </Card>
 
+            {/* ===== Form Card ===== */}
             <Card padding="md" className={styles.formCard}>
               <form className={styles.form} onSubmit={handleSubmit} noValidate>
                 {errors.submit ? (
@@ -358,19 +406,43 @@ export function ProfilePage() {
                   hint="Email được dùng để đăng nhập, không thể thay đổi tại đây."
                 />
 
-                <Input
-                  label="Số điện thoại"
-                  value={form.phone}
-                  onChange={(e) => handleChange("phone", e.target.value)}
-                  disabled={submitting}
-                  error={errors.phone}
-                  placeholder="VD: 0901 234 567"
-                  leftIcon={<Phone size={16} />}
-                  hint="Để trống nếu không muốn cung cấp."
-                  maxLength={20}
-                  autoComplete="tel"
-                  inputMode="tel"
-                />
+                <div className={styles.formCols}>
+                  <Input
+                    label="Số điện thoại"
+                    value={form.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    disabled={submitting}
+                    error={errors.phone}
+                    placeholder="VD: 0901 234 567"
+                    leftIcon={<Phone size={16} />}
+                    hint="Để trống nếu không muốn cung cấp."
+                    maxLength={20}
+                    autoComplete="tel"
+                    inputMode="tel"
+                  />
+
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="profile-address">
+                      Địa chỉ
+                    </label>
+                    <textarea
+                      id="profile-address"
+                      className={[
+                        styles.textarea,
+                        errors.address ? styles.textareaError : "",
+                      ].join(" ")}
+                      value={form.address}
+                      onChange={(e) => handleChange("address", e.target.value)}
+                      disabled={submitting}
+                      placeholder="VD: 123 Nguyễn Trãi, Thanh Xuân, Hà Nội"
+                      rows={3}
+                      maxLength={ADDRESS_MAX}
+                    />
+                    <span className={styles.hintText}>
+                      {errors.address ?? "Để trống nếu không muốn cung cấp."}
+                    </span>
+                  </div>
+                </div>
 
                 <div className={styles.field}>
                   <label className={styles.label}>Vai trò</label>
@@ -379,7 +451,8 @@ export function ProfilePage() {
                     <span>{ROLE_LABEL[user.role]}</span>
                   </div>
                   <span className={styles.hintText}>
-                    Vai trò được cấp bởi quản trị viên, không thể thay đổi tại đây.
+                    Vai trò được cấp bởi quản trị viên, không thể thay đổi tại
+                    đây.
                   </span>
                 </div>
 
@@ -408,19 +481,25 @@ export function ProfilePage() {
           </div>
 
           {/* ===== Login history ===== */}
-          <section className={styles.historySection} aria-labelledby="login-history-heading">
+          <section
+            className={styles.historySection}
+            aria-labelledby="login-history-heading"
+          >
             <header className={styles.historyHeader}>
-              <h3 id="login-history-heading" className={styles.historyTitle}>
+              <h3
+                id="login-history-heading"
+                className={styles.historyTitle}
+              >
                 <HistoryIcon size={18} aria-hidden="true" />
                 Lịch sử đăng nhập
               </h3>
               <p className={styles.historyHint}>
-                10 lần đăng nhập và đăng xuất gần nhất của bạn. Nếu phát hiện hoạt động lạ,
-                vui lòng đổi mật khẩu ngay.
+                10 lần đăng nhập/đăng xuất gần nhất của bạn. Nếu phát hiện hoạt
+                động lạ, vui lòng đổi mật khẩu ngay.
               </p>
             </header>
             <Card padding="md">
-              <LoginHistoryList limit={10} />
+              <LoginHistory limit={10} />
             </Card>
           </section>
         </>

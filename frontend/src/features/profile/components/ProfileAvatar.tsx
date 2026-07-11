@@ -1,14 +1,13 @@
 /**
- * AvatarUploader — UI cho upload/đổi/xoá avatar.
+ * ProfileAvatar — UI cho upload/đổi/xoá avatar của self.
  *
- * Click vào avatar hiện tại hoặc nút "Đổi ảnh" → mở file picker (chỉ chấp nhận ảnh).
- * Hiển thị progress % trong lúc upload. Khi upload thành công:
- *   - gọi onChange(newProfile) để parent cập nhật state.
- *   - hiển thị preview ảnh mới qua getAvatarUrl.
+ * Click avatar hoặc nút "Đổi ảnh" → mở file picker (chỉ chấp nhận ảnh).
+ * - Hiển thị preview ảnh HIỆN TẠI khi chưa chọn file
+ * - Hiển thị preview tạm (Object URL) trong khi upload; revert nếu fail
+ * - Progress % realtime trên overlay
+ * - Nút "Xoá" riêng chỉ hiện khi đã có avatar
  *
- * Không dùng modal — preview inline. Nút "Xoá" riêng chỉ hiện khi đã có avatar.
- *
- * Permission: chỉ user tự upload/xoá avatar của mình (BE enforce qua req.user.id).
+ * Style theo DESIGN.md tokens (--brand-primary, --radius-full, --shadow-card).
  */
 
 import {
@@ -24,9 +23,7 @@ import {
   UploadCloud,
   User as UserIcon,
 } from "lucide-react";
-import {
-  ApiError,
-} from "../../../shared/api";
+import { ApiError } from "../../../shared/api";
 import { Button } from "../../../shared/components/ui";
 import {
   getAvatarUrl,
@@ -34,38 +31,48 @@ import {
   uploadAvatar,
   type ProfileUser,
 } from "../services/profileApi";
-import styles from "./AvatarUploader.module.css";
+import styles from "./ProfileAvatar.module.css";
 
-export interface AvatarUploaderProps {
+export interface ProfileAvatarProps {
   user: ProfileUser;
   /** Được gọi với ProfileUser mới sau khi upload/remove thành công. */
   onChange: (updated: ProfileUser) => void;
-  /** Được gọi khi user nhấn "Đổi ảnh"/xoá — parent hiển thị toast/alert. */
+  /** Được gọi khi user upload/xoá — parent hiển thị toast/alert. */
   onMessage?: (type: "success" | "error", text: string) => void;
 }
 
-// Giới hạn mime + size để validate phía client (BE cũng filter,
-// nhưng check sớm ở client giúp UX tốt hơn).
 const ACCEPT_MIME = "image/jpeg,image/jpg,image/png,image/webp";
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB (BE limit 10MB, FE giới hạn nhỏ hơn cho avatar)
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
-export function AvatarUploader({ user, onChange, onMessage }: AvatarUploaderProps) {
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (!parts.length || !parts[0]) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+export function ProfileAvatar({
+  user,
+  onChange,
+  onMessage,
+}: ProfileAvatarProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [removing, setRemoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const avatarStoredName = user.avatarFile?.storedName ?? null;
   const [previewUrl, setPreviewUrl] = useState<string | null>(() =>
-    getAvatarUrl(user.avatarFile?.storedName)
+    getAvatarUrl(avatarStoredName)
   );
 
   // Đồng bộ preview khi user prop thay đổi (parent state).
   useEffect(() => {
-    setPreviewUrl(getAvatarUrl(user.avatarFile?.storedName));
-  }, [user.avatarFile?.storedName]);
+    setPreviewUrl(getAvatarUrl(avatarStoredName));
+  }, [avatarStoredName]);
 
-  // Cleanup object URL khi unmount hoặc đổi ảnh.
+  // Cleanup object URL cũ khi unmount / đổi ảnh.
   useEffect(() => {
     return () => {
       if (previewUrl && previewUrl.startsWith("blob:")) {
@@ -80,8 +87,8 @@ export function AvatarUploader({ user, onChange, onMessage }: AvatarUploaderProp
   }
 
   function validateFile(file: File): string | null {
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
+    const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
       return "Vui lòng chọn file ảnh (jpg, jpeg, png, webp).";
     }
     if (file.size > MAX_SIZE) {
@@ -92,16 +99,17 @@ export function AvatarUploader({ user, onChange, onMessage }: AvatarUploaderProp
 
   async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    // Reset input để chọn lại cùng file nhiều lần vẫn trigger onChange.
+    // Reset input để chọn lại cùng file nhiều lần.
     if (e.target) e.target.value = "";
     if (!file) return;
+
     const validateError = validateFile(file);
     if (validateError) {
       setError(validateError);
       return;
     }
 
-    // Preview tạm thời trước khi upload xong (UX tốt hơn).
+    // Preview tạm thời (UX tốt hơn — không đợi BE).
     const tempUrl = URL.createObjectURL(file);
     setPreviewUrl(tempUrl);
     setError(null);
@@ -113,13 +121,11 @@ export function AvatarUploader({ user, onChange, onMessage }: AvatarUploaderProp
         onProgress: (pct) => setProgress(pct),
       });
       onChange(updated);
-      // Sau khi upload xong, BE trả về avatarFile mới → useEffect cập nhật previewUrl.
-      // Nhưng ta cần cleanup object URL tạm.
       if (tempUrl.startsWith("blob:")) URL.revokeObjectURL(tempUrl);
       onMessage?.("success", "Cập nhật ảnh đại diện thành công");
     } catch (err) {
-      // Upload fail → rollback preview về avatar hiện tại.
-      setPreviewUrl(getAvatarUrl(user.avatarFile?.storedName));
+      // Upload fail → rollback preview.
+      setPreviewUrl(getAvatarUrl(avatarStoredName));
       const message =
         err instanceof ApiError
           ? err.message
@@ -160,63 +166,62 @@ export function AvatarUploader({ user, onChange, onMessage }: AvatarUploaderProp
   }
 
   const hasAvatar = Boolean(previewUrl);
-  const initials = (user.fullName || "?").trim().slice(0, 2).toUpperCase();
+  const initials = initialsOf(user.fullName || "?");
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.avatarRow}>
-        <div
-          className={[
-            styles.avatar,
-            uploading || removing ? styles.avatarBusy : "",
-          ].join(" ")}
-          onClick={openFilePicker}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              openFilePicker();
-            }
-          }}
-          aria-label={hasAvatar ? "Đổi ảnh đại diện" : "Thêm ảnh đại diện"}
-        >
-          {hasAvatar ? (
-            <img src={previewUrl!} alt="Ảnh đại diện" className={styles.img} />
+      <div
+        className={[styles.avatar, uploading || removing ? styles.avatarBusy : ""].join(
+          " "
+        )}
+        onClick={openFilePicker}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openFilePicker();
+          }
+        }}
+        aria-label={hasAvatar ? "Đổi ảnh đại diện" : "Thêm ảnh đại diện"}
+      >
+        {hasAvatar ? (
+          <img src={previewUrl!} alt="Ảnh đại diện" className={styles.img} />
+        ) : (
+          <span className={styles.initials}>
+            {initials || <UserIcon size={36} aria-hidden="true" />}
+          </span>
+        )}
+
+        {/* Overlay: camera icon khi hover */}
+        <div className={styles.overlay} aria-hidden="true">
+          {uploading ? (
+            <Loader2 size={32} className={styles.spin} />
           ) : (
-            <span className={styles.initials}>
-              {initials || <UserIcon size={28} aria-hidden="true" />}
-            </span>
+            <Camera size={32} />
           )}
-
-          {/* Overlay: camera icon khi hover */}
-          <div className={styles.overlay} aria-hidden="true">
-            {uploading ? (
-              <Loader2 size={28} className={styles.spin} />
-            ) : (
-              <Camera size={28} />
-            )}
-          </div>
-
-          {/* Progress ring */}
-          {uploading && progress > 0 && progress < 100 ? (
-            <div className={styles.progressRing} aria-hidden="true">
-              <span className={styles.progressText}>{progress}%</span>
-            </div>
-          ) : null}
         </div>
 
-        <div className={styles.controls}>
-          <input
-            ref={inputRef}
-            type="file"
-            accept={ACCEPT_MIME}
-            onChange={handleFileChange}
-            className={styles.fileInput}
-            aria-hidden="true"
-            tabIndex={-1}
-          />
+        {/* Progress ring */}
+        {uploading && progress > 0 && progress < 100 ? (
+          <div className={styles.progressRing} aria-hidden="true">
+            <span className={styles.progressText}>{progress}%</span>
+          </div>
+        ) : null}
+      </div>
 
+      <div className={styles.controls}>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={ACCEPT_MIME}
+          onChange={handleFileChange}
+          className={styles.fileInput}
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+
+        <div className={styles.actions}>
           <Button
             variant="secondary"
             size="sm"
@@ -238,23 +243,22 @@ export function AvatarUploader({ user, onChange, onMessage }: AvatarUploaderProp
               disabled={uploading || removing}
               isLoading={removing}
               loadingText="Đang xoá..."
-              className={styles.removeBtn}
             >
               Xoá
             </Button>
           ) : null}
-
-          <p className={styles.hint}>
-            Chấp nhận JPG, PNG, WEBP. Tối đa {(MAX_SIZE / 1024 / 1024).toFixed(0)}MB.
-            Chỉ bạn mới có thể thay đổi ảnh đại diện của mình.
-          </p>
-
-          {error ? (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          ) : null}
         </div>
+
+        {error ? (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        ) : (
+          <p className={styles.hint}>
+            JPG, PNG, WEBP. Tối đa {(MAX_SIZE / 1024 / 1024).toFixed(0)}MB. Chỉ bạn
+            mới có thể thay đổi ảnh đại diện của mình.
+          </p>
+        )}
       </div>
     </div>
   );

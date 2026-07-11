@@ -11,6 +11,8 @@ model User {
   fullName              String
   email                 String         @unique
   phone                 String?
+  /// Địa chỉ liên hệ — user tự cập nhật trong Hồ sơ cá nhân. Nullable.
+  address               String?
   passwordHash          String
   role                  Role           @default(STUDENT)
   status                UserStatus     @default(ACTIVE)
