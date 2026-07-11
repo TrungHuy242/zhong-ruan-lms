@@ -10,11 +10,15 @@ export const SEARCH_TYPE_LABELS: Record<SearchType, string> = {
   users: "Người dùng",
   notifications: "Thông báo",
   files: "Tệp",
+  settings: "Cấu hình",
 };
 
 export const SEARCH_KEYWORD_MAX = 200;
 export const SEARCH_LIMIT_DEFAULT = 10;
 export const SEARCH_LIMIT_MAX = 100;
+// Tối đa số lịch sử tìm kiếm lưu cho mỗi user (đồng bộ với BE MAX_HISTORY).
+export const SEARCH_HISTORY_LIMIT = 10;
+export const SEARCH_HISTORY_MAX = 50;
 
 export interface KeywordValidationResult {
   ok: boolean;

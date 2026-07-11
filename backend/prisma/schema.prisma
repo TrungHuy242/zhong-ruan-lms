@@ -29,8 +29,24 @@ model User {
   notifications         Notification[]
   uploads               UploadFile[]   @relation("UserUploads")
   avatarFile            UploadFile?    @relation("UserAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
+  searchHistories       SearchHistory[]
 
   @@index([avatarFileId])
+}
+
+/// Lịch sử từ khóa Global Search của từng user — dùng để gợi ý recent keywords.
+/// Cascade delete khi user bị xoá vĩnh viễn (deleteUser đã xử lý soft-delete cho user).
+model SearchHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  /// Từ khoá đã search (trim + lowercase ở app layer). Không unique — cho phép lặp.
+  keyword   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("search_histories")
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([keyword])
 }
 
 enum Role {

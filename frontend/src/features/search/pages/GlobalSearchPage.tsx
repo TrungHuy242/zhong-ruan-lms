@@ -29,6 +29,7 @@ import {
   type SearchFile,
   type SearchNotification,
   type SearchResult,
+  type SearchSetting,
   type SearchType,
   type SearchUser,
 } from "../services/searchApi";
@@ -84,6 +85,7 @@ const TYPE_TONE: Record<SearchType, string> = {
   users: styles.badgeUser,
   notifications: styles.badgeNotification,
   files: styles.badgeFile,
+  settings: styles.badgeSetting,
 };
 
 /**
@@ -448,6 +450,61 @@ export function GlobalSearchPage() {
     [keywordApplied, navigate]
   );
 
+  const settingColumns: TableColumn<SearchSetting>[] = useMemo(
+    () => [
+      {
+        key: "key",
+        header: "Key",
+        render: (s) => (
+          <code className={styles.codeCell}>
+            {highlight(s.key, keywordApplied)}
+          </code>
+        ),
+      },
+      {
+        key: "description",
+        header: "Mô tả",
+        render: (s) => (
+          <span className={styles.cellText}>
+            {s.description ? highlight(s.description, keywordApplied) : "—"}
+          </span>
+        ),
+      },
+      {
+        key: "group",
+        header: "Nhóm",
+        render: (s) => (
+          <span className={[styles.cellText, styles.tag].join(" ")}>
+            {s.group ?? "—"}
+          </span>
+        ),
+      },
+      {
+        key: "updatedAt",
+        header: "Cập nhật",
+        render: (s) => (
+          <span className={styles.cellText}>{formatDateTime(s.updatedAt)}</span>
+        ),
+      },
+      {
+        key: "actions",
+        header: "",
+        align: "right",
+        render: () => (
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<Eye size={14} />}
+            onClick={() => navigate(`/settings`)}
+          >
+            Mở cấu hình
+          </Button>
+        ),
+      },
+    ],
+    [keywordApplied, navigate]
+  );
+
   // ===== Render =====
   const hasKeyword = keywordApplied.trim().length > 0;
 
@@ -570,6 +627,7 @@ export function GlobalSearchPage() {
           userColumns={userColumns}
           notifColumns={notifColumns}
           fileColumns={fileColumns}
+          settingColumns={settingColumns}
           keywordApplied={keywordApplied}
           emptyState={noResultEmpty}
         />
@@ -589,6 +647,7 @@ interface SearchResultsProps {
   userColumns: TableColumn<SearchUser>[];
   notifColumns: TableColumn<SearchNotification>[];
   fileColumns: TableColumn<SearchFile>[];
+  settingColumns: TableColumn<SearchSetting>[];
   keywordApplied: string;
   emptyState: React.ReactNode;
 }
@@ -603,6 +662,7 @@ function SearchResults({
   userColumns,
   notifColumns,
   fileColumns,
+  settingColumns,
   keywordApplied,
   emptyState,
 }: SearchResultsProps) {
@@ -610,16 +670,19 @@ function SearchResults({
   const showUsers = type === "all" || type === "users";
   const showNotifs = type === "all" || type === "notifications";
   const showFiles = type === "all" || type === "files";
+  const showSettings = type === "all" || type === "settings";
 
   const usersBlock = data.users;
   const notifsBlock = data.notifications;
   const filesBlock = data.files;
+  const settingsBlock = data.settings;
 
-  // Tính tổng để quyết định có hiển thị "no result" khi type=all nhưng cả 3 đều rỗng.
+  // Tính tổng để quyết định có hiển thị "no result" khi type=all nhưng cả blocks đều rỗng.
   const totalAll =
     (usersBlock?.total ?? 0) +
     (notifsBlock?.total ?? 0) +
-    (filesBlock?.total ?? 0);
+    (filesBlock?.total ?? 0) +
+    (settingsBlock?.total ?? 0);
 
   if (!loading && totalAll === 0) {
     return <div className={styles.allEmpty}>{emptyState}</div>;
@@ -669,6 +732,22 @@ function SearchResults({
           onPageChange={onPageChange}
           columns={fileColumns}
           rowKey={(f: SearchFile) => `f-${f.id}`}
+          keywordApplied={keywordApplied}
+        />
+      ) : null}
+
+      {showSettings ? (
+        <SearchSection
+          tone={TYPE_TONE.settings}
+          title={SEARCH_TYPE_LABELS.settings}
+          icon={<SearchIcon size={16} />}
+          block={settingsBlock}
+          loading={loading && settingsBlock === undefined}
+          page={page}
+          onPageChange={onPageChange}
+          columns={settingColumns}
+          rowKey={(s: SearchSetting) => `s-${s.id}`}
+          emptyHint={isAdmin ? undefined : "Bạn không có quyền tìm kiếm cấu hình."}
           keywordApplied={keywordApplied}
         />
       ) : null}
