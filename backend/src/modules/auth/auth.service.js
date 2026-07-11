@@ -51,20 +51,27 @@ async function login(email, password, req) {
   });
 
   if (!user) {
+    // Ghi audit TRƯỚC throw (audit chỉ best-effort, không làm fail login flow).
+    try {
+      await audit.log({ userId: null, action: "AUTH_LOGIN_FAIL", target: `User:by-email:${email}`, meta: { reason: "INVALID_CREDENTIALS" }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
+    } catch (_) {}
     throw new Error("Email hoặc mật khẩu không đúng");
-    await audit.log({ userId: null, action: "AUTH_LOGIN_FAIL", target: `User:by-email:${email}`, meta: { reason: "INVALID_CREDENTIALS" }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
   }
 
   if (user.status !== UserStatus.ACTIVE) {
+    try {
+      await audit.log({ userId: user.id, action: "AUTH_LOGIN_FAIL", target: `User:${user.id}`, meta: { reason: "USER_SUSPENDED" }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
+    } catch (_) {}
     throw new Error("Tài khoản đã bị khóa");
-    await audit.log({ userId: user.id, action: "AUTH_LOGIN_FAIL", target: `User:${user.id}`, meta: { reason: "USER_SUSPENDED" }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
   if (!isPasswordValid) {
+    try {
+      await audit.log({ userId: user.id, action: "AUTH_LOGIN_FAIL", target: `User:${user.id}`, meta: { reason: "INVALID_CREDENTIALS" }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
+    } catch (_) {}
     throw new Error("Email hoặc mật khẩu không đúng");
-    await audit.log({ userId: user.id, action: "AUTH_LOGIN_SUCCESS", target: `User:${user.id}`, meta: { email: user.email }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
   }
 
   const accessToken = generateAccessToken(user);
@@ -79,6 +86,11 @@ async function login(email, password, req) {
       refreshTokenExpiresAt,
     },
   });
+
+  // Ghi audit LOGIN_SUCCESS.
+  try {
+    await audit.log({ userId: user.id, action: "AUTH_LOGIN_SUCCESS", target: `User:${user.id}`, meta: { email: user.email }, ip: req && req.ip, userAgent: req && req.headers && req.headers["user-agent"] });
+  } catch (_) {}
 
   return {
     accessToken,

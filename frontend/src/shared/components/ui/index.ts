@@ -24,3 +24,5 @@ export type {
   UploadItem,
   UploadStatus,
 } from "./UploadZone";
+export { Skeleton } from "./Skeleton";
+export type { SkeletonProps, SkeletonVariant } from "./Skeleton";

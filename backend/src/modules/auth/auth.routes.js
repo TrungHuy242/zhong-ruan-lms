@@ -13,6 +13,7 @@ router.post("/reset-password", authController.resetPassword);
 router.post("/logout", authenticate, authController.logout);
 router.put("/change-password", authenticate, authController.changePassword);
 router.put("/me", authenticate, authController.updateMe);
-router.get("/me", authenticate, authController.me);
+// GET /me đã chuyển sang profile.routes.js (trả kèm avatarFile).
+// Nếu user cũ vẫn gọi /api/auth/me GET sẽ trúng vào profile.routes vì mount order.
 
 module.exports = router;

@@ -1,0 +1,161 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.avatarRow {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+/* ===== Avatar circular ===== */
+.avatar {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.avatar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.avatar:focus-visible {
+  outline: 3px solid var(--brand-primary, #4f46e5);
+  outline-offset: 3px;
+}
+
+.avatarBusy {
+  cursor: wait;
+  opacity: 0.85;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== Overlay (camera icon on hover) ===== */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.avatar:hover .overlay,
+.avatar:focus-visible .overlay {
+  opacity: 1;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Progress ring/text ===== */
+.progressRing {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.progressText {
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* ===== Controls (buttons + hint + error) ===== */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.fileInput {
+  display: none;
+}
+
+.removeBtn {
+  color: var(--color-error, #dc2626);
+}
+
+.removeBtn:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted, #64748b);
+  line-height: 1.4;
+}
+
+.error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-error, #dc2626);
+  font-weight: 500;
+}
+
+/* ===== Responsive (mobile) ===== */
+@media (max-width: 640px) {
+  .avatarRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.875rem;
+  }
+
+  .avatar {
+    margin: 0 auto;
+  }
+
+  .controls {
+    align-items: stretch;
+  }
+}

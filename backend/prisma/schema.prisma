@@ -18,12 +18,17 @@ model User {
   resetTokenExpiresAt   DateTime?
   refreshTokenHash      String?
   refreshTokenExpiresAt DateTime?
+  /// Ảnh đại diện — FK UploadFile, nullable. Chỉ user tự thay đổi avatar của mình.
+  avatarFileId          Int?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   deletedAt             DateTime?
   auditLogs             AuditLog[]
   notifications         Notification[]
   uploads               UploadFile[]   @relation("UserUploads")
+  avatarFile            UploadFile?    @relation("UserAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
+
+  @@index([avatarFileId])
 }
 
 enum Role {
@@ -93,6 +98,7 @@ model UploadFile {
   uploadedBy   User      @relation("UserUploads", fields: [uploadedById], references: [id])
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
+  avatarOf     User[]    @relation("UserAvatar")
 
   @@index([uploadedById])
   @@index([deletedAt])

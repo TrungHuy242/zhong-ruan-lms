@@ -6,7 +6,10 @@ import {
   Input,
 } from "../../../shared/components/ui";
 import { ChangePasswordModal } from "../components/ChangePasswordModal";
+import { AvatarUploader } from "../components/AvatarUploader";
+import { LoginHistoryList } from "../components/LoginHistoryList";
 import {
+  History as HistoryIcon,
   KeyRound,
   Mail,
   Phone,
@@ -49,13 +52,6 @@ const ROLE_TONE: Record<UserRole, string> = {
   TEACHER: styles.badgeTeacher,
   STUDENT: styles.badgeStudent,
 };
-
-function initialsFromName(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 0 || !parts[0]) return "?";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 export function ProfilePage() {
   // ===== State =====
@@ -183,6 +179,34 @@ export function ProfilePage() {
     setErrors({});
   }
 
+  /**
+   * Avatar uploader cập nhật state local sau upload/remove thành công.
+   * Đồng thời đồng bộ authStorage.user.fullName (các field khác giữ nguyên) để header luôn
+   * hiển thị tên mới — avatar sẽ được Header render qua storedName nếu có.
+   */
+  function handleAvatarChange(updated: ProfileUser) {
+    setUser(updated);
+    const stored = authStorage.getUser();
+    if (stored) {
+      authStorage.setSession({
+        accessToken: authStorage.getAccessToken() ?? "",
+        refreshToken: authStorage.getRefreshToken() ?? "",
+        user: {
+          id: String(stored.id),
+          fullName: updated.fullName,
+          email: updated.email,
+          phone: updated.phone,
+          role: updated.role,
+          status: updated.status,
+        },
+      });
+    }
+  }
+
+  function handleAvatarMessage(type: "success" | "error", text: string) {
+    setAlertMessage({ type, text });
+  }
+
   // ===== Render =====
   if (loading) {
     return (
@@ -250,135 +274,156 @@ export function ProfilePage() {
       ) : null}
 
       {user ? (
-        <div className={styles.grid}>
-          <Card padding="md" className={styles.identityCard}>
-            <div className={styles.identityTop}>
-              <div className={styles.avatar} aria-hidden="true">
-                {initialsFromName(user.fullName)}
-              </div>
-              <div className={styles.identityInfo}>
-                <h2 className={styles.identityName}>{user.fullName}</h2>
-                <div className={styles.identityMeta}>
-                  <span className={styles.metaItem}>
-                    <Mail size={14} aria-hidden="true" />
-                    {user.email}
-                  </span>
+        <>
+          <div className={styles.grid}>
+            <Card padding="md" className={styles.identityCard}>
+              <div className={styles.identityTop}>
+                <AvatarUploader
+                  user={user}
+                  onChange={handleAvatarChange}
+                  onMessage={handleAvatarMessage}
+                />
+                <div className={styles.identityInfo}>
+                  <h2 className={styles.identityName}>{user.fullName}</h2>
+                  <div className={styles.identityMeta}>
+                    <span className={styles.metaItem}>
+                      <Mail size={14} aria-hidden="true" />
+                      {user.email}
+                    </span>
+                  </div>
+                  <div className={styles.badgeRow}>
+                    <span
+                      className={[styles.badge, ROLE_TONE[user.role]].join(" ")}
+                    >
+                      <Shield size={12} aria-hidden="true" />
+                      {ROLE_LABEL[user.role]}
+                    </span>
+                  </div>
                 </div>
-                <div className={styles.badgeRow}>
+              </div>
+              <div className={styles.metaList}>
+                <div className={styles.metaRow}>
+                  <span className={styles.metaLabel}>ID</span>
+                  <span className={styles.metaValue}>#{user.id}</span>
+                </div>
+                <div className={styles.metaRow}>
+                  <span className={styles.metaLabel}>Trạng thái</span>
                   <span
-                    className={[styles.badge, ROLE_TONE[user.role]].join(" ")}
+                    className={[
+                      styles.metaValue,
+                      user.status === "ACTIVE"
+                        ? styles.statusActive
+                        : styles.statusInactive,
+                    ].join(" ")}
                   >
-                    <Shield size={12} aria-hidden="true" />
-                    {ROLE_LABEL[user.role]}
+                    {user.status}
+                  </span>
+                </div>
+                <div className={styles.metaRow}>
+                  <span className={styles.metaLabel}>Số điện thoại</span>
+                  <span className={styles.metaValue}>
+                    {user.phone?.trim() ? user.phone : "—"}
                   </span>
                 </div>
               </div>
-            </div>
-            <div className={styles.metaList}>
-              <div className={styles.metaRow}>
-                <span className={styles.metaLabel}>ID</span>
-                <span className={styles.metaValue}>#{user.id}</span>
-              </div>
-              <div className={styles.metaRow}>
-                <span className={styles.metaLabel}>Trạng thái</span>
-                <span
-                  className={[
-                    styles.metaValue,
-                    user.status === "ACTIVE"
-                      ? styles.statusActive
-                      : styles.statusInactive,
-                  ].join(" ")}
-                >
-                  {user.status}
-                </span>
-              </div>
-              <div className={styles.metaRow}>
-                <span className={styles.metaLabel}>Số điện thoại</span>
-                <span className={styles.metaValue}>
-                  {user.phone?.trim() ? user.phone : "—"}
-                </span>
-              </div>
-            </div>
-          </Card>
+            </Card>
 
-          <Card padding="md" className={styles.formCard}>
-            <form className={styles.form} onSubmit={handleSubmit} noValidate>
-              {errors.submit ? (
-                <div className={styles.submitError} role="alert">
-                  {errors.submit}
+            <Card padding="md" className={styles.formCard}>
+              <form className={styles.form} onSubmit={handleSubmit} noValidate>
+                {errors.submit ? (
+                  <div className={styles.submitError} role="alert">
+                    {errors.submit}
+                  </div>
+                ) : null}
+
+                <Input
+                  label="Họ và tên"
+                  required
+                  value={form.fullName}
+                  onChange={(e) => handleChange("fullName", e.target.value)}
+                  disabled={submitting}
+                  error={errors.fullName}
+                  placeholder="Nhập họ và tên đầy đủ"
+                  leftIcon={<UserIcon size={16} />}
+                  maxLength={100}
+                  autoComplete="name"
+                />
+
+                <Input
+                  label="Email"
+                  value={user.email}
+                  disabled
+                  readOnly
+                  leftIcon={<Mail size={16} />}
+                  hint="Email được dùng để đăng nhập, không thể thay đổi tại đây."
+                />
+
+                <Input
+                  label="Số điện thoại"
+                  value={form.phone}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                  disabled={submitting}
+                  error={errors.phone}
+                  placeholder="VD: 0901 234 567"
+                  leftIcon={<Phone size={16} />}
+                  hint="Để trống nếu không muốn cung cấp."
+                  maxLength={20}
+                  autoComplete="tel"
+                  inputMode="tel"
+                />
+
+                <div className={styles.field}>
+                  <label className={styles.label}>Vai trò</label>
+                  <div className={styles.roleBox}>
+                    <Shield size={16} className={styles.roleIcon} aria-hidden="true" />
+                    <span>{ROLE_LABEL[user.role]}</span>
+                  </div>
+                  <span className={styles.hintText}>
+                    Vai trò được cấp bởi quản trị viên, không thể thay đổi tại đây.
+                  </span>
                 </div>
-              ) : null}
 
-              <Input
-                label="Họ và tên"
-                required
-                value={form.fullName}
-                onChange={(e) => handleChange("fullName", e.target.value)}
-                disabled={submitting}
-                error={errors.fullName}
-                placeholder="Nhập họ và tên đầy đủ"
-                leftIcon={<UserIcon size={16} />}
-                maxLength={100}
-                autoComplete="name"
-              />
-
-              <Input
-                label="Email"
-                value={user.email}
-                disabled
-                readOnly
-                leftIcon={<Mail size={16} />}
-                hint="Email được dùng để đăng nhập, không thể thay đổi tại đây."
-              />
-
-              <Input
-                label="Số điện thoại"
-                value={form.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                disabled={submitting}
-                error={errors.phone}
-                placeholder="VD: 0901 234 567"
-                leftIcon={<Phone size={16} />}
-                hint="Để trống nếu không muốn cung cấp."
-                maxLength={20}
-                autoComplete="tel"
-                inputMode="tel"
-              />
-
-              <div className={styles.field}>
-                <label className={styles.label}>Vai trò</label>
-                <div className={styles.roleBox}>
-                  <Shield size={16} className={styles.roleIcon} aria-hidden="true" />
-                  <span>{ROLE_LABEL[user.role]}</span>
+                <div className={styles.actions}>
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    leftIcon={<RefreshCcw size={16} />}
+                    onClick={handleReset}
+                    disabled={submitting || !isDirty()}
+                  >
+                    Đặt lại
+                  </Button>
+                  <Button
+                    type="submit"
+                    isLoading={submitting}
+                    loadingText="Đang lưu..."
+                    leftIcon={<Save size={16} />}
+                    disabled={!isDirty() && !submitting}
+                  >
+                    Lưu thay đổi
+                  </Button>
                 </div>
-                <span className={styles.hintText}>
-                  Vai trò được cấp bởi quản trị viên, không thể thay đổi tại đây.
-                </span>
-              </div>
+              </form>
+            </Card>
+          </div>
 
-              <div className={styles.actions}>
-                <Button
-                  variant="secondary"
-                  type="button"
-                  leftIcon={<RefreshCcw size={16} />}
-                  onClick={handleReset}
-                  disabled={submitting || !isDirty()}
-                >
-                  Đặt lại
-                </Button>
-                <Button
-                  type="submit"
-                  isLoading={submitting}
-                  loadingText="Đang lưu..."
-                  leftIcon={<Save size={16} />}
-                  disabled={!isDirty() && !submitting}
-                >
-                  Lưu thay đổi
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
+          {/* ===== Login history ===== */}
+          <section className={styles.historySection} aria-labelledby="login-history-heading">
+            <header className={styles.historyHeader}>
+              <h3 id="login-history-heading" className={styles.historyTitle}>
+                <HistoryIcon size={18} aria-hidden="true" />
+                Lịch sử đăng nhập
+              </h3>
+              <p className={styles.historyHint}>
+                10 lần đăng nhập và đăng xuất gần nhất của bạn. Nếu phát hiện hoạt động lạ,
+                vui lòng đổi mật khẩu ngay.
+              </p>
+            </header>
+            <Card padding="md">
+              <LoginHistoryList limit={10} />
+            </Card>
+          </section>
+        </>
       ) : null}
 
       <ChangePasswordModal

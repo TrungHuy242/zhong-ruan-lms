@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const authRoutes = require("./modules/auth/auth.routes");
+const profileRoutes = require("./modules/auth/profile.routes");
 const userRoutes = require("./modules/users/user.routes");
 const auditRoutes = require("./modules/audit/audit.routes");
 const notificationRoutes = require("./modules/notifications/notification.routes");
@@ -19,6 +21,19 @@ const app = express();
 
 // 1. CORS
 app.use(cors());
+
+// 1.5. Static serve cho thư mục uploads/ — để avatar (và file upload khác) hiển thị qua URL public.
+//     URL: GET /uploads/<storedName> — chỉ serve file vật lý, không list thư mục.
+//     Lưu ý bảo mật: đây là URL public, không có auth. Nếu sau này cần auth/private file,
+//     nên đổi sang signed URL hoặc route /api/files/:id/download có check permission.
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "..", "uploads"), {
+    dotfiles: "deny",
+    index: false,
+    maxAge: "1d",
+  })
+);
 
 // 2. Body parsing — must be before routes.
 //    Wrap express.json() so a malformed body becomes a normal 400 response
@@ -75,6 +90,9 @@ app.get("/api/health/socket", (req, res) => {
 });
 
 // 4. Routes
+//    Profile routes mount TRƯỚC auth routes để override /me GET (trả kèm avatarFile).
+//    Express match first wins — /me GET trong profile.routes phải được check trước.
+app.use("/api/auth", profileRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", userRoutes);
 app.use("/api/admin/audit-logs", auditRoutes);
