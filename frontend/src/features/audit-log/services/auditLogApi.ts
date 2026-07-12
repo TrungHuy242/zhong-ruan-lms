@@ -108,6 +108,24 @@ export async function listAuditLogs(
 }
 
 /**
+ * Lấy N hoạt động gần nhất (createdAt desc) — dùng cho widget Recent Activities
+ * trên Dashboard. Endpoint mới bổ sung, không phá listAuditLogs hiện có.
+ *
+ * BE: GET /api/admin/audit-logs/recent?limit=10  (limit clamp [1, 50], default 10)
+ * Trả về đúng `limit` bản ghi mới nhất — không cần sort/slice phía FE.
+ */
+export async function getRecentAuditLogs(
+  limit = 10
+): Promise<AuditLog[]> {
+  const safe = Math.min(50, Math.max(1, Math.floor(Number(limit) || 10)));
+  // Endpoint mới trả `{ message, data: AuditLog[] }` — apiFetch sẽ unwrap `data`.
+  const data = await apiFetch<AuditLog[]>(
+    `/admin/audit-logs/recent?limit=${safe}`
+  );
+  return Array.isArray(data) ? data : [];
+}
+
+/**
  * Lấy chi tiết 1 audit log theo id.
  * Trả null nếu BE trả 404.
  *

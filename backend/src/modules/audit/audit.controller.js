@@ -69,4 +69,34 @@ async function getAuditLogById(req, res) {
   }
 }
 
-module.exports = { listAuditLogs, getAuditLogById };
+/**
+ * GET /api/admin/audit-logs/recent?limit=10
+ *
+ * Trả đúng N hoạt động gần nhất (createdAt desc). Dùng cho widget
+ * Recent Activities trên Dashboard — tránh over-fetch pageSize lớn rồi
+ * slice phía FE (fix P0-01).
+ *
+ * Query:
+ *   - limit (number)  — mặc định 10, tối đa 50. Service clamp.
+ *
+ * Response shape:
+ *   { message, data: AuditLog[] }  // data là mảng đúng `limit` phần tử
+ */
+async function getRecentAuditLogs(req, res) {
+  try {
+    const raw = req.query.limit;
+    const limit = raw == null || raw === "" ? 10 : Number(raw);
+    const items = await auditService.getRecentLogs({ limit });
+    res.json({
+      message: "Lấy nhật ký gần đây thành công",
+      data: items,
+    });
+  } catch (error) {
+    console.error("[audit.controller] getRecentAuditLogs error:", error && error.message ? error.message : error);
+    res.status(500).json({
+      message: "Lỗi hệ thống",
+    });
+  }
+}
+
+module.exports = { listAuditLogs, getRecentAuditLogs, getAuditLogById };

@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
-  listAuditLogs,
+  getRecentAuditLogs,
   AUDIT_ACTION_LABELS,
   AUDIT_ACTION_GROUPS,
   AUDIT_GROUP_LABELS,
@@ -69,8 +69,8 @@ function actorLabel(log: AuditLog): string {
 /**
  * RecentActivities — widget hiển thị các hoạt động gần nhất trên Dashboard.
  *
- * - Gọi GET /admin/audit-logs với pageSize lớn (200 — đủ cho 10 dòng đầu),
- *   sort createdAt desc (BE đã orderBy createdAt desc mặc định).
+ * - Gọi GET /admin/audit-logs/recent?limit=N — BE trả đúng N hoạt động mới nhất
+ *   (createdAt desc). Không cần sort/slice phía FE (fix P0-01).
  * - Click 1 dòng → mở AuditLogDetailModal (re-use từ màn Audit Log).
  */
 export function RecentActivities({
@@ -87,16 +87,10 @@ export function RecentActivities({
     onLoadingChange?.(true);
     setError(null);
     try {
-      // BE filter theo pageSize; sortBy createdAt desc là default.
-      // Ta lấy pageSize=200 để có đủ data cho limit dòng đầu.
-      // Nếu sau này BE có endpoint /recent thì thay bằng endpoint đó.
-      const all = await listAuditLogs({ pageSize: 200 });
-      // sort theo createdAt desc (đề phòng BE trả không đúng thứ tự)
-      const sorted = [...all.items].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      setItems(sorted.slice(0, limit));
+      // Endpoint chuyên dụng: BE trả đúng N bản ghi mới nhất (sort createdAt desc),
+      // không phụ thuộc pageSize cap của list endpoint.
+      const recent = await getRecentAuditLogs(limit);
+      setItems(recent);
     } catch (err) {
       const message =
         err instanceof ApiError

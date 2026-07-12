@@ -184,6 +184,31 @@ async function listLogs({
 }
 
 /**
+ * Lấy N hoạt động gần nhất theo createdAt desc — dùng cho widget Recent Activities.
+ *
+ * Khác với `listLogs`:
+ *   - KHÔNG phân trang, KHÔNG filter — chỉ lấy đúng N row mới nhất.
+ *   - `limit` clamp [1, 50], mặc định 10.
+ *   - Luôn sort createdAt desc → 10 dòng đầu chắc chắn là 10 hoạt động mới nhất,
+ *     không phụ thuộc vào pageSize cap (fix P0-01 của Dashboard).
+ *   - `meta` vẫn redact như listLogs.
+ *
+ * @param {Object} [opts]
+ * @param {number} [opts.limit=10] - Số bản ghi muốn lấy (clamp [1, 50]).
+ */
+async function getRecentLogs({ limit = 10 } = {}) {
+  const safeLimit = Math.min(50, Math.max(1, Math.floor(Number(limit) || 10)));
+  const items = await prisma.auditLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take: safeLimit,
+    include: {
+      user: { select: ACTOR_SELECT },
+    },
+  });
+  return items.map(redactLog);
+}
+
+/**
  * Lấy chi tiết 1 audit log theo id. Trả `null` nếu không tồn tại.
  * `meta` được redact như list.
  */
@@ -204,6 +229,7 @@ module.exports = {
   logFromRequest,
   extractRequestMeta,
   listLogs,
+  getRecentLogs,
   getLogById,
   // Export `redactMeta` cho test đơn vị. Không nên gọi từ controller —
   // redaction phải đi qua `listLogs` / `getLogById` để đảm bảo không lộ data thô.
