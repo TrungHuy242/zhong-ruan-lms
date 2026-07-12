@@ -3,11 +3,11 @@ const router = express.Router();
 
 const authController = require("./auth.controller");
 const authenticate = require("../../middlewares/auth.middleware");
-const loginRateLimiter = require("../../middlewares/rateLimit.middleware");
+const { loginRateLimiter, refreshTokenRateLimiter } = require("../../middlewares/rateLimit.middleware");
 
 router.post("/register", authController.register);
 router.post("/login", loginRateLimiter, authController.login);
-router.post("/refresh-token", authController.refreshToken);
+router.post("/refresh-token", refreshTokenRateLimiter, authController.refreshToken);
 router.post("/forgot-password", authController.forgotPassword);
 router.post("/reset-password", authController.resetPassword);
 router.post("/logout", authenticate, authController.logout);

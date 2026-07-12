@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { Role, UserStatus } = require("@prisma/client");
 const prisma = require("../../config/database");
 const audit = require("../audit/audit.service");
+const v = require("./auth.validator");
 
 function generateAccessToken(user) {
   return jwt.sign(
@@ -20,9 +21,14 @@ function generateAccessToken(user) {
 }
 
 function generateRefreshToken(user) {
+  // jti đảm bảo mỗi refresh token là DUY NHẤT về giá trị (kể cả khi cùng user,
+  // cùng iat). Kết hợp với atomic updateMany trong refreshToken(), đây là cơ chế
+  // chống race condition: nếu 2 request cùng refresh token cũ, chỉ request đầu
+  // tiên commit được WHERE refreshTokenHash = oldHash, request sau count=0 → fail.
   return jwt.sign(
     {
       id: user.id,
+      jti: crypto.randomUUID(),
     },
     process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
     {
@@ -46,8 +52,12 @@ function getRefreshExpiryDate() {
 }
 
 async function login(email, password, req) {
+  // Chuẩn hóa email trước khi truy vấn (trim + lowercase) để "User@x.com " vẫn
+  // match được user đã đăng ký với "user@x.com". Không validate/throw ở login để
+  // tránh lộ thông tin email có tồn tại hay không.
+  const normalizedEmail = v.normalizeEmail(email);
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
 
   if (!user) {
@@ -119,6 +129,7 @@ async function refreshToken(token) {
 
   const user = await prisma.user.findUnique({
     where: { id: decoded.id },
+    select: { id: true, status: true },
   });
 
   if (!user) {
@@ -131,26 +142,34 @@ async function refreshToken(token) {
 
   const incomingHash = hashRefreshToken(token);
 
-  if (!user.refreshTokenHash || user.refreshTokenHash !== incomingHash) {
-    throw new Error("Refresh token không hợp lệ");
-  }
-
-  if (!user.refreshTokenExpiresAt || user.refreshTokenExpiresAt.getTime() <= Date.now()) {
-    throw new Error("Refresh token không hợp lệ hoặc đã hết hạn");
-  }
-
   const newAccessToken = generateAccessToken(user);
   const newRefreshToken = generateRefreshToken(user);
   const newRefreshTokenHash = hashRefreshToken(newRefreshToken);
   const newRefreshTokenExpiresAt = getRefreshExpiryDate();
 
-  await prisma.user.update({
-    where: { id: user.id },
+  // Atomic rotation: updateMany chỉ match khi hash cũ còn đúng và chưa hết hạn.
+  // Nếu 0 row updated → token đã bị consume bởi request khác (race) hoặc đã expire.
+  // Trong cả 2 trường hợp, REVOKE TOÀN BỘ session (xóa hash) để bảo vệ account.
+  const consumed = await prisma.user.updateMany({
+    where: {
+      id: user.id,
+      refreshTokenHash: incomingHash,
+      refreshTokenExpiresAt: { gt: new Date() },
+    },
     data: {
       refreshTokenHash: newRefreshTokenHash,
       refreshTokenExpiresAt: newRefreshTokenExpiresAt,
     },
   });
+
+  if (consumed.count === 0) {
+    // Best-effort revoke: nuốt lỗi DB để trả message auth chuẩn.
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshTokenHash: null, refreshTokenExpiresAt: null },
+    }).catch(() => {});
+    throw new Error("Refresh token không hợp lệ hoặc đã hết hạn");
+  }
 
   return {
     accessToken: newAccessToken,
@@ -159,20 +178,13 @@ async function refreshToken(token) {
 }
 
 async function register(payload, req) {
-  const { fullName, email, phone, password } = payload;
+  const { phone, password } = payload;
 
-  if (!fullName || !email || !password) {
-    throw new Error("Vui lòng nhập đầy đủ họ tên, email và mật khẩu");
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    throw new Error("Email không đúng định dạng");
-  }
-
-  if (password.length < 6) {
-    throw new Error("Mật khẩu phải có ít nhất 6 ký tự");
-  }
+  // Validate + normalize toàn bộ input phía backend (không phụ thuộc FE).
+  const fullName = v.validateFullName(payload.fullName);
+  const email = v.validateEmail(payload.email);
+  v.validatePassword(password, "Mật khẩu");
+  const phoneNormalized = phone ? v.validatePhone(phone) : null;
 
   const existedUser = await prisma.user.findUnique({
     where: { email },
@@ -191,7 +203,7 @@ async function register(payload, req) {
     data: {
       fullName,
       email,
-      phone: phone || null,
+      phone: phoneNormalized,
       passwordHash,
       role: Role.STUDENT,
       status: UserStatus.ACTIVE,
@@ -211,10 +223,22 @@ async function register(payload, req) {
 }
 
 async function updateProfile(userId, payload) {
-  const { fullName, phone, address } = payload;
+  const { address } = payload;
 
-  if (!fullName || fullName.trim() === "") {
-    throw new Error("Vui lòng nhập họ tên");
+  // fullName: nếu có thì phải trim + length hợp lệ.
+  let fullNameUpdate;
+  if (payload.fullName !== undefined) {
+    fullNameUpdate = v.validateFullName(payload.fullName);
+  }
+
+  // phone: optional. Trim + format; nếu rỗng → set null (clear).
+  let phoneUpdate;
+  if (payload.phone !== undefined) {
+    if (payload.phone === null || (typeof payload.phone === "string" && payload.phone.trim() === "")) {
+      phoneUpdate = null;
+    } else {
+      phoneUpdate = v.validatePhone(payload.phone);
+    }
   }
 
   // address: optional. Trim nếu có, set null khi rỗng/trim-rỗng.
@@ -237,8 +261,8 @@ async function updateProfile(userId, payload) {
   const updated = await prisma.user.update({
     where: { id: userId },
     data: {
-      fullName: fullName.trim(),
-      phone: phone === undefined ? undefined : phone || null,
+      ...(fullNameUpdate !== undefined ? { fullName: fullNameUpdate } : {}),
+      ...(phoneUpdate !== undefined ? { phone: phoneUpdate } : {}),
       ...(addressUpdate !== undefined ? { address: addressUpdate } : {}),
     },
     select: {
@@ -257,13 +281,8 @@ async function updateProfile(userId, payload) {
 }
 
 async function changePassword(userId, oldPassword, newPassword, req) {
-  if (!oldPassword || !newPassword) {
-    throw new Error("Vui lòng nhập mật khẩu cũ và mật khẩu mới");
-  }
-
-  if (newPassword.length < 6) {
-    throw new Error("Mật khẩu mới phải có ít nhất 6 ký tự");
-  }
+  v.validatePassword(oldPassword, "Mật khẩu cũ");
+  v.validatePassword(newPassword, "Mật khẩu mới");
 
   if (oldPassword === newPassword) {
     throw new Error("Mật khẩu mới phải khác mật khẩu cũ");
@@ -300,17 +319,20 @@ async function changePassword(userId, oldPassword, newPassword, req) {
 async function forgotPassword(email) {
   const result = { sent: true };
 
-  if (!email) {
+  // Chuẩn hóa email; không hợp lệ thì vẫn trả { sent: true } để tránh lộ
+  // thông tin email tồn tại hay không. Nuốt mọi lỗi validate.
+  let normalizedEmail;
+  try {
+    normalizedEmail = v.validateEmailOptional(email);
+  } catch (_) {
     return result;
   }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  if (!normalizedEmail) {
     return result;
   }
 
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
 
   if (!user) {
@@ -346,13 +368,10 @@ async function forgotPassword(email) {
 }
 
 async function resetPassword(rawToken, newPassword) {
-  if (!rawToken || !newPassword) {
-    throw new Error("Vui lòng cung cấp token và mật khẩu mới");
+  if (!rawToken || typeof rawToken !== "string" || rawToken.trim() === "") {
+    throw new Error("Vui lòng cung cấp token đặt lại mật khẩu");
   }
-
-  if (newPassword.length < 6) {
-    throw new Error("Mật khẩu mới phải có ít nhất 6 ký tự");
-  }
+  v.validatePassword(newPassword, "Mật khẩu mới");
 
   const hashedToken = crypto
     .createHash("sha256")
