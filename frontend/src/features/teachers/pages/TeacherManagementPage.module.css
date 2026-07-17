@@ -1,0 +1,434 @@
+/* TeacherManagementPage — Admin trang quản lý giảng viên. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.tableCard {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ===== Toolbar ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  background-color: var(--bg-surface-alt);
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  flex: 1 1 280px;
+  min-width: 220px;
+}
+
+.toolbarActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.filterToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  height: 40px;
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.filterToggleBtn:hover {
+  background-color: var(--bg-surface-alt);
+}
+
+.filterToggleBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.filterToggleBtnActive {
+  border-color: var(--brand-primary);
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
+}
+
+.filterToggleBtnActive .chevron {
+  color: var(--brand-primary);
+}
+
+.chevron {
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.columnToggleWrap {
+  position: relative;
+}
+
+.columnMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 220px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  z-index: 50;
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+}
+
+.columnItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: background-color 0.1s ease;
+}
+
+.columnItem:hover {
+  background-color: var(--bg-surface-alt);
+}
+
+.columnItem input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--brand-primary);
+  cursor: pointer;
+}
+
+.columnItemLocked {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.columnItemLocked input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
+.columnMenuHeader {
+  padding: var(--space-2) var(--space-3);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: var(--space-1);
+}
+
+/* ===== Table footer ===== */
+.tableFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-default);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.totalLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ===== Empty / error state ===== */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
+  color: var(--text-secondary);
+}
+
+.emptyState svg {
+  color: var(--text-placeholder);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.emptyHint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.errorWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+/* ===== Badges ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+
+.badgeFeatured {
+  background-color: var(--brand-accent-light);
+  color: var(--brand-accent-hover);
+}
+
+.badgeActive {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badgeWarn {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.badgeMuted {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+}
+
+.badgeDeleted {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* ===== Avatar + name cell ===== */
+.fullNameCell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 180px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.avatarPlaceholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
+  border: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.fullName {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* ===== Specialty tags ===== */
+.tagList {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tagMore {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  background-color: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ===== Row deleted ===== */
+.rowDeleted,
+.rowDeleted td,
+.rowDeleted:hover {
+  opacity: 0.55;
+  background-color: transparent !important;
+}
+
+.rowDeleted td {
+  text-decoration: line-through;
+  text-decoration-color: rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Action dropdown ===== */
+.actionWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.actionTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-default);
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.actionTrigger:hover {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-primary);
+}
+
+.actionTrigger:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.actionMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  z-index: 50;
+  padding: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.actionItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background-color: transparent;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.actionItem:hover {
+  background-color: var(--bg-surface-alt);
+}
+
+.actionItem:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.actionItemDanger {
+  color: var(--color-error);
+}
+
+.actionItemDanger:hover {
+  background-color: var(--color-error-bg);
+}
+
+@media (max-width: 640px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .searchWrap,
+  .toolbarActions {
+    width: 100%;
+  }
+  .fullNameCell {
+    min-width: 0;
+  }
+  .fullName {
+    max-width: 140px;
+  }
+}

@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  GraduationCap,
 } from "lucide-react";
 import { authStorage } from "../../storage/authStorage";
 import styles from "./Sidebar.module.css";
@@ -28,6 +29,7 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   { label: "Dashboard", to: "/dashboard", Icon: LayoutDashboard },
   { label: "Quản lý người dùng", to: "/users", Icon: Users, allowedRoles: ["ADMIN"] },
+  { label: "Quản lý giảng viên", to: "/teachers", Icon: GraduationCap, allowedRoles: ["ADMIN"] },
   { label: "Thông báo", to: "/notifications", Icon: Bell },
   { label: "Quản lý tệp", to: "/files", Icon: FolderOpen },
   {
