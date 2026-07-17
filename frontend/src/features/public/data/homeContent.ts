@@ -21,16 +21,6 @@ export interface UspItem {
   description: string;
 }
 
-export interface CourseItem {
-  id: string;
-  name: string;
-  description: string;
-  price: string;
-  level: string;
-  lessons: number;
-  to: string;
-}
-
 export interface TeacherItem {
   name: string;
   title: string;
@@ -116,41 +106,14 @@ export const uspContent: UspItem[] = [
 ];
 
 // =============================================================================
-// KHÓA HỌC NỔI BẬT
+// KHÓA HỌC NỔI BẬT — import từ coursesContent.ts (1 nguồn duy nhất)
+// HomePage chỉ hiển thị rút gọn, đủ tên + giá + mô tả ngắn.
 // =============================================================================
 
-export const featuredCoursesContent = [
-  {
-    id: "hsk-1-2",
-    name: "HSK Sơ cấp (HSK 1-2)",
-    description:
-      "Dành cho người mới bắt đầu hoặc đã mất gốc. Nền tảng vững chắc từ bảng chữ cái, phiên âm Pinyin đến giao tiếp cơ bản.",
-    price: "Từ 90.000đ/buổi",
-    level: "Sơ cấp",
-    lessons: 48,
-    to: "/khoa-hoc",
-  },
-  {
-    id: "hsk-3-4",
-    name: "HSK Trung cấp (HSK 3-4)",
-    description:
-      "Củng cố giao tiếp, mở rộng từ vựng, chuẩn bị thi chứng chỉ HSK. Phù hợp với người đã có nền tảng HSK 1-2.",
-    price: "Từ 110.000đ/buổi",
-    level: "Trung cấp",
-    lessons: 64,
-    to: "/khoa-hoc",
-  },
-  {
-    id: "hsk-5-6",
-    name: "HSK Cao cấp (HSK 5-6)",
-    description:
-      "Luyện thi chuyên sâu, mục tiêu du học, công việc hoặc dịch thuật chuyên nghiệp. Giảng viên Tiến sĩ trực tiếp hướng dẫn.",
-    price: "Từ 130.000đ/buổi",
-    level: "Cao cấp",
-    lessons: 80,
-    to: "/khoa-hoc",
-  },
-];
+import { getCourseSummaries } from "./coursesContent";
+import type { CourseSummary } from "./coursesContent";
+
+export const featuredCoursesContent: CourseSummary[] = getCourseSummaries();
 
 // =============================================================================
 // GIẢNG VIÊN

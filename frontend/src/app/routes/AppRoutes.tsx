@@ -31,6 +31,7 @@ import { ProtectedRoute } from "../guards/ProtectedRoute";
 import { PublicLayout } from "../../layouts/PublicLayout";
 import { HomePage } from "../../pages/public/HomePage";
 import { CoursesPage } from "../../pages/public/CoursesPage";
+import { CourseDetailPage } from "../../pages/public/CourseDetailPage";
 import { TeachersPage } from "../../pages/public/TeachersPage";
 import { PricingPage } from "../../pages/public/PricingPage";
 import { ContactPage } from "../../pages/public/ContactPage";
@@ -42,6 +43,7 @@ export function AppRoutes() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/khoa-hoc" element={<CoursesPage />} />
+        <Route path="/khoa-hoc/:slug" element={<CourseDetailPage />} />
         <Route path="/giang-vien" element={<TeachersPage />} />
         <Route path="/bang-gia" element={<PricingPage />} />
         <Route path="/lien-he" element={<ContactPage />} />

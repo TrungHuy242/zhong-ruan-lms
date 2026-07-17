@@ -45,6 +45,22 @@
   flex: 1;
 }
 
+.audienceLine {
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--brand-primary-lighter);
+  border-left: 3px solid var(--brand-primary);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.audienceLine strong {
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
 .meta {
   display: flex;
   gap: var(--space-4);

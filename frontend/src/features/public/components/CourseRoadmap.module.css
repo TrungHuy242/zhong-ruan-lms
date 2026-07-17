@@ -1,0 +1,121 @@
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  position: relative;
+}
+
+/* Đường dọc nối các marker */
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 19px;
+  top: 16px;
+  bottom: 16px;
+  width: 2px;
+  background: var(--border-default);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: var(--space-4);
+  position: relative;
+  align-items: start;
+}
+
+.marker {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  color: var(--text-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  box-shadow: 0 0 0 4px var(--bg-surface), 0 0 0 5px var(--brand-primary-light);
+  position: relative;
+  z-index: 1;
+}
+
+.markerNum {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.content {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.content:hover {
+  border-color: var(--brand-primary-light);
+  box-shadow: var(--shadow-card);
+}
+
+.headRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.stage {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.sessions {
+  display: inline-block;
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .item {
+    grid-template-columns: 32px 1fr;
+    gap: var(--space-3);
+  }
+
+  .marker {
+    width: 32px;
+    height: 32px;
+  }
+
+  .timeline::before {
+    left: 15px;
+  }
+
+  .content {
+    padding: var(--space-4);
+  }
+
+  .stage {
+    font-size: 15px;
+  }
+}

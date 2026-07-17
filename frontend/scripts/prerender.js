@@ -24,6 +24,9 @@ const PREVIEW_PORT = 4173; // mặc định của `vite preview`
 const ROUTES = [
   { path: "/", file: "dist/index.html" },
   { path: "/khoa-hoc", file: "dist/khoa-hoc/index.html" },
+  { path: "/khoa-hoc/hsk-1-2", file: "dist/khoa-hoc/hsk-1-2/index.html" },
+  { path: "/khoa-hoc/hsk-3-4", file: "dist/khoa-hoc/hsk-3-4/index.html" },
+  { path: "/khoa-hoc/hsk-5-6", file: "dist/khoa-hoc/hsk-5-6/index.html" },
   { path: "/giang-vien", file: "dist/giang-vien/index.html" },
   { path: "/bang-gia", file: "dist/bang-gia/index.html" },
   { path: "/lien-he", file: "dist/lien-he/index.html" },

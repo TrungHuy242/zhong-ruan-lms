@@ -1,0 +1,339 @@
+/* ===== Hero riêng khóa ===== */
+
+.hero {
+  background: var(--hero-gradient, linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-active) 100%));
+  padding: var(--space-12) 0;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  text-align: center;
+}
+
+.levelBadge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.3px;
+}
+
+.heading {
+  font-family: "Be Vietnam Pro", "Inter", sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 auto var(--space-5);
+  text-wrap: balance;
+}
+
+.subheading {
+  font-size: 16px;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 0 auto var(--space-8);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.heroMeta {
+  display: flex;
+  gap: var(--space-6);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-8);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.metaItem svg {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.heroCta {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.priceBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  min-width: 220px;
+}
+
+.priceLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.price {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  margin: var(--space-1) 0;
+}
+
+.priceNote {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px var(--space-8);
+  background: #fff;
+  color: var(--brand-primary);
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.ctaBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Sections ===== */
+
+.section {
+  padding: 80px 0;
+}
+
+.sectionAlt {
+  background: var(--bg-page);
+}
+
+.sectionWhite {
+  background: var(--bg-surface);
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: var(--space-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-family: "Be Vietnam Pro", "Inter", sans-serif;
+  font-size: clamp(24px, 2.5vw, 32px);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.sectionSubtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ===== Outcomes ===== */
+
+.outcomesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.outcomeItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.outcomeItem:hover {
+  border-color: var(--brand-primary);
+  transform: translateY(-2px);
+}
+
+.outcomeIcon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.outcomeText {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  padding-top: 2px;
+}
+
+/* ===== Audience card ===== */
+
+.audienceCard {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--brand-primary-lighter);
+  border-left: 4px solid var(--brand-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-8);
+}
+
+.audienceTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4);
+}
+
+.audienceText {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* ===== 2 khóa khác ===== */
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-6);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ===== Not Found ===== */
+
+.notFound {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-4);
+  background: var(--bg-page);
+}
+
+.notFoundInner {
+  text-align: center;
+  max-width: 480px;
+}
+
+.notFoundTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4);
+}
+
+.notFoundText {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0 0 var(--space-8);
+}
+
+.notFoundBtn {
+  display: inline-block;
+  padding: 14px var(--space-8);
+  background: var(--brand-primary);
+  color: var(--text-on-primary);
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.notFoundBtn:hover {
+  background: var(--brand-primary-hover);
+  transform: translateY(-1px);
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 1024px) {
+  .outcomesList {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--space-10) 0;
+  }
+
+  .container {
+    padding: 0 var(--space-4);
+  }
+
+  .section {
+    padding: 48px 0;
+  }
+
+  .heroMeta {
+    gap: var(--space-4);
+  }
+
+  .heroCta {
+    flex-direction: column;
+  }
+
+  .ctaBtn,
+  .priceBox {
+    width: 100%;
+  }
+
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeader {
+    margin-bottom: var(--space-8);
+  }
+
+  .audienceCard {
+    padding: var(--space-6);
+  }
+}
