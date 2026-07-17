@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Allow: /khoa-hoc
+Allow: /giang-vien
+Allow: /bang-gia
+Allow: /lien-he
+
+Disallow: /dashboard
+Disallow: /users
+Disallow: /notifications
+Disallow: /files
+Disallow: /logs
+Disallow: /settings
+Disallow: /profile
+Disallow: /search
+Disallow: /trash
+Disallow: /api
+Disallow: /uploads
+
+Sitemap: https://zhongruan.vn/sitemap.xml

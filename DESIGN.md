@@ -231,3 +231,63 @@ Màu chữ mặc định: `--text-primary` cho nội dung chính, `--text-second
 - Khi tạo màn hình mới: ưu tiên tái sử dụng component đã định nghĩa (Button, Input, Card, Table, Badge, Modal, Alert...) thay vì tạo style riêng lẻ từng nơi.
 - Chỉ giữ lại từ giao diện cũ: **màu thương hiệu** (đỏ + vàng gold) và **nội dung/nghiệp vụ** (tên thương hiệu, slogan, dữ liệu, trường thông tin...). Toàn bộ layout, spacing, cách trình bày component là **thiết kế mới**, theo chuẩn SaaS/Admin Dashboard hiện đại.
 - Nếu một màn hình cụ thể (VD: Login) cần chi tiết bố cục riêng, sẽ có file mô tả riêng cho màn đó (VD: `screens/login.md`) — nhưng màu sắc/token/component vẫn phải lấy từ file `DESIGN.md` này, không định nghĩa lại.
+
+---
+
+## 8. Public/Marketing Site — bổ sung
+
+Phần này dành cho 5 trang marketing (Home / Courses / Teachers / Pricing / Contact) — tách hẳn khỏi Admin shell nhưng vẫn dùng chung design tokens ở mục 1–7. Mục tiêu: tạo bộ mặt thương hiệu nhất quán với Admin nhưng có phong cách marketing riêng (hero lớn, animation, CTA nổi bật hơn).
+
+### 8.1 Token bổ sung (chỉ dùng cho marketing)
+
+| Token | Giá trị | Mô tả |
+|---|---|---|
+| `--hero-gradient` | `linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-active) 100%)` | Background cho hero section, banner lớn |
+| `--hero-gradient-accent` | `linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%)` | Background hero nhấn vàng gold, dùng cho trang đặc biệt (VD: Landing giảm giá) |
+| `--section-spacing` | `80px` (desktop) / `48px` (mobile) | Padding-top + padding-bottom mặc định cho mỗi section marketing |
+
+Các token này KHÔNG thay thế token Admin — Admin vẫn dùng `--brand-primary` đơn sắc. Public có thêm gradient + section spacing thoáng hơn vì làm landing page.
+
+### 8.2 Layout pattern Public
+
+- **Container chính**: `max-width: 1280px`, `margin: 0 auto`, `padding: 0 var(--space-6)`. Trên mobile `padding: 0 var(--space-4)`.
+- **Section**: padding-top + padding-bottom = `--section-spacing`. Nếu cần section sát nhau, dùng `--space-6` thay.
+- **Section tone**: xen kẽ `--bg-page` (sáng nhạt) và `--bg-surface` (trắng) để tạo nhịp phân khu rõ ràng khi user cuộn.
+- **PublicLayout**: full viewport height, header sticky 72px (64px mobile), footer đỏ đậm `var(--brand-primary-active)`. Tách hẳn với `AdminLayout` (có Sidebar + Topbar).
+
+### 8.3 Typography Public (kế thừa mục 2 + bổ sung)
+
+| Cấp | Size | Weight | Dùng cho |
+|---|---|---|---|
+| Hero H1 | 48–56px desktop / 32px mobile | 800 | Tiêu đề lớn trên hero section |
+| Hero subtitle | 18–20px | 400 | Mô tả ngắn dưới H1 hero |
+| Section H2 | 32–40px | 700 | Tiêu đề section lớn (VD: "Khóa học nổi bật") |
+| Section H3 | 22–24px | 600 | Tiêu đề card trong section |
+
+Font vẫn dùng `Be Vietnam Pro` + `Inter` như Admin, đã import trong `index.html`.
+
+### 8.4 Chính sách animation
+
+| Ngữ cảnh | Admin | Public |
+|---|---|---|
+| Hover/transition | Tối giản (150ms ease) | Tối giản (150ms ease) — giống Admin |
+| Fade-in on scroll | Không dùng | Khuyến khích (200–400ms ease-out) |
+| Count-up số liệu | Không dùng | Khuyến khích (dùng `useCountUp` hook đã có) |
+| Drawer/menu | Sidebar collapse | Hamburger drawer slide-down mobile |
+
+Public có animation nhiều hơn vì mục tiêu marketing là **gây ấn tượng**. Admin tối giản vì mục tiêu là **thao tác nhanh, không gây rối**.
+
+### 8.5 Component mới cần cho Public (chỉ liệt kê — implement ở task sau)
+
+| Component | Mô tả ngắn |
+|---|---|
+| `HeroSection` | H1 lớn + subtitle + 1-2 CTA button, nền `--hero-gradient` hoặc ảnh nền |
+| `CTABanner` | Banner ngang full-width, 1 câu kêu gọi + 1 button, dùng giữa các section |
+| `TestimonialCard` | Card đánh giá học viên: avatar, tên, cấp HSK, nội dung, rating 5 sao |
+| `PricingCard` | Card gói giá: tên gói, giá, danh sách tính năng, nút CTA, highlight gói phổ biến |
+| `TeacherCard` | Card giảng viên: ảnh, tên, chứng chỉ, kinh nghiệm, nút "Đặt học thử" |
+| `StatCounter` | Số liệu lớn có animation count-up (dùng `useCountUp`), label ngắn bên dưới |
+| `FAQAccordion` | Câu hỏi thường gặp dạng accordion (mở/đóng từng item) |
+| `Logo` | Logo dùng chung (đã có sẵn ở `public/logo/logo-full.png`) |
+
+Các component này sẽ được tạo ở các task tiếp theo, **không implement trong task hạ tầng này**.

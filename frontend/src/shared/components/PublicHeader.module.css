@@ -1,0 +1,263 @@
+/* ===== PublicHeader ===== */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background: var(--bg-surface);
+  z-index: 100;
+  transition: box-shadow 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.scrolled {
+  box-shadow: var(--shadow-card);
+  border-bottom-color: var(--border-default);
+}
+
+.container {
+  max-width: 1280px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logo img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+/* ===== Desktop nav ===== */
+
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  justify-content: center;
+}
+
+.navLink {
+  padding: var(--space-2) var(--space-4);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.navLink:hover {
+  color: var(--brand-primary);
+  background: var(--brand-primary-lighter);
+}
+
+.navLinkActive {
+  color: var(--brand-primary);
+  border-bottom-color: var(--brand-primary);
+  font-weight: 600;
+}
+
+/* ===== Actions (login + CTA) ===== */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.loginLink {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.loginLink:hover {
+  background: var(--bg-surface-alt);
+  color: var(--brand-primary);
+}
+
+.ctaButton {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-on-primary);
+  background: var(--brand-primary);
+  text-decoration: none;
+  padding: 10px var(--space-5);
+  border-radius: var(--radius-md);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.ctaButton:hover {
+  background: var(--brand-primary-hover);
+  transform: translateY(-1px);
+}
+
+.ctaButton:active {
+  background: var(--brand-primary-active);
+}
+
+/* ===== Hamburger ===== */
+
+.hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.hamburger:hover {
+  background: var(--bg-surface-alt);
+  border-color: var(--border-strong);
+}
+
+/* ===== Mobile drawer ===== */
+
+.drawer {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+  box-shadow: var(--shadow-modal);
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+  z-index: 99;
+  max-height: calc(100vh - 72px);
+  overflow-y: auto;
+}
+
+.drawerOpen {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawerNav {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-6);
+  gap: var(--space-1);
+}
+
+.drawerLink {
+  padding: var(--space-3) var(--space-4);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.drawerLink:hover {
+  background: var(--bg-surface-alt);
+  color: var(--brand-primary);
+}
+
+.drawerLinkActive {
+  color: var(--brand-primary);
+  background: var(--brand-primary-lighter);
+  font-weight: 600;
+}
+
+.drawerCta {
+  margin-top: var(--space-3);
+  padding: 12px var(--space-5);
+  background: var(--brand-primary);
+  color: var(--text-on-primary);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background 0.15s ease;
+}
+
+.drawerCta:hover {
+  background: var(--brand-primary-hover);
+}
+
+/* ===== Backdrop ===== */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  top: 72px;
+  background: rgba(20, 20, 30, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
+  z-index: 98;
+}
+
+.backdropVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 768px) {
+  .header {
+    height: 64px;
+  }
+
+  .container {
+    padding: 0 var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .logo img {
+    height: 36px;
+  }
+
+  .desktopNav {
+    display: none;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .drawer {
+    top: 64px;
+  }
+
+  .backdrop {
+    top: 64px;
+  }
+}

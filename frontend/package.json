@@ -5,14 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "build": "tsc --noEmit && vite build && node scripts/prerender.js",
+    "build:no-prerender": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "og:placeholder": "node scripts/generate-og-image.js"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
     "lucide-react": "^1.23.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^6.26.2",
     "recharts": "^3.9.2",
     "socket.io-client": "^4.8.3"
@@ -21,6 +24,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
+    "puppeteer": "^25.3.0",
     "typescript": "^5.6.3",
     "vite": "^5.4.10"
   }

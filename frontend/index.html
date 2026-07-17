@@ -11,7 +11,13 @@
       href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>Zhong Ruan LMS — Đăng nhập</title>
+    <!--
+      MỌI meta SEO (title, description, og:*, twitter:*) đều do <SEO> component
+      (react-helmet-async) inject runtime + prerender. KHÔNG hard-code ở đây vì
+      index.html là fallback cho SPA (user gõ URL thẳng khi JS chưa load) nên chỉ
+      cần brand name ở đây — helmet sẽ override khi app boot.
+    -->
+    <title>Zhong Ruan — Tiếng Trung Online</title>
   </head>
   <body>
     <div id="root"></div>

@@ -1,0 +1,20 @@
+/* PublicLayout shell — flex column full viewport height, footer dính đáy. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+
+.main {
+  /* Đủ chừa cho header sticky cao 72px + khoảng thở */
+  padding-top: 72px;
+  flex: 1;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding-top: 64px;
+  }
+}

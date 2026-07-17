@@ -4,6 +4,14 @@
  * Tách khỏi App.tsx để:
  *   - App.tsx chỉ làm nhiệm vụ render (giữ component gốc gọn)
  *   - Sau này có thể thêm lazy load, role-based guard, ... ở 1 chỗ duy nhất
+ *
+ * 3 nhánh route:
+ *   - Public marketing: không cần auth, bọc PublicLayout (5 trang marketing).
+ *   - Auth: /login, /register (không bọc layout).
+ *   - Admin: bọc ProtectedRoute + AdminLayout (9 trang quản trị).
+ *
+ * Catch-all về "/" (HomePage public), KHÔNG về /login như trước.
+ * ProtectedRoute độc lập redirect /dashboard (chưa login) → /login.
  */
 
 import { Navigate, Route, Routes } from "react-router-dom";
@@ -20,12 +28,26 @@ import { GlobalSearchPage } from "../../features/search/pages/GlobalSearchPage";
 import { TrashManagerPage } from "../../features/trash/pages/TrashManagerPage";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { ProtectedRoute } from "../guards/ProtectedRoute";
+import { PublicLayout } from "../../layouts/PublicLayout";
+import { HomePage } from "../../pages/public/HomePage";
+import { CoursesPage } from "../../pages/public/CoursesPage";
+import { TeachersPage } from "../../pages/public/TeachersPage";
+import { PricingPage } from "../../pages/public/PricingPage";
+import { ContactPage } from "../../pages/public/ContactPage";
 
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Public marketing — không cần auth */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/khoa-hoc" element={<CoursesPage />} />
+        <Route path="/giang-vien" element={<TeachersPage />} />
+        <Route path="/bang-gia" element={<PricingPage />} />
+        <Route path="/lien-he" element={<ContactPage />} />
+      </Route>
+
+      {/* Auth — không bọc layout */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
@@ -48,8 +70,8 @@ export function AppRoutes() {
         <Route path="/trash" element={<TrashManagerPage />} />
       </Route>
 
-      {/* Catch-all */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Catch-all: về trang chủ public thay vì /login */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
