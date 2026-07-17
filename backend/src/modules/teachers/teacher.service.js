@@ -19,6 +19,7 @@ const {
   ensureUniqueSlug,
   validateTeacherPayload,
   notFound,
+  badRequest,
 } = require("./teacher.helpers");
 const { softDelete, restore, forceDelete } = require("../../utils/softDelete");
 const { notDeletedWhere, parseFlags } = require("../../utils/softQuery");
@@ -99,6 +100,15 @@ async function listTeachers(query = {}) {
   return { teachers: items, pagination: { page, limit, total, totalPages } };
 }
 
+/**
+ * Lay danh sach user role=TEACHER (id + fullName + email) cho dropdown
+ * "Lien ket tai khoan" trong TeacherFormModal. KHONG filter giang vien —
+ * muc dich chi de Admin tham khao nhanh.
+ */
+async function listTeacherUserOptions() {
+  return teacherRepository.listTeacherUserOptions();
+}
+
 async function createTeacher(payload, req) {
   validateTeacherPayload(payload, { isUpdate: false });
 
@@ -130,6 +140,17 @@ async function createTeacher(payload, req) {
     isPublished: payload.isPublished === false ? false : true,
     displayOrder: Number(payload.displayOrder || 0),
   };
+
+  // linkedUserId: optional, nullable. Validate user ton tai + role=TEACHER truoc khi gan.
+  if (payload.linkedUserId !== undefined && payload.linkedUserId !== null) {
+    const valid = await teacherRepository.linkedUserExists(payload.linkedUserId);
+    if (!valid) {
+      throw badRequest("linkedUserId khong hop le (user khong ton tai hoac khong phai role TEACHER)");
+    }
+    data.linkedUserId = Number(payload.linkedUserId);
+  } else {
+    data.linkedUserId = null;
+  }
 
   const teacher = await teacherRepository.createTeacher(data);
   await audit.log({
@@ -177,6 +198,17 @@ async function updateTeacher(id, payload, req) {
   if (payload.isPublished !== undefined) updateData.isPublished = payload.isPublished === true;
   if (payload.displayOrder !== undefined) {
     updateData.displayOrder = Number(payload.displayOrder || 0);
+  }
+  if (payload.linkedUserId !== undefined) {
+    if (payload.linkedUserId === null) {
+      updateData.linkedUserId = null;
+    } else {
+      const valid = await teacherRepository.linkedUserExists(payload.linkedUserId);
+      if (!valid) {
+        throw badRequest("linkedUserId khong hop le (user khong ton tai hoac khong phai role TEACHER)");
+      }
+      updateData.linkedUserId = Number(payload.linkedUserId);
+    }
   }
 
   // Slug update: neu admin truyen slug moi -> check trung (tru chinh no).
@@ -314,6 +346,7 @@ async function getPublicTeacherBySlug(slug) {
 module.exports = {
   // Admin
   listTeachers,
+  listTeacherUserOptions,
   createTeacher,
   getTeacherById,
   updateTeacher,

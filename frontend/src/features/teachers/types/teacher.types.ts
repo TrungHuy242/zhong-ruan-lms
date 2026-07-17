@@ -24,6 +24,9 @@ export interface Teacher {
   isFeatured: boolean;
   isPublished: boolean;
   displayOrder: number;
+  /** Tham chiếu nội bộ (nullable) tới User.role=teacher để Admin đối chiếu nhanh.
+   *  Không đồng bộ dữ liệu 2 chiều — chỉ là ghi chú nội bộ. */
+  linkedUserId: number | null;
   createdAt: string;
   updatedAt?: string;
   /** List endpoint trả kèm deletedAt; detail thì không. Optional. */
@@ -109,6 +112,8 @@ export interface CreateTeacherPayload {
   isFeatured: boolean;
   isPublished: boolean;
   displayOrder: number;
+  /** Tham chiếu User.role=teacher (optional, nullable). */
+  linkedUserId?: number | null;
 }
 
 export interface UpdateTeacherPayload {
@@ -123,6 +128,12 @@ export interface UpdateTeacherPayload {
   isFeatured?: boolean;
   isPublished?: boolean;
   displayOrder?: number;
+  /**
+   * Set null để gỡ liên kết. Bỏ qua key (undefined) để giữ nguyên.
+   * Lưu ý: dùng key `linkedUserId: null` KHÁC với key undefined —
+   * `null` thực sự cập nhật DB, `undefined` không gửi field.
+   */
+  linkedUserId?: number | null;
 }
 
 /** Kết quả xoá/khôi phục trả về từ BE. */

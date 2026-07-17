@@ -166,6 +166,13 @@ function validateTeacherPayload(payload, { isUpdate = false } = {}) {
       throw badRequest("displayOrder phai la so nguyen khong am");
     }
   }
+
+  if (payload.linkedUserId !== undefined && payload.linkedUserId !== null) {
+    const id = Number(payload.linkedUserId);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw badRequest("linkedUserId phai la so nguyen duong (User.id)");
+    }
+  }
 }
 
 function notFound(message = "Khong tim thay giang vien") {

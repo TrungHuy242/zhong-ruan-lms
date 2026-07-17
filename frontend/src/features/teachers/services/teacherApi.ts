@@ -125,6 +125,25 @@ export async function getTeacher(id: string): Promise<Teacher> {
 }
 
 /**
+ * GET /admin/teachers/teacher-users — danh sách user role=TEACHER (id + fullName + email)
+ * cho dropdown "Liên kết tài khoản" trong TeacherFormModal.
+ *
+ * KHÔNG phân trang — chỉ dùng cho dropdown chọn nhanh, BE trả về tối đa vài chục user.
+ */
+export interface TeacherUserOption {
+  id: number;
+  fullName: string;
+  email: string;
+}
+
+export async function listTeacherUserOptions(): Promise<TeacherUserOption[]> {
+  const data = await apiFetch<{ users: TeacherUserOption[] }>(
+    "/admin/teachers/teacher-users"
+  );
+  return Array.isArray(data?.users) ? data.users : [];
+}
+
+/**
  * PUT /admin/teachers/:id — cập nhật teacher. Partial payload OK (BE check undefined).
  *
  * Cũng dùng để toggle nhanh isPublished/featured: truyền field đó với giá trị mới.

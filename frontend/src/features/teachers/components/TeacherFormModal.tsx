@@ -26,14 +26,16 @@ import { Alert, Button, Input, Modal, UploadZone } from "../../../shared/compone
 import {
   createTeacher,
   getTeacherAvatarUrl,
+  listTeacherUserOptions,
   updateTeacher,
   uploadTeacherAvatar,
   type CreateTeacherPayload,
   type Teacher,
+  type TeacherUserOption,
   type UpdateTeacherPayload,
 } from "../services/teacherApi";
 import { ApiError } from "../../../shared/api";
-import { ImageIcon, X as XIcon } from "lucide-react";
+import { ImageIcon, Link2, X as XIcon } from "lucide-react";
 import styles from "./TeacherFormModal.module.css";
 
 interface FieldErrors {
@@ -149,6 +151,9 @@ export function TeacherFormModal({
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPublished, setIsPublished] = useState(true);
   const [displayOrder, setDisplayOrder] = useState("0");
+  const [linkedUserId, setLinkedUserId] = useState<number | "">("");
+  const [teacherUserOptions, setTeacherUserOptions] = useState<TeacherUserOption[]>([]);
+  const [linkedUserTouched, setLinkedUserTouched] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -173,11 +178,31 @@ export function TeacherFormModal({
     setDisplayOrder(
       teacher?.displayOrder != null ? String(teacher.displayOrder) : "0"
     );
+    setLinkedUserId(teacher?.linkedUserId ?? "");
+    setLinkedUserTouched(false);
     setErrors({});
     setSubmitError(null);
     setIsSubmitting(false);
     setIsUploadingAvatar(false);
   }, [open, teacher]);
+
+  // Load danh sách user role=TEACHER cho dropdown "Liên kết tài khoản".
+  // Fetch MỘT LẦN khi modal mở lần đầu (không refetch khi đã có data).
+  useEffect(() => {
+    if (!open) return;
+    if (teacherUserOptions.length > 0) return;
+    let cancelled = false;
+    listTeacherUserOptions()
+      .then((opts) => {
+        if (!cancelled) setTeacherUserOptions(opts);
+      })
+      .catch(() => {
+        // Không block UI nếu lỗi — dropdown vẫn dùng được với 0 option.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, teacherUserOptions.length]);
 
   // Tự sinh slug gợi ý từ fullName khi tạo mới (chỉ khi user chưa sửa tay).
   useEffect(() => {
@@ -270,6 +295,12 @@ export function TeacherFormModal({
         if (slug.trim() && slug.trim() !== teacher.slug) {
           payload.slug = slug.trim();
         }
+        // Liên kết User:
+        //   - linkedUserTouched=false (chưa đụng) → undefined (giữ nguyên DB)
+        //   - linkedUserTouched=true → truyền giá trị mới (number hoặc null)
+        if (linkedUserTouched) {
+          payload.linkedUserId = linkedUserId === "" ? null : linkedUserId;
+        }
         result = await updateTeacher(teacher.id, payload);
         onSuccess(result, "update");
       } else {
@@ -284,6 +315,8 @@ export function TeacherFormModal({
           isFeatured,
           isPublished,
           displayOrder: displayOrderNum,
+          // Create: undefined khi không chọn → BE sẽ gán null.
+          linkedUserId: linkedUserId === "" ? null : linkedUserId,
         };
         if (slug.trim()) payload.slug = slug.trim();
         result = await createTeacher(payload);
@@ -355,6 +388,36 @@ export function TeacherFormModal({
             }
             disabled={isSubmitting}
           />
+        </div>
+
+        {/* ===== Liên kết tài khoản (optional) ===== */}
+        <div className={styles.field}>
+          <label htmlFor="teacher-linked-user" className={styles.label}>
+            <Link2 size={14} aria-hidden="true" />
+            <span>Liên kết tài khoản (không bắt buộc)</span>
+          </label>
+          <select
+            id="teacher-linked-user"
+            className={styles.select}
+            value={linkedUserId === "" ? "" : String(linkedUserId)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setLinkedUserId(v === "" ? "" : Number(v));
+              setLinkedUserTouched(true);
+            }}
+            disabled={isSubmitting}
+          >
+            <option value="">— Không liên kết —</option>
+            {teacherUserOptions.map((u) => (
+              <option key={u.id} value={String(u.id)}>
+                {u.fullName} — {u.email}
+              </option>
+            ))}
+          </select>
+          <span className={styles.hint}>
+            Tham chiếu nội bộ tới User có role giáo viên — chỉ để đối chiếu nhanh.
+            Không tự động đồng bộ tên/email vào các trường phía trên.
+          </span>
         </div>
 
         <Input

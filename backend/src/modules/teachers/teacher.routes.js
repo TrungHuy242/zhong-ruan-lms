@@ -8,6 +8,8 @@ const authorizeRoles = require("../../middlewares/role.middleware");
 router.use(authenticate, authorizeRoles("ADMIN"));
 
 router.get("/", teacherController.getAllTeachers);
+// Endpoint dropdown cho "Lien ket tai khoan" — dat TRUOC route /:id de khong bi bat nham.
+router.get("/teacher-users", teacherController.getTeacherUserOptions);
 router.post("/", teacherController.createTeacher);
 router.get("/:id", teacherController.getTeacherById);
 router.put("/:id", teacherController.updateTeacher);

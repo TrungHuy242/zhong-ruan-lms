@@ -4,6 +4,7 @@ function statusFromError(error) {
   let status = 400;
   if (error.code === "NOT_FOUND") status = 404;
   else if (error.code === "FORBIDDEN") status = 403;
+  else if (error.code === "BAD_REQUEST") status = 400;
   return status;
 }
 
@@ -23,6 +24,22 @@ async function getAllTeachers(req, res) {
     res.json({
       message: "Lay danh sach giang vien thanh cong",
       data: { teachers: result.teachers, pagination: result.pagination },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Loi he thong" });
+  }
+}
+
+/**
+ * GET /admin/teachers/teacher-users — dropdown options cho TeacherFormModal.
+ * Tra ve user role=TEACHER (id + fullName + email), khong phan trang.
+ */
+async function getTeacherUserOptions(req, res) {
+  try {
+    const users = await teacherService.listTeacherUserOptions();
+    res.json({
+      message: "Lay danh sach user teacher thanh cong",
+      data: { users },
     });
   } catch (error) {
     res.status(500).json({ message: "Loi he thong" });
@@ -103,6 +120,7 @@ async function forceDeleteTeacher(req, res) {
 
 module.exports = {
   getAllTeachers,
+  getTeacherUserOptions,
   createTeacher,
   getTeacherById,
   updateTeacher,

@@ -36,6 +36,7 @@ model User {
   deletedUploads        UploadFile[]   @relation("UploadFileDeletedBy")
   deletedSettings       Setting[]      @relation("SettingDeletedBy")
   deletedTeachers       Teacher[]      @relation("TeacherDeletedBy")
+  linkedTeachers        Teacher[]      @relation("TeacherLinkedUser")
 
   @@index([avatarFileId])
   @@index([deletedById])
@@ -187,6 +188,11 @@ model Teacher {
   isPublished       Boolean  @default(true)
   /// Thứ tự hiển thị tùy chỉnh (sort tăng dần).
   displayOrder      Int      @default(0)
+  /// Tham chiếu nội bộ (nullable) tới User.role=teacher — để Admin đối chiếu
+  /// nhanh giữa hồ sơ công khai và tài khoản đăng nhập. KHÔNG đồng bộ dữ liệu
+  /// 2 chiều: Teacher vẫn là dữ liệu marketing độc lập. SetNull nếu user bị xoá.
+  linkedUserId      Int?
+  linkedUser        User?    @relation("TeacherLinkedUser", fields: [linkedUserId], references: [id], onDelete: SetNull)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   deletedAt         DateTime?
@@ -198,5 +204,6 @@ model Teacher {
   @@index([displayOrder])
   @@index([deletedAt])
   @@index([deletedById])
+  @@index([linkedUserId])
   @@map("teachers")
 }

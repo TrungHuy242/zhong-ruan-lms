@@ -23,6 +23,7 @@ const TEACHER_SELECT = {
   isFeatured: true,
   isPublished: true,
   displayOrder: true,
+  linkedUserId: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
@@ -111,6 +112,33 @@ async function deleteTeacher(id) {
   return prismaInternal.teacher.delete({ where: { id: String(id) } });
 }
 
+/**
+ * Check User ton tai + role=TEACHER cho field linkedUserId.
+ * Tra ve true neu hop le (user ton tai, role=TEACHER, chua bi xoa mem).
+ */
+async function linkedUserExists(id) {
+  if (!id && id !== 0) return false;
+  const numeric = Number(id);
+  if (!Number.isInteger(numeric) || numeric <= 0) return false;
+  const row = await prisma.user.findFirst({
+    where: { id: numeric, role: "TEACHER", deletedAt: null },
+    select: { id: true },
+  });
+  return !!row;
+}
+
+/**
+ * Lay danh sach user role=TEACHER (chua xoa mem), chi id+fullName+email.
+ * Dung cho dropdown "Lien ket tai khoan" trong TeacherFormModal.
+ */
+async function listTeacherUserOptions() {
+  return prisma.user.findMany({
+    where: { role: "TEACHER", deletedAt: null },
+    select: { id: true, fullName: true, email: true },
+    orderBy: [{ fullName: "asc" }],
+  });
+}
+
 module.exports = {
   TEACHER_SELECT,
   TEACHER_SELECT_PUBLIC,
@@ -120,6 +148,8 @@ module.exports = {
   findTeacherByIdIncludeDeleted,
   findTeacherBySlugIncludeDeleted,
   slugExists,
+  linkedUserExists,
+  listTeacherUserOptions,
   createTeacher,
   updateTeacher,
   deleteTeacher,
