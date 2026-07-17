@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && node scripts/prerender.js",
+    "build": "tsc --noEmit && vite build && node scripts/prerender.js && node scripts/generate-sitemap.js",
     "build:no-prerender": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "og:placeholder": "node scripts/generate-og-image.js"

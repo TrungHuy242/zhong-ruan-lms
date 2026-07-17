@@ -1,0 +1,468 @@
+/* TeacherDetailPage — trang hồ sơ giảng viên công khai. */
+
+/* ===== Hero ===== */
+.hero {
+  background: var(--hero-gradient, linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-active) 100%));
+  padding: var(--space-12) 0;
+  color: #fff;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-10);
+  align-items: start;
+}
+
+/* ===== Avatar ===== */
+.avatarWrap {
+  position: relative;
+}
+
+.avatar {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  border: 4px solid rgba(255, 255, 255, 0.25);
+  background-color: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.featuredBadge {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--brand-accent-light);
+  color: var(--brand-accent-hover);
+  border: 1px solid var(--brand-accent);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: var(--shadow-card);
+}
+
+/* ===== Hero info ===== */
+.heroInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 12px;
+  background: var(--brand-accent-light);
+  color: var(--brand-accent-hover);
+  border: 1px solid var(--brand-accent);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: "Be Vietnam Pro", "Inter", sans-serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.verifiedIcon {
+  color: var(--brand-accent);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.bioShort {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* ===== Experience card ===== */
+.expCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(8px);
+  align-self: flex-start;
+}
+
+.expIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--brand-accent);
+  color: var(--text-on-primary);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.expBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.expLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.expValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ===== Tags ===== */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tagsLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-right: 4px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+/* ===== CTA row ===== */
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.primaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-6);
+  background: var(--brand-accent);
+  color: var(--text-on-primary);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  box-shadow: var(--shadow-card);
+}
+
+.primaryCta:hover {
+  background: var(--brand-accent-hover);
+  transform: translateY(-1px);
+}
+
+.primaryCta:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.secondaryCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-3) var(--space-5);
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.secondaryCta:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* ===== Sections ===== */
+.section {
+  padding: 80px 0;
+}
+
+.sectionAlt {
+  background: var(--bg-page);
+}
+
+/* ===== Bio ===== */
+.bioCard {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-card);
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.bioTitle {
+  font-family: "Be Vietnam Pro", "Inter", sans-serif;
+  font-size: clamp(22px, 2.5vw, 28px);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-5);
+  line-height: 1.3;
+}
+
+.bioContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.bioParagraph {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ===== Not Found ===== */
+.notFound {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px var(--space-6);
+  min-height: 60vh;
+}
+
+.notFoundInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+  max-width: 480px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  padding: var(--space-12) var(--space-8);
+  box-shadow: var(--shadow-card);
+}
+
+.notFoundIcon {
+  color: var(--brand-primary);
+}
+
+.notFoundTitle {
+  font-family: "Be Vietnam Pro", "Inter", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.notFoundText {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.notFoundBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--brand-primary);
+  color: var(--text-on-primary);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.notFoundBtn:hover {
+  background: var(--brand-primary-hover);
+}
+
+/* ===== Loading skeleton ===== */
+.loadingWrap {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-10);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+}
+
+.loadingAvatar {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-lg);
+  animation: shimmer 1.5s infinite;
+}
+
+.loadingBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.loadingTitle {
+  height: 36px;
+  width: 60%;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.5s infinite;
+}
+
+.loadingSubtitle {
+  height: 20px;
+  width: 40%;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.5s infinite;
+}
+
+.loadingLines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.loadingLine {
+  height: 14px;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.5s infinite;
+}
+
+.loadingLine:nth-child(1) {
+  width: 100%;
+}
+
+.loadingLine:nth-child(2) {
+  width: 90%;
+}
+
+.loadingLine:nth-child(3) {
+  width: 75%;
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .heroGrid {
+    grid-template-columns: 280px 1fr;
+    gap: var(--space-8);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--space-10) 0;
+  }
+
+  .heroGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .avatar {
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .section {
+    padding: 48px 0;
+  }
+
+  .container {
+    padding: 0 var(--space-4);
+  }
+
+  .loadingWrap {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .loadingAvatar {
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .bioCard {
+    padding: var(--space-5);
+  }
+
+  .expCard {
+    padding: var(--space-3) var(--space-4);
+  }
+}

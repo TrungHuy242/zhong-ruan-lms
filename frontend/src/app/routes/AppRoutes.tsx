@@ -19,6 +19,7 @@ import { LoginPage } from "../../features/auth/pages/LoginPage";
 import { RegisterPage } from "../../features/auth/pages/RegisterPage";
 import { DashboardPage } from "../../features/dashboard/pages/DashboardPage";
 import { UserManagementPage } from "../../features/users/pages/UserManagementPage";
+import { TeacherManagementPage } from "../../features/teachers/pages/TeacherManagementPage";
 import { NotificationManagementPage } from "../../features/notifications/pages/NotificationManagementPage";
 import { AuditLogPage } from "../../features/audit-log/pages/AuditLogPage";
 import { FileManagerPage } from "../../features/files/pages/FileManagerPage";
@@ -32,9 +33,10 @@ import { PublicLayout } from "../../layouts/PublicLayout";
 import { HomePage } from "../../pages/public/HomePage";
 import { CoursesPage } from "../../pages/public/CoursesPage";
 import { CourseDetailPage } from "../../pages/public/CourseDetailPage";
-import { TeachersPage } from "../../pages/public/TeachersPage";
+import { TeachersListPage } from "../../pages/public/TeachersListPage";
 import { PricingPage } from "../../pages/public/PricingPage";
 import { ContactPage } from "../../pages/public/ContactPage";
+import { TeacherDetailPage } from "../../pages/public/TeacherDetailPage";
 
 export function AppRoutes() {
   return (
@@ -44,7 +46,8 @@ export function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/khoa-hoc" element={<CoursesPage />} />
         <Route path="/khoa-hoc/:slug" element={<CourseDetailPage />} />
-        <Route path="/giang-vien" element={<TeachersPage />} />
+        <Route path="/giang-vien" element={<TeachersListPage />} />
+        <Route path="/giang-vien/:slug" element={<TeacherDetailPage />} />
         <Route path="/bang-gia" element={<PricingPage />} />
         <Route path="/lien-he" element={<ContactPage />} />
       </Route>
@@ -63,6 +66,7 @@ export function AppRoutes() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UserManagementPage />} />
+        <Route path="/teachers" element={<TeacherManagementPage />} />
         <Route path="/notifications" element={<NotificationManagementPage />} />
         <Route path="/files" element={<FileManagerPage />} />
         <Route path="/logs" element={<AuditLogPage />} />
