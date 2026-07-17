@@ -35,6 +35,7 @@ model User {
   deletedNotifications  Notification[] @relation("NotificationDeletedBy")
   deletedUploads        UploadFile[]   @relation("UploadFileDeletedBy")
   deletedSettings       Setting[]      @relation("SettingDeletedBy")
+  deletedTeachers       Teacher[]      @relation("TeacherDeletedBy")
 
   @@index([avatarFileId])
   @@index([deletedById])
@@ -154,4 +155,48 @@ model Setting {
   @@index([deletedAt])
   @@index([deletedById])
   @@map("settings")
+}
+
+/// Hồ sơ giảng viên công khai — hiển thị trên trang /giang-vien (public site).
+/// Tách khỏi User (User là tài khoản đăng nhập; Teacher là profile giảng dạy)
+/// để Admin có thể quản lý hồ sơ độc lập với tài khoản.
+/// Soft-delete theo đúng pattern của 4 model còn lại (deletedAt + deletedById).
+/// Slug @unique dùng cho URL public /giang-vien/:slug; auto-generate từ fullName
+/// nếu không truyền, cho phép Admin sửa tay khi trùng.
+model Teacher {
+  id                String   @id @default(uuid())
+  fullName          String
+  /// URL-friendly slug — sinh tự động (unidecode + kebab-case) từ fullName,
+  /// Admin có thể sửa tay nếu trùng. Unique.
+  slug              String   @unique
+  /// Học vị / chức danh, vd "Thạc sĩ Ngôn ngữ Trung Quốc".
+  title             String
+  /// Mô tả dài cho trang chi tiết. Dùng String (không @db.Text) theo pattern chung của project.
+  bio               String
+  /// Mô tả ngắn 1–2 câu cho card danh sách.
+  bioShort          String
+  /// Link ảnh đại diện (CDN hoặc /uploads/...). Nullable — FE dùng ImagePlaceholder.
+  avatarUrl         String?
+  /// Số năm kinh nghiệm giảng dạy. Nullable cho giảng viên mới.
+  yearsOfExperience Int?
+  /// Chuyên môn, vd ["HSK 4-6", "Luyện thi", "Giao tiếp thương mại"].
+  specialties       String[]
+  /// Đánh dấu nổi bật — ưu tiên hiển thị + prerender SEO riêng.
+  isFeatured        Boolean  @default(false)
+  /// Cho phép ẩn tạm mà không cần xoá.
+  isPublished       Boolean  @default(true)
+  /// Thứ tự hiển thị tùy chỉnh (sort tăng dần).
+  displayOrder      Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+  deletedById       Int?
+  deletedBy         User?    @relation("TeacherDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([displayOrder])
+  @@index([deletedAt])
+  @@index([deletedById])
+  @@map("teachers")
 }

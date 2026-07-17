@@ -42,4 +42,17 @@ const refreshTokenRateLimiter = rateLimit({
   },
 });
 
-module.exports = { loginRateLimiter, refreshTokenRateLimiter };
+// Public teachers rate-limit: chống spam IP, KHÔNG strict như auth.
+// 60 req / 15 min / IP — đủ cho crawler SEO + user xem trang.
+const teachersPublicRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req.ip || "unknown"),
+  message: {
+    message: "Quá nhiều yêu cầu, vui lòng thử lại sau 15 phút",
+  },
+});
+
+module.exports = { loginRateLimiter, refreshTokenRateLimiter, teachersPublicRateLimiter };

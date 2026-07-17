@@ -40,18 +40,20 @@ const {
 } = require("../../utils/softDelete");
 
 // ===== Module whitelist =====
-const MODULES = ["users", "notifications", "files", "settings"];
+const MODULES = ["users", "notifications", "files", "settings", "teachers"];
 const MODULE_TO_LABEL = {
   users: "User",
   notifications: "Notification",
   files: "UploadFile",
   settings: "Setting",
+  teachers: "Teacher",
 };
 const MODULE_TO_PRISMA = {
   users: "user",
   notifications: "notification",
   files: "uploadFile",
   settings: "setting",
+  teachers: "teacher",
 };
 
 // ===== Error helpers =====
@@ -209,6 +211,14 @@ function buildModuleWhere(mod, keyword) {
           { description: { contains: q, mode: "insensitive" } },
         ],
       };
+    case "teachers":
+      return {
+        OR: [
+          { fullName: { contains: q, mode: "insensitive" } },
+          { slug: { contains: q.toLowerCase() } },
+          { title: { contains: q, mode: "insensitive" } },
+        ],
+      };
     default:
       return {};
   }
@@ -278,6 +288,8 @@ function pickLabel(mod, row) {
       return row.originalName || row.storedName || `#${row.id}`;
     case "settings":
       return row.key || `#${row.id}`;
+    case "teachers":
+      return row.fullName || row.title || `#${row.id}`;
     default:
       return `#${row.id}`;
   }

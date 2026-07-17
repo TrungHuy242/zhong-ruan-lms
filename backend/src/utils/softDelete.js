@@ -21,6 +21,7 @@ const SOFT_DELETE_ACTIONS = {
   notification: "NOTIFICATION_SOFT_DELETE",
   uploadFile: "UPLOAD_SOFT_DELETE",
   setting: "SETTING_SOFT_DELETE",
+  teacher: "TEACHER_SOFT_DELETE",
 };
 
 const RESTORE_ACTIONS = {
@@ -28,6 +29,7 @@ const RESTORE_ACTIONS = {
   notification: "NOTIFICATION_RESTORE",
   uploadFile: "UPLOAD_RESTORE",
   setting: "SETTING_RESTORE",
+  teacher: "TEACHER_RESTORE",
 };
 
 const FORCE_DELETE_ACTIONS = {
@@ -35,6 +37,7 @@ const FORCE_DELETE_ACTIONS = {
   notification: "NOTIFICATION_FORCE_DELETE",
   uploadFile: "UPLOAD_FORCE_DELETE",
   setting: "SETTING_FORCE_DELETE",
+  teacher: "TEACHER_FORCE_DELETE",
 };
 
 // Map "User" → "user" (prismaInternal.user), "Notification" → "notification", "UploadFile" → "uploadFile"
@@ -59,6 +62,7 @@ function resolveActionKey(label) {
   if (lower === "notification") return "notification";
   if (lower === "uploadfile" || lower === "upload") return "uploadFile";
   if (lower === "setting" || lower === "settings") return "setting";
+  if (lower === "teacher" || lower === "teachers") return "teacher";
   return null;
 }
 
@@ -175,7 +179,7 @@ async function forceDelete(label, where, { req = null, userId = null } = {}) {
 function snapshotFields(obj) {
   if (!obj) return null;
   const snap = {};
-  for (const k of ["id", "email", "fullName", "title", "storedName", "originalName", "key"]) {
+  for (const k of ["id", "email", "fullName", "title", "storedName", "originalName", "key", "slug"]) {
     if (obj[k] !== undefined) snap[k] = obj[k];
   }
   return snap;

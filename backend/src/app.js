@@ -13,6 +13,8 @@ const settingsRouter = require("./modules/settings/setting.routes");
 const dashboardRouter = require("./modules/dashboard/dashboard.routes");
 const searchRouter = require("./modules/search/search.routes");
 const trashRouter = require("./modules/trash/trash.routes");
+const teacherAdminRoutes = require("./modules/teachers/teacher.routes");
+const teacherPublicRoutes = require("./modules/teachers/teacher.public.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -93,18 +95,22 @@ app.get("/api/health/socket", (req, res) => {
 // 4. Routes
 //    Profile routes mount TRƯỚC auth routes để override /me GET (trả kèm avatarFile).
 //    Express match first wins — /me GET trong profile.routes phải được check trước.
+//    Lưu ý: uploadRoutes + filesRoutes + một số router khác có `router.use(authenticate)`
+//    ở đầu → apply cho MỌI request pass vào. Vì `app.use("/api", router)` match theo prefix,
+//    public teachers PHẢI mount TRƯỚC các router này.
 app.use("/api/auth", profileRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", userRoutes);
 app.use("/api/admin/audit-logs", auditRoutes);
 app.use("/api/notifications", notificationRoutes);
-// uploads/ chỉ mount POST /upload (chia sẻ multer). Mọi endpoint /files/... đã chuyển sang files/.
+app.use("/api/public/teachers", teacherPublicRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api", filesRoutes);
 app.use("/api/settings", settingsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/search", searchRouter);
 app.use("/api/trash", trashRouter);
+app.use("/api/admin/teachers", teacherAdminRoutes);
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);
