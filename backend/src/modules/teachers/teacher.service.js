@@ -1,4 +1,4 @@
-﻿/**
+/**
  * teacher.service.js — Business logic cho module Teachers.
  *
  * Chia 2 nhom ham:
@@ -129,8 +129,8 @@ async function createTeacher(payload, req) {
     fullName: String(payload.fullName).trim(),
     slug,
     title: String(payload.title).trim(),
-    bio: String(payload.bio).trim(),
-    bioShort: String(payload.bioShort).trim(),
+    bio: payload.bio != null ? String(payload.bio).trim() : "",
+    bioShort: payload.bioShort != null ? String(payload.bioShort).trim() : "",
     avatarUrl: payload.avatarUrl ? String(payload.avatarUrl).trim() : null,
     yearsOfExperience: payload.yearsOfExperience ?? null,
     specialties: Array.isArray(payload.specialties)
@@ -292,7 +292,7 @@ async function forceDeleteTeacher(id, currentUserId, req) {
 
 async function listPublicTeachers(query = {}) {
   // Public: luon chi tra isPublished=true, deletedAt=null.
-  const where = { isPublished: true };
+  const where = { isPublished: true, deletedAt: null };
   const { limit, page, skip } = parsePagination(query);
   const keyword = (query.keyword ?? query.search ?? "").toString().trim();
   if (keyword) {
@@ -321,7 +321,7 @@ async function listPublicTeachers(query = {}) {
 }
 
 async function listFeaturedTeachers(query = {}) {
-  const where = { isPublished: true, isFeatured: true };
+  const where = { isPublished: true, isFeatured: true, deletedAt: null };
   const rawLimit = Number(query.limit);
   const limit = Number.isInteger(rawLimit) && rawLimit > 0 && rawLimit <= 50 ? rawLimit : 6;
   const { items, total } = await teacherRepository.findTeachersPaginated({

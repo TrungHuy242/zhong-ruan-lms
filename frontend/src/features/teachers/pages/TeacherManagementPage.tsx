@@ -57,6 +57,7 @@ import {
 } from "../constants/teacher.constants";
 import { ApiError } from "../../../shared/api";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { isAdmin } from "../../../shared/utils/auth";
 import { useTableColumns } from "../../../shared/hooks/useTableColumns";
 import {
   ChevronDown,
@@ -132,7 +133,7 @@ interface BulkConfirmState {
 
 export function TeacherManagementPage() {
   const currentUser = authStorage.getUser();
-  const canManage = currentUser?.role === "ADMIN";
+  const canManage = isAdmin(currentUser?.role);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<FilterState>(() => {

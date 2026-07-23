@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FileManagerPage — File Manager chuẩn SaaS.
  *
  * Tính năng (nâng cấp từ bản CRUD cơ bản):
@@ -63,6 +63,7 @@ import {
   validateFile,
 } from "../../../shared/validation/fileValidation";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
 import { listUsers, type User } from "../../users/services/userApi";
 import styles from "./FileManagerPage.module.css";
 
@@ -97,7 +98,7 @@ function findUploader(users: User[], uploadedById: number) {
 export function FileManagerPage() {
   // ===== Auth =====
   const currentUser = authStorage.getUser();
-  const isAdmin = currentUser?.role === "ADMIN";
+  const isAdmin = checkIsAdmin(currentUser?.role);
   const currentUserId =
     currentUser?.id !== undefined
       ? typeof currentUser.id === "number"

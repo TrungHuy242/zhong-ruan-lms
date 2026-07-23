@@ -1,4 +1,4 @@
-﻿import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -11,8 +11,11 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Tag,
+  MessageSquare,
 } from "lucide-react";
 import { authStorage } from "../../shared/storage/authStorage";
+import { hasRole } from "../../shared/utils/auth";
 import styles from "./Sidebar.module.css";
 
 const SIDEBAR_KEY = "zrlms_sidebar_collapsed";
@@ -28,6 +31,14 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   { label: "Dashboard", to: "/dashboard", Icon: LayoutDashboard },
   { label: "Quản lý người dùng", to: "/users", Icon: Users, allowedRoles: ["ADMIN"] },
+  { label: "Quản lý giảng viên", to: "/teachers", Icon: Users, allowedRoles: ["ADMIN"] },
+  { label: "Quản lý bảng giá", to: "/pricing-plans", Icon: Tag, allowedRoles: ["ADMIN"] },
+  {
+    label: "Yêu cầu tư vấn",
+    to: "/contact-requests",
+    Icon: MessageSquare,
+    allowedRoles: ["ADMIN"],
+  },
   { label: "Thông báo", to: "/notifications", Icon: Bell },
   { label: "Quản lý tệp", to: "/files", Icon: FolderOpen },
   {
@@ -52,10 +63,7 @@ export function Sidebar({ collapsed, onToggle, onClose, isDrawer }: SidebarProps
   const location = useLocation();
   const currentRole = authStorage.getUser()?.role;
 
-  const visibleMenu = MENU_ITEMS.filter((item) => {
-    if (!item.allowedRoles) return true;
-    return currentRole ? item.allowedRoles.includes(currentRole) : false;
-  });
+  const visibleMenu = MENU_ITEMS.filter((item) => hasRole(currentRole, item.allowedRoles));
 
   return (
     <>

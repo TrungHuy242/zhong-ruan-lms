@@ -84,13 +84,11 @@ function validateTitle(value: string): string | undefined {
 }
 function validateBioShort(value: string): string | undefined {
   const trimmed = value.trim();
-  if (!trimmed) return "Vui lòng nhập mô tả ngắn";
   if (trimmed.length > 250) return "Mô tả ngắn không quá 250 ký tự";
   return undefined;
 }
 function validateBio(value: string): string | undefined {
   const trimmed = value.trim();
-  if (!trimmed) return "Vui lòng nhập mô tả chi tiết";
   if (trimmed.length > 5000) return "Mô tả chi tiết không quá 5000 ký tự";
   return undefined;
 }
@@ -432,7 +430,7 @@ export function TeacherFormModal({
 
         <div className={styles.field}>
           <label htmlFor="teacher-bio-short" className={styles.label}>
-            Mô tả ngắn <span className={styles.required}>*</span>
+            Mô tả ngắn
           </label>
           <textarea
             id="teacher-bio-short"
@@ -449,14 +447,14 @@ export function TeacherFormModal({
             </span>
           ) : (
             <span className={styles.hint}>
-              Tối đa 250 ký tự. Hiển thị ở card giảng viên trên trang chủ.
+              Tùy chọn. Tối đa 250 ký tự. Hiển thị ở card giảng viên trên trang chủ.
             </span>
           )}
         </div>
 
         <div className={styles.field}>
           <label htmlFor="teacher-bio" className={styles.label}>
-            Mô tả chi tiết <span className={styles.required}>*</span>
+            Mô tả chi tiết
           </label>
           <textarea
             id="teacher-bio"
@@ -472,7 +470,7 @@ export function TeacherFormModal({
               {errors.bio}
             </span>
           ) : (
-            <span className={styles.hint}>Tối đa 5000 ký tự.</span>
+            <span className={styles.hint}>Tùy chọn. Tối đa 5000 ký tự.</span>
           )}
         </div>
 

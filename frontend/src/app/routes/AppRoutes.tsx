@@ -20,6 +20,7 @@ import { RegisterPage } from "../../features/auth/pages/RegisterPage";
 import { DashboardPage } from "../../features/dashboard/pages/DashboardPage";
 import { UserManagementPage } from "../../features/users/pages/UserManagementPage";
 import { TeacherManagementPage } from "../../features/teachers/pages/TeacherManagementPage";
+import { PricingManagementPage } from "../../features/pricing/pages/PricingManagementPage";
 import { NotificationManagementPage } from "../../features/notifications/pages/NotificationManagementPage";
 import { AuditLogPage } from "../../features/audit-log/pages/AuditLogPage";
 import { FileManagerPage } from "../../features/files/pages/FileManagerPage";
@@ -27,6 +28,7 @@ import { SystemSettingsPage } from "../../features/settings/pages/SystemSettings
 import { ProfilePage } from "../../features/profile/pages/ProfilePage";
 import { GlobalSearchPage } from "../../features/search/pages/GlobalSearchPage";
 import { TrashManagerPage } from "../../features/trash/pages/TrashManagerPage";
+import { ContactRequestManagementPage } from "../../features/contact-requests/pages/ContactRequestManagementPage";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { ProtectedRoute } from "../guards/ProtectedRoute";
 import { PublicLayout } from "../../layouts/PublicLayout";
@@ -67,6 +69,7 @@ export function AppRoutes() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UserManagementPage />} />
         <Route path="/teachers" element={<TeacherManagementPage />} />
+        <Route path="/pricing-plans" element={<PricingManagementPage />} />
         <Route path="/notifications" element={<NotificationManagementPage />} />
         <Route path="/files" element={<FileManagerPage />} />
         <Route path="/logs" element={<AuditLogPage />} />
@@ -74,6 +77,7 @@ export function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/search" element={<GlobalSearchPage />} />
         <Route path="/trash" element={<TrashManagerPage />} />
+        <Route path="/contact-requests" element={<ContactRequestManagementPage />} />
       </Route>
 
       {/* Catch-all: về trang chủ public thay vì /login */}

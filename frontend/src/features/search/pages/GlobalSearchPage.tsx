@@ -1,4 +1,4 @@
-﻿/**
+/**
  * GlobalSearchPage — trang tìm kiếm toàn hệ thống (SaaS-style).
  *
  * Cấu trúc:
@@ -59,6 +59,7 @@ import {
   type SearchUser,
 } from "../services/searchApi";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
 import { SearchBar } from "../components/SearchBar";
 import { RecentSearch } from "../components/RecentSearch";
 import { SearchResultGroup } from "../components/SearchResultGroup";
@@ -382,7 +383,7 @@ export function GlobalSearchPage() {
 
   // ===== Auth =====
   const currentUser = authStorage.getUser();
-  const isAdmin = currentUser?.role === "ADMIN";
+  const isAdmin = checkIsAdmin(currentUser?.role);
 
   // ===== Columns cho mỗi section =====
   const userColumns: TableColumn<SearchUser>[] = useMemo(

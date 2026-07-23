@@ -1,4 +1,4 @@
-﻿import {
+import {
   ChangeEvent,
   useCallback,
   useEffect,
@@ -38,6 +38,7 @@ import {
 } from "../services/userApi";
 import { ApiError } from "../../../shared/api";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
 import { useTableColumns } from "../../../shared/hooks/useTableColumns";
 import {
   ChevronDown,
@@ -161,7 +162,7 @@ interface BulkConfirmState {
 export function UserManagementPage() {
   // ===== Phân quyền (UI-level) =====
   const currentUser = authStorage.getUser();
-  const canManage = currentUser?.role === "ADMIN";
+  const canManage = checkIsAdmin(currentUser?.role);
 
   // ===== URL sync =====
   const [searchParams, setSearchParams] = useSearchParams();

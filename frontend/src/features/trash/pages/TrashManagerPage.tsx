@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TrashManagerPage — trung tâm quản lý dữ liệu đã xoá (SaaS-style).
  *
  * Luồng tổng thể:
@@ -78,6 +78,7 @@ import { TrashDetailModal } from "../components/TrashDetailModal";
 import type { UserOption } from "../components/UserOption";
 import { listUsers, type User } from "../../users";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
 import {
   AlertTriangle,
   Bell,
@@ -173,7 +174,7 @@ type ConfirmKind = "single-restore" | "single-force" | "bulk-restore" | "bulk-fo
 
 export function TrashManagerPage() {
   const currentUser = authStorage.getUser();
-  const isAdmin = currentUser?.role === "ADMIN";
+  const isAdmin = checkIsAdmin(currentUser?.role);
 
   // ===== URL sync =====
   const [searchParams, setSearchParams] = useSearchParams();

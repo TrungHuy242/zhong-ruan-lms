@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SystemSettingsPage — trang quản lý cấu hình hệ thống (SaaS Admin).
  *
  * Layout:
@@ -62,6 +62,7 @@ import {
 import { ApiError } from "../../../shared/api";
 import { getApiErrorMessage } from "../../../shared/validation/fileValidation";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
 import styles from "./SystemSettingsPage.module.css";
 
 interface FiltersState {
@@ -121,7 +122,7 @@ function shouldUseSearchApi(search: string): boolean {
 export function SystemSettingsPage() {
   // ===== Auth =====
   const currentUser = authStorage.getUser();
-  const isAdmin = currentUser?.role === "ADMIN";
+  const isAdmin = checkIsAdmin(currentUser?.role);
 
   // ===== Filter state =====
   const [filters, setFilters] = useState<FiltersState>(INITIAL_FILTERS);

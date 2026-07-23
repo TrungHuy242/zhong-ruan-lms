@@ -1,4 +1,4 @@
-﻿import {
+import {
   ChangeEvent,
   useCallback,
   useEffect,
@@ -26,6 +26,7 @@ import {
 import { ApiError } from "../../../shared/api";
 import { useNotifications } from "../../../shared/contexts/NotificationContext";
 import { authStorage } from "../../../shared/storage/authStorage";
+import { isAdmin } from "../../../shared/utils/auth";
 import {
   CheckCheck,
   Edit3,
@@ -71,7 +72,7 @@ function formatDateTime(value: string | null | undefined): string {
 
 export function NotificationManagementPage() {
   const currentUser = authStorage.getUser();
-  const canCreate = currentUser?.role === "ADMIN";
+  const canCreate = isAdmin(currentUser?.role);
   const { unreadCount, refresh, markAll, markOneRead } = useNotifications();
 
   // ===== URL sync =====
