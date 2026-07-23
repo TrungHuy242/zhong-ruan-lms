@@ -1,0 +1,278 @@
+/* PricingPage — trang bảng giá công khai. */
+
+/* ===== Hero ===== */
+.hero {
+  background: linear-gradient(
+    135deg,
+    var(--brand-primary) 0%,
+    var(--brand-primary-active) 100%
+  );
+  padding: var(--space-12) 0;
+  text-align: center;
+}
+
+.heroContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.heroBadge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.heroHeading {
+  font-family: "Be Vietnam Pro", "Inter", sans-serif;
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 var(--space-4);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.heroSubheading {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 auto;
+  line-height: 1.7;
+  max-width: 600px;
+}
+
+/* ===== Container ===== */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* ===== Section common ===== */
+.pricingSection {
+  padding: 80px 0;
+  background: var(--bg-page);
+}
+
+.policiesSection {
+  padding: 80px 0;
+  background: var(--bg-surface);
+}
+
+.faqSection {
+  padding: 80px 0;
+  background: var(--bg-page);
+}
+
+/* ===== Section header ===== */
+.sectionHeader {
+  text-align: center;
+  margin-bottom: var(--space-10);
+}
+
+.sectionTitle {
+  font-family: "Be Vietnam Pro", "Inter", sans-serif;
+  font-size: clamp(24px, 2.5vw, 32px);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3);
+  line-height: 1.25;
+}
+
+.sectionSubtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ===== Alert spacing ===== */
+.alertSpacing {
+  max-width: 600px;
+  margin: 0 auto var(--space-6);
+}
+
+/* ===== Pricing Grid ===== */
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+/* ===== Skeleton ===== */
+.skeletonCard {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  min-height: 400px;
+}
+
+.skeletonHeader {
+  height: 80px;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonPrice {
+  height: 100px;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonBenefits {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.skeletonLine {
+  height: 16px;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonLine:nth-child(2) {
+  width: 80%;
+}
+
+.skeletonLine:nth-child(3) {
+  width: 60%;
+}
+
+.skeletonCta {
+  height: 48px;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-md);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ===== Empty state ===== */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-6);
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.emptyState svg {
+  color: var(--text-placeholder);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.emptyHint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+.emptyCta {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-5);
+  background: var(--brand-primary);
+  color: var(--text-on-primary);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+  margin-top: var(--space-2);
+}
+
+.emptyCta:hover {
+  background: var(--brand-primary-hover);
+}
+
+/* ===== Policies Grid ===== */
+.policiesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .pricingGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .policiesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--space-10) 0;
+  }
+
+  .pricingSection,
+  .policiesSection,
+  .faqSection {
+    padding: 48px 0;
+  }
+
+  .container {
+    padding: 0 var(--space-4);
+  }
+
+  .pricingGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .policiesGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 540px) {
+  .sectionHeader {
+    margin-bottom: var(--space-6);
+  }
+}
