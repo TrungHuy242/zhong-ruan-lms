@@ -55,4 +55,52 @@ const teachersPublicRateLimiter = rateLimit({
   },
 });
 
-module.exports = { loginRateLimiter, refreshTokenRateLimiter, teachersPublicRateLimiter };
+const pricingPlansPublicRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req.ip || "unknown"),
+  message: {
+    message: "Quá nhiều yêu cầu, vui lòng thử lại sau 15 phút",
+  },
+});
+
+// ContactRequest public rate-limit (chống spam form liên hệ):
+// Mặc định 3 req / IP / 1 giờ — đủ cho người dùng thật, chặn bot/spammer.
+// windowMs tính theo milliseconds.
+//
+// Cho phép override `max` qua ENV CONTACT_RATE_LIMIT_MAX (số nguyên dương) để
+// dễ test dev mà KHÔNG phải đợi 1 giờ. Ví dụ đặt trong .env:
+//   CONTACT_RATE_LIMIT_MAX=1000
+// Lưu ý:
+//   - KHÔNG override > 1000 cho môi trường prod.
+//   - Vẫn giữ windowMs = 1 giờ vì đây là cửa sổ chống spam hợp lý với lead form.
+const DEFAULT_CONTACT_RATE_LIMIT_MAX = 3;
+const parsedContactMax = Number(process.env.CONTACT_RATE_LIMIT_MAX);
+const contactRateLimitMax =
+  Number.isFinite(parsedContactMax) &&
+  parsedContactMax >= 1 &&
+  parsedContactMax <= 1000
+    ? Math.floor(parsedContactMax)
+    : DEFAULT_CONTACT_RATE_LIMIT_MAX;
+
+const contactRequestPublicRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: contactRateLimitMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => ipKeyGenerator(req.ip || "unknown"),
+  message: {
+    message:
+      "Bạn đã gửi quá nhiều yêu cầu liên hệ. Vui lòng thử lại sau 1 giờ.",
+  },
+});
+
+module.exports = {
+  loginRateLimiter,
+  refreshTokenRateLimiter,
+  teachersPublicRateLimiter,
+  pricingPlansPublicRateLimiter,
+  contactRequestPublicRateLimiter,
+};

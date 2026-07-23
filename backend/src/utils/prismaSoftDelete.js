@@ -2,7 +2,8 @@
  * prismaSoftDelete.js — Prisma Client Extension (Prisma 7+) tự động ẩn record đã xóa mềm.
  *
  * Thay thế cho `prisma.$use()` đã bị xoá từ Prisma 7.
- * Áp dụng cho 3 model: User, Notification, UploadFile.
+ * Áp dụng cho các model có trường `deletedAt`: User, Notification, UploadFile,
+ * Setting, Teacher, PricingPlan, ContactRequest.
  *
  * Quy tắc:
  *  - Mặc định: MỌI truy vấn read (findUnique/findFirst/findMany/count/aggregate/groupBy)
@@ -15,7 +16,15 @@
  * hãy dùng `prismaInternal` từ `config/database.js` thay vì client mặc định.
  */
 
-const SOFT_DELETE_MODELS = new Set(["User", "Notification", "UploadFile", "Setting", "Teacher"]);
+const SOFT_DELETE_MODELS = new Set([
+  "User",
+  "Notification",
+  "UploadFile",
+  "Setting",
+  "Teacher",
+  "PricingPlan",
+  "ContactRequest",
+]);
 
 const READ_OPERATIONS = new Set([
   "findUnique",

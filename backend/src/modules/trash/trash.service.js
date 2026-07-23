@@ -40,13 +40,15 @@ const {
 } = require("../../utils/softDelete");
 
 // ===== Module whitelist =====
-const MODULES = ["users", "notifications", "files", "settings", "teachers"];
+const MODULES = ["users", "notifications", "files", "settings", "teachers", "pricingplans", "contactrequests"];
 const MODULE_TO_LABEL = {
   users: "User",
   notifications: "Notification",
   files: "UploadFile",
   settings: "Setting",
   teachers: "Teacher",
+  pricingplans: "PricingPlan",
+  contactrequests: "ContactRequest",
 };
 const MODULE_TO_PRISMA = {
   users: "user",
@@ -54,6 +56,8 @@ const MODULE_TO_PRISMA = {
   files: "uploadFile",
   settings: "setting",
   teachers: "teacher",
+  pricingplans: "pricingPlan",
+  contactrequests: "contactRequest",
 };
 
 // ===== Error helpers =====
@@ -219,6 +223,21 @@ function buildModuleWhere(mod, keyword) {
           { title: { contains: q, mode: "insensitive" } },
         ],
       };
+    case "pricingplans":
+      return {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
+        ],
+      };
+    case "contactrequests":
+      return {
+        OR: [
+          { fullName: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } },
+          { phone: { contains: q } },
+        ],
+      };
     default:
       return {};
   }
@@ -290,6 +309,10 @@ function pickLabel(mod, row) {
       return row.key || `#${row.id}`;
     case "teachers":
       return row.fullName || row.title || `#${row.id}`;
+    case "pricingplans":
+      return row.name || `#${row.id}`;
+    case "contactrequests":
+      return row.fullName || row.email || `#${row.id}`;
     default:
       return `#${row.id}`;
   }
@@ -324,21 +347,28 @@ async function restoreOne(mod, idOrKey, currentUserId, req = null) {
     };
   }
 
+  // pricingplans, teachers, contactrequests dùng String (UUID), còn lại dùng Number (Int)
+  const isStringIdModule = mod === "pricingplans" || mod === "teachers" || mod === "contactrequests";
   const numericId = Number(idOrKey);
-  if (!Number.isFinite(numericId) || numericId <= 0) {
+
+  if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {
     throw badRequest("id không hợp lệ");
   }
+
+  const where = isStringIdModule ? { id: String(idOrKey) } : { id: numericId };
   const restored = await restore(
     label,
-    { id: numericId },
+    where,
     { req, userId: currentUserId }
   );
-  if (!restored) throw notFound(`Không tìm thấy ${label} với id = ${numericId}`);
+  if (!restored) {
+    throw notFound(`Không tìm thấy ${label} với id = ${idOrKey}`);
+  }
 
   return {
     module: mod,
     id: restored.id,
-    deletedAt: restored.deletedAt, // = null
+    deletedAt: restored.deletedAt,
     restored: true,
   };
 }
@@ -366,16 +396,23 @@ async function forceDeleteOne(mod, idOrKey, currentUserId, req = null) {
     };
   }
 
+  // pricingplans, teachers, contactrequests dùng String (UUID), còn lại dùng Number (Int)
+  const isStringIdModule = mod === "pricingplans" || mod === "teachers" || mod === "contactrequests";
   const numericId = Number(idOrKey);
-  if (!Number.isFinite(numericId) || numericId <= 0) {
+
+  if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {
     throw badRequest("id không hợp lệ");
   }
+
+  const where = isStringIdModule ? { id: String(idOrKey) } : { id: numericId };
   const removed = await forceDelete(
     label,
-    { id: numericId },
+    where,
     { req, userId: currentUserId }
   );
-  if (!removed) throw notFound(`Không tìm thấy ${label} với id = ${numericId}`);
+  if (!removed) {
+    throw notFound(`Không tìm thấy ${label} với id = ${idOrKey}`);
+  }
 
   return {
     module: mod,
@@ -607,11 +644,16 @@ async function getTrashDetail(mod, idOrKey) {
   if (mod === "settings") {
     row = await delegate.findUnique({ where: { key: String(idOrKey) } });
   } else {
+    // pricingplans, teachers, contactrequests dùng String (UUID), còn lại dùng Number (Int)
+    const isStringIdModule = mod === "pricingplans" || mod === "teachers" || mod === "contactrequests";
     const numericId = Number(idOrKey);
-    if (!Number.isFinite(numericId) || numericId <= 0) {
+
+    if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {
       throw badRequest("id không hợp lệ");
     }
-    row = await delegate.findUnique({ where: { id: numericId } });
+
+    const where = isStringIdModule ? { id: String(idOrKey) } : { id: numericId };
+    row = await delegate.findUnique({ where });
   }
 
   if (!row || !row.deletedAt) {
