@@ -66,6 +66,8 @@ export function TeachersListPage() {
    */
   const [specialtyOptions, setSpecialtyOptions] = useState<string[]>([]);
   const [specialtiesLoading, setSpecialtiesLoading] = useState(true);
+  // Tăng counter để ép useEffect fetch list re-run khi user bấm "Thử lại".
+  const [reloadToken, setReloadToken] = useState(0);
 
   // Debounce keyword input → apply sau 400ms.
   useEffect(() => {
@@ -145,7 +147,7 @@ export function TeachersListPage() {
     return () => {
       cancelled = true;
     };
-  }, [keywordApplied, specialty, page]);
+  }, [keywordApplied, specialty, page, reloadToken]);
 
   const isFiltered = Boolean(keywordApplied) || specialty !== "ALL";
 
@@ -267,9 +269,19 @@ export function TeachersListPage() {
 
           {/* ===== Error state ===== */}
           {loadError ? (
-            <Alert variant="error" className={styles.alertSpacing}>
-              {loadError}
-            </Alert>
+            <div className={styles.errorState} role="alert">
+              <Alert variant="error" className={styles.alertSpacing}>
+                {loadError}
+              </Alert>
+              <Button
+                variant="secondary"
+                size="md"
+                leftIcon={<RotateCcw size={14} />}
+                onClick={() => setReloadToken((n) => n + 1)}
+              >
+                Thử lại
+              </Button>
+            </div>
           ) : null}
 
           {/* ===== Grid / skeleton / empty ===== */}

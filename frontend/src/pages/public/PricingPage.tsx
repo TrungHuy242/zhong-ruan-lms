@@ -12,7 +12,7 @@
  *
  * Pattern tham chiếu: TeachersListPage (loading/empty/error states).
  */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "../../shared/components/SEO";
 import { Breadcrumb } from "../../features/public/components/Breadcrumb";
@@ -20,14 +20,14 @@ import { PricingCard } from "../../features/public/components/PricingCard";
 import { PolicyCard } from "../../features/public/components/PolicyCard";
 import { FAQAccordion } from "../../features/public/components/FAQAccordion";
 import { CTABanner } from "../../features/public/components/CTABanner";
-import { Alert } from "../../shared/components/ui";
+import { Alert, Button } from "../../shared/components/ui";
 import { ApiError } from "../../shared/api";
 import {
   listPublicPricingPlans,
   type PublicPricingPlan,
 } from "../../features/public/services/publicPricingApi";
 import { policiesContent } from "../../features/public/data/policiesContent";
-import { Tag } from "lucide-react";
+import { RotateCcw, Tag } from "lucide-react";
 import styles from "./PricingPage.module.css";
 
 interface FaqItem {
@@ -61,35 +61,37 @@ export function PricingPage() {
   const [plans, setPlans] = useState<PublicPricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const load = useCallback(async (cancelled: { v: boolean }) => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const result = await listPublicPricingPlans();
+      if (cancelled.v) return;
+      setPlans(result);
+    } catch (err) {
+      if (cancelled.v) return;
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+          ? err.message
+          : "Không tải được bảng giá";
+      setLoadError(message);
+      setPlans([]);
+    } finally {
+      if (!cancelled.v) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setLoadError(null);
-      try {
-        const result = await listPublicPricingPlans();
-        if (cancelled) return;
-        setPlans(result);
-      } catch (err) {
-        if (cancelled) return;
-        const message =
-          err instanceof ApiError
-            ? err.message
-            : err instanceof Error
-            ? err.message
-            : "Không tải được bảng giá";
-        setLoadError(message);
-        setPlans([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void load();
+    const cancelled = { v: false };
+    void load(cancelled);
     return () => {
-      cancelled = true;
+      cancelled.v = true;
     };
-  }, []);
+  }, [reloadToken, load]);
 
   const isEmpty = useMemo(
     () => !loading && plans.length === 0 && !loadError,
@@ -141,9 +143,19 @@ export function PricingPage() {
           </div>
 
           {loadError ? (
-            <Alert variant="error" className={styles.alertSpacing}>
-              {loadError}
-            </Alert>
+            <div className={styles.errorState} role="alert">
+              <Alert variant="error" className={styles.alertSpacing}>
+                {loadError}
+              </Alert>
+              <Button
+                variant="secondary"
+                size="md"
+                leftIcon={<RotateCcw size={14} />}
+                onClick={() => setReloadToken((n) => n + 1)}
+              >
+                Thử lại
+              </Button>
+            </div>
           ) : loading ? (
             <div className={styles.pricingGrid}>
               {[0, 1, 2].map((i) => (

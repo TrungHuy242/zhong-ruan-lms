@@ -7,6 +7,9 @@ Allow: /lien-he
 
 Disallow: /dashboard
 Disallow: /users
+Disallow: /teachers
+Disallow: /pricing-plans
+Disallow: /contact-requests
 Disallow: /notifications
 Disallow: /files
 Disallow: /logs

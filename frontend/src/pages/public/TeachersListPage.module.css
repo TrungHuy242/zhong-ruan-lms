@@ -220,6 +220,15 @@
   padding: var(--space-5);
 }
 
+/* ===== Error state ===== */
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-6);
+}
+
 /* ===== Empty state ===== */
 .emptyState {
   display: flex;

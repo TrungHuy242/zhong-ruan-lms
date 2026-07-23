@@ -46,11 +46,22 @@ function buildTitle(t: PublicTeacher): string {
 }
 
 function buildDescription(t: PublicTeacher): string {
-  const base = (t.bioShort || t.bio || "").trim();
-  if (!base) return `Hồ sơ giảng viên ${t.fullName} tại ${SITE_NAME}.`;
-  // Cắt còn ~160 ký tự cho meta description.
-  if (base.length <= 160) return base;
-  return `${base.slice(0, 157).trimEnd()}…`;
+  // Description SEO tối thiểu ~120 ký tự để Google snippet đẹp và không bị "thin".
+  // Thứ tự ưu tiên: (1) bio, (2) bioShort, (3) fallback chuẩn theo title + specialties.
+  const base = (t.bio || t.bioShort || "").trim();
+  if (base && base.length >= 80) {
+    return base.length <= 160 ? base : `${base.slice(0, 157).trimEnd()}…`;
+  }
+  // Fallback: tạo description từ dữ liệu có sẵn, không phụ thuộc bio ngắn.
+  const years =
+    typeof t.yearsOfExperience === "number" && t.yearsOfExperience > 0
+      ? `${t.yearsOfExperience}+ năm kinh nghiệm`
+      : "nhiều năm kinh nghiệm";
+  const specialties = Array.isArray(t.specialties) && t.specialties.length > 0
+    ? t.specialties.slice(0, 3).join(", ")
+    : "giảng dạy tiếng Trung";
+  const built = `Giảng viên ${t.fullName} — ${t.title}, ${years}, chuyên ${specialties}. Học thử miễn phí tại ${SITE_NAME}.`;
+  return built.length <= 160 ? built : built.slice(0, 157) + "…";
 }
 
 function formatExperience(years: number | null | undefined): string {

@@ -20,6 +20,11 @@ backend/uploads/*
 backend/tmp_test_uploads/
 backend/scripts/tmp_test_uploads/
 
+# QA tự động (artifacts, không commit lên repo)
+frontend/public-site-qa-report.json
+frontend/public-site-qa-report.md
+frontend/public-site-qa-screenshots/
+
 # Prisma local
 backend/prisma/.env
 
