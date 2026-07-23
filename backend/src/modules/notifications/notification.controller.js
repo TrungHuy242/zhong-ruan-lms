@@ -14,8 +14,9 @@ async function listMyNotifications(req, res) {
       },
     });
   } catch (error) {
-    console.error("[notification.controller] listMyNotifications error:", error && error.message ? error.message : error);
-    res.status(400).json({
+    console.error("[notification.controller] listMyNotifications error:", error && error.message ? error.message : error, error.stack);
+    const status = error.code === "NOT_FOUND" ? 404 : 500;
+    res.status(status).json({
       message: error.message || "Lỗi hệ thống",
     });
   }

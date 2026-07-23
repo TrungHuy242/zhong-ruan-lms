@@ -15,6 +15,10 @@ const searchRouter = require("./modules/search/search.routes");
 const trashRouter = require("./modules/trash/trash.routes");
 const teacherAdminRoutes = require("./modules/teachers/teacher.routes");
 const teacherPublicRoutes = require("./modules/teachers/teacher.public.routes");
+const pricingPlanAdminRoutes = require("./modules/pricing-plans/pricing-plan.routes");
+const pricingPlanPublicRoutes = require("./modules/pricing-plans/pricing-plan.public.routes");
+const contactRequestAdminRoutes = require("./modules/contact-requests/contact-request.routes");
+const contactRequestPublicRoutes = require("./modules/contact-requests/contact-request.public.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -104,6 +108,8 @@ app.use("/api/admin/users", userRoutes);
 app.use("/api/admin/audit-logs", auditRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/public/teachers", teacherPublicRoutes);
+app.use("/api/public/pricing-plans", pricingPlanPublicRoutes);
+app.use("/api/public/contact-requests", contactRequestPublicRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api", filesRoutes);
 app.use("/api/settings", settingsRouter);
@@ -111,6 +117,8 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/search", searchRouter);
 app.use("/api/trash", trashRouter);
 app.use("/api/admin/teachers", teacherAdminRoutes);
+app.use("/api/admin/pricing-plans", pricingPlanAdminRoutes);
+app.use("/api/admin/contact-requests", contactRequestAdminRoutes);
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);

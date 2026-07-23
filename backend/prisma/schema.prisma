@@ -36,6 +36,7 @@ model User {
   deletedUploads        UploadFile[]   @relation("UploadFileDeletedBy")
   deletedSettings       Setting[]      @relation("SettingDeletedBy")
   deletedTeachers       Teacher[]      @relation("TeacherDeletedBy")
+  deletedPricingPlans   PricingPlan[]  @relation("PricingPlanDeletedBy")
   linkedTeachers        Teacher[]      @relation("TeacherLinkedUser")
 
   @@index([avatarFileId])
@@ -206,4 +207,73 @@ model Teacher {
   @@index([deletedById])
   @@index([linkedUserId])
   @@map("teachers")
+}
+
+/// Liên hệ từ form public — khách truy cập website gửi yêu cầu tư vấn/hỗ trợ.
+/// Khác với User (tài khoản đăng nhập) và Notification (thông báo nội bộ),
+/// ContactRequest là lead từ public, không cần auth để tạo.
+/// Soft-delete theo đúng pattern (deletedAt + deletedById) để Admin xử lý
+/// rồi xoá khi cần, đồng thời đưa vào Trash Manager như các module khác.
+model ContactRequest {
+  id          String    @id @default(uuid())
+  fullName    String
+  phone       String
+  email       String
+  /// Nội dung khách muốn liên hệ — lưu TEXT (Postgres @db.Text) vì có thể dài.
+  message     String    @db.Text
+  /// NEW (mới) | CONTACTED (đã liên hệ) | CLOSED (đã xử lý xong).
+  /// Lưu String thay vì enum để tránh phải thêm enum Postgres khi cần mở rộng.
+  status      String    @default("NEW")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  deletedById Int?
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@index([deletedById])
+  @@map("contact_requests")
+}
+
+/// Gói học phí hiển thị trên trang /bang-gia (public) và quản lý qua Admin UI.
+/// Soft-delete theo đúng pattern (deletedAt + deletedById).
+model PricingPlan {
+  id            String    @id @default(uuid())
+  /// Tên gói, VD "HSK Sơ cấp (HSK 1-2) — Lớp nhóm".
+  name          String
+  /// "GROUP" (lớp nhóm) | "PRIVATE" (1 kèm 1).
+  classType     String
+  /// Giá bán (VNĐ). Không âm.
+  price         Int
+  /// Đơn vị: "buổi" | "tháng" | "khóa".
+  priceUnit     String
+  /// Giá gốc (nullable) — hiện gạch ngang nếu có khuyến mãi.
+  originalPrice Int?
+  /// Mô tả ngắn 1–2 câu.
+  description   String
+  /// Danh sách quyền lợi, VD ["Tặng giáo trình", "Học thử miễn phí 2 buổi"].
+  features      String[]
+  /// Slug khóa học liên kết (nullable) — tham chiếu tới coursesContent slug.
+  courseSlug    String?
+  /// Đánh dấu "Phổ biến nhất" nổi bật trên UI.
+  isFeatured    Boolean   @default(false)
+  /// Ẩn tạm mà không cần xoá.
+  isPublished   Boolean   @default(true)
+  /// Thứ tự hiển thị (sort tăng dần).
+  displayOrder  Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  deletedById  Int?
+  deletedBy    User?     @relation("PricingPlanDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([classType])
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([displayOrder])
+  @@index([deletedAt])
+  @@index([deletedById])
+  @@index([courseSlug])
+  @@map("pricing_plans")
 }
