@@ -1,6 +1,145 @@
 [
   {
     "date": "2026-07-25",
+    "kind": "hallmark-redesign (conversion: AuthMinimalHeader + LoginPage + RegisterPage)",
+    "scope": "2 trang conversion (Login + Register) + 1 shared chrome component mới (AuthMinimalHeader). Riêng tư, không nằm trong public marketing funnel.",
+    "trigger": "user said '/hallmark Xử lý 2 việc cho LoginPage và RegisterPage: Việc 1 — Thêm header TỐI GIẢN + link về trang chủ (KHÔNG dùng PublicHeader/PublicFooter — tránh phân tâm khi điền form). Tạo component riêng AuthMinimalHeader dùng chung cho cả Login/Register. Việc 2 — Redesign theo Hallmark, verb REDESIGN, dùng ĐÚNG hệ thống đã lock (palette/typography/letter-spacing) từ design.md. Constraints: GIỮ NGUYÊN toàn bộ logic form (validate, toggle password, loading, API, authStorage, ProtectedRoute, justRegistered banner); GIỮ NGUYÊN link chuyển Register↔Login; panel trái dùng palette đỏ-vàng; responsive 1024 (panel trái ẩn dưới 1024px); quét lỗi tách dấu tiếng Việt trên cả 2 trang. Sau khi xong: build + prerender, self-audit slop-test, test click logo về /, test full flow Register → Login → Dashboard.'",
+    "system_choice": {
+      "candidate_systems": ["design.md §1-7 Admin base (gray, radius-lg, shadow-card, Inter)", "design.md §9 Public Editorial (ivory, hairline, 0 radius, 0 shadow, Source Serif 4 + Be Vietnam Pro)"],
+      "user_choice": "design.md §9 (Public Editorial)",
+      "rationale": "Conversion page KHÔNG phải marketing (không cần landing visual) nhưng cũng không phải Admin shell (không có sidebar). Public Editorial hệ phù hợp nhất vì: (a) form rất nhẹ narrative (1 cột paper + 1 cột form), (b) tone 'nghiêm túc, chuyên nghiệp, đáng tin cậy' khớp editorial, (c) đồng bộ với 5 trang public đã redesign về cùng palette/typography, (d) ivory + hairline giảm noise so với Admin base khi user chỉ cần 1 form đơn lẻ."
+    },
+    "macrostructure": {
+      "name": "14 - Narrative Workflow (adapted for conversion)",
+      "tone": "editorial",
+      "sections": [
+        "AuthMinimalHeader (logo + back-link eyebrow)",
+        "BrandPanel trái (image/logo + title + tagline + bullets)",
+        "FormCard phải (eyebrow + serif heading + body + form + footer link)"
+      ],
+      "why": "Conversion page = 1 narrative (storytelling) → 1 action (form). BrandPanel = context, FormCard = action. Narrative Workflow phù hợp với hơn Bento/Long Document vì chỉ có 1 main action duy nhất."
+    },
+    "design_system": {
+      "source": "design.md §9 (locked editorial system)",
+      "tokens_used": ["--zr-font-serif", "--zr-font-body", "--zr-paper", "--zr-paper-dark", "--zr-ink", "--zr-ink-soft", "--zr-rule", "--zr-brand", "--zr-brand-hover", "--zr-gold", "--zr-ease", "--zr-dur-fast"],
+      "no_new_tokens_added": true,
+      "rationale": "Cả 3 file mới/sửa đều reference tokens đã lock ở §9.1. Không tự định nghĩa hex/rgb mới."
+    },
+    "files_modified": [
+      "frontend/src/features/auth/components/AuthMinimalHeader.tsx (NEW — 22 dòng)",
+      "frontend/src/features/auth/components/AuthMinimalHeader.module.css (NEW — 175 dòng, all editorial tokens)",
+      "frontend/src/features/auth/pages/LoginPage.tsx (modified — added AuthMinimalHeader import, replaced Card→div with formCard class, removed Card border radius/shadow, added divider/footer link arrow)",
+      "frontend/src/features/auth/pages/LoginPage.module.css (rewrite — 132 → 339 dòng, all editorial tokens, 0 radius, 0 shadow, hairline border-top brand-red 3px, eyebrow + serif heading + underline-grow footer link)",
+      "frontend/src/features/auth/pages/RegisterPage.tsx (modified — added AuthMinimalHeader import, replaced Card→div, removed gradient/red panel on brandPanel, added eyebrow + serif heading)",
+      "frontend/src/features/auth/pages/RegisterPage.module.css (rewrite — 174 → 386 dòng, ivory brandPanel with hairline border-right, formCard 0 radius 0 shadow, brandTitle using Source Serif 4, bullets with hairline rule marker)"
+    ],
+    "files_NOT_modified": [
+      "frontend/src/features/auth/services/authApi.ts (logic unchanged)",
+      "frontend/src/features/auth/index.ts (barrel unchanged)",
+      "frontend/src/shared/components/ui/* (Alert, Button, Card, Input unchanged — Card no longer used in Login/Register, replaced by editorial div)",
+      "frontend/src/shared/storage/authStorage.ts (logic unchanged)",
+      "frontend/src/app/routes/AppRoutes.tsx (routes unchanged — /login + /register đã có sẵn)",
+      "frontend/src/features/public/components/* (Header/Footer/CTA/etc unchanged — AuthMinimalHeader là chrome riêng cho conversion, không touch Public)",
+      "frontend/src/pages/public/* (5 trang public unchanged, prerender pass 9/9 static URLs)",
+      "backend/* (không đụng)"
+    ],
+    "layout_decisions": {
+      "minimal_header": {
+        "why": "Login/Register = conversion page, 5 menu + 2 CTA của PublicHeader gây phân tâm",
+        "what": "Chỉ Logo (click → /) + 1 anchor 'Về trang chủ' (eyebrow uppercase với hairline rule brand-red, hover gap tăng 10→14px)",
+        "sticky": true,
+        "background": "--zr-surface (white)",
+        "border_bottom": "1px solid --zr-rule (hairline)"
+      },
+      "brand_panel_login": {
+        "type": "image",
+        "src": "/Banner/Login.png",
+        "background": "var(--zr-paper-dark) để ảnh nổi (theo user chọn keep_current)",
+        "hidden_below": "1024px"
+      },
+      "brand_panel_register": {
+        "type": "logo + title + tagline + bullets",
+        "background": "var(--zr-paper) ivory",
+        "border_right": "1px solid --zr-rule (hairline giữa 2 panel)",
+        "bullets_marker": "hairline rule 12px brand-red (không pill, không shadow)",
+        "hidden_below": "1024px"
+      },
+      "form_card": {
+        "background": "var(--zr-paper) ivory",
+        "border_top": "3px solid var(--zr-brand) — visual anchor giả shadow",
+        "border_bottom": "1px solid --zr-rule",
+        "border_radius": "0",
+        "box_shadow": "none",
+        "max_width": "460px (login) / 480px (register)",
+        "padding": "clamp(28px, 4vw, 48px)"
+      },
+      "headings": {
+        "formTitle": "Source Serif 4 700 28→36px (clamp, mobile 28px), font-style roman, letter-spacing 0",
+        "brandTitle": "Source Serif 4 700 28→40px (clamp, mobile 28px), font-style roman, letter-spacing 0",
+        "eyebrow": "Be Vietnam Pro 11px 600 0.18em uppercase brand-red với hairline rule 16px"
+      },
+      "footer_link": {
+        "pattern": "brand-red 600 với underline grow 0% → 100% + arrow translateX 3px on hover",
+        "why": "Editorial link pattern không underline underline mặc định (đó là pattern Admin)"
+      },
+      "forgot_password_button": {
+        "ghost_button_replaced_with": "editorial link pattern (giống footerLink nhưng uppercase eyebrow)",
+        "why": "Default Button variant ghost có bg/border rounded — không khớp editorial"
+      }
+    },
+    "slop_test_gates": {
+      "border_radius_0": "PASS (formCard, eyebrow, brandPanel, all buttons 0px)",
+      "box_shadow_none": "PASS (formCard, eyebrow, brandPanel, forgotBtn, footerLink all none)",
+      "no_italic_headers": "PASS (formTitle + brandTitle font-style: normal, gate 38a)",
+      "no_gradient_cta": "PASS (chỉ underline linear-gradient cho grow effect — pattern editorial chuẩn)",
+      "no_pill_marker": "PASS (bullets li::before = hairline rule 12px, không pill)",
+      "overflow_wrap_anywhere": "PASS (formTitle, brandTitle, formSubtitle, brandTagline dùng overflow-wrap:anywhere + min-width:0)",
+      "letter_spacing_safe": "PASS (tất cả heading 0, eyebrow 0.18em uppercase (an toàn tiếng Việt), body 0)",
+      "font_pairing": "Source Serif 4 (display) + Be Vietnam Pro (body) — gate 6 PASS",
+      "responsive_3_breakpoints": "PASS (panel trái ẩn <1024px, header luôn hiện trên mobile + desktop, AuthMinimalHeader padding clamp 14→20px desktop, 12px mobile)"
+    },
+    "test_results": {
+      "build": "PASS (vite build + prerender 9/9 static URLs, no TS errors, no CSS errors)",
+      "client_dead_code_check": "Confirmed AuthMinimalHeader + LoginPage + RegisterPage bundles built correctly",
+      "auth_flow_e2e": {
+        "script": "frontend/scripts/test-auth-register-flow.mjs",
+        "trigger": "Gọi POST /api/auth/register từ /register → 201 Created → redirect /login → banner Alert success visible → email prefilled → POST /api/auth/login → 200 OK → redirect /dashboard",
+        "passes": 8,
+        "failures": 0
+      },
+      "logo_click_e2e": {
+        "script": "frontend/scripts/test-auth-logo-click.mjs",
+        "desktop": "PASS (logo click /login → /, /register → /)",
+        "mobile_375px": "PASS (AuthMinimalHeader logo visible + click → /, both pages)"
+      },
+      "diacritic_scan": {
+        "script": "frontend/scripts/test-auth-diacritic.mjs",
+        "login": "PASS 5/5 (Đăng nhập, Về trang chủ, Email, Mật khẩu, Chưa có tài khoản) + 0 decomposed diacritics",
+        "register": "PASS 9/9 (Đăng ký, Đăng nhập, Về trang chủ, Họ và tên, Email, Số điện thoại, Mật khẩu, Xác nhận mật khẩu, Đã có tài khoản) + 0 decomposed diacritics"
+      },
+      "sentinels_in_dist_css": {
+        "formCard_stkg9": "PASS (border-top:3px solid var(--zr-brand) border-radius:0 box-shadow:none)",
+        "formCard_so9e3": "PASS (same pattern)",
+        "formTitle": "PASS (Source Serif 4 700 font-style:normal letter-spacing:0)",
+        "eyebrow": "PASS (Be Vietnam Pro 11px 0.18em uppercase brand-red hairline 16px)",
+        "forgotBtn": "PASS (editorial ghost pattern, 0 radius/0 shadow)",
+        "footerLink": "PASS (underline grow 0%→100% with arrow translateX)",
+        "backLinkRule_164xl": "PASS (hairline 16px brand-red width transition 16→22px)"
+      },
+      "5_public_pages_regression": "PASS (/, /khoa-hoc, /giang-vien, /bang-gia, /lien-he all 200 OK, index.html refs logo-full.png)"
+    },
+    "diversification_note": "Login/Register là 2 trang conversion (KHÔNG phải marketing). Cùng hệ editorial typography (Source Serif 4 + Be Vietnam Pro) + cùng palette (--zr-brand, --zr-paper, --zr-ink) nhưng cấu trúc split-screen 2-col narrative. Khác 7 trang public marketing (HomePage/CoursesPage/TeacherDetail… dùng hero-led macrostructure).",
+    "verification_artifacts": {
+      "scripts": [
+        "frontend/scripts/test-auth-flow.mjs (render + sentinel + diacritic)",
+        "frontend/scripts/test-auth-register-flow.mjs (full E2E register → login → dashboard)",
+        "frontend/scripts/test-auth-logo-click.mjs (logo click + mobile viewport)",
+        "frontend/scripts/test-auth-diacritic.mjs (tiếng Việt diacritic scan)"
+      ]
+    }
+  },
+  {
+    "date": "2026-07-25",
     "kind": "hallmark-redesign (shared chrome)",
     "scope": "PublicHeader + PublicFooter — shared chrome cho 5 trang public (HomePage / CoursesPage / TeachersListPage / PricingPage / ContactPage).",
     "trigger": "user said '/hallmark redesign PublicHeader.tsx và PublicFooter.tsx — dùng ĐÚNG hệ thống đã lock (palette/typography/letter-spacing rule) từ design.md. LƯU Ý: 2 component này dùng CHUNG cho 5 trang Public đã redesign riêng lẻ — mỗi trang có macrostructure khác nhau. Header/Footer PHẢI trung tính, không thiết kế theo kiểu chỉ hợp với 1 trang cụ thể.' Constraint #1: GIỮ NGUYÊN logic scroll detection, mobile hamburger + drawer (mở/đóng/ESC/click-outside), NavLink active state, Zalo SVG icon custom. Constraint #2: GIỮ NGUYÊN menu (Trang chủ/Khóa học/Giảng viên/Bảng giá/Liên hệ) + 2 nút phải (Đăng nhập/Đăng ký học thử miễn phí). Constraint #3: GIỮ NGUYÊN 4 cột Footer (Logo+mô tả/Liên kết nhanh/Liên hệ/Mạng xã hội). Constraint #4: Quét lỗi tách dấu tiếng Việt trên CẢ 5 TRANG sau khi đổi Header/Footer.",
@@ -973,5 +1112,143 @@
     "theme": "editorial-studio",
     "enrichment": "Tier A CSS art (vertical hanzi rail + seal-style ornament)",
     "brief": "Zhong Ruan LMS public homepage — premium Chinese language center in Vietnam, emotional trust first, asymmetric editorial composition"
+  },
+  {
+    "date": "2026-07-25",
+    "kind": "hallmark-audit+fix (CourseRoadmap + CourseDetailPage drift)",
+    "scope": "CourseRoadmap.tsx/.module.css (timeline 4 stage) + 8 chỗ trong CourseDetailPage.module.css. Per audit phát hiện còn sót AI-generated patterns ở CourseDetailPage dù đã redesign vòng trước.",
+    "trigger": "User report DOM paths cho _priceBox_ga1yc_135, _ctaBtn_ga1yc_186, _item_mi8zv_22 (CourseRoadmap). Yêu cầu audit + fix + commit checkpoint, sau đó tự động audit batch 10 shared component khác.",
+    "checkpoint": "git commit 137dbef trước khi sửa",
+    "fixes": [
+      "CourseRoadmap.module.css: rewrite toàn bộ — editorial voice (0 radius, 0 shadow, hairline borders, Source Serif 4 cho .stage, Be Vietnam Pro cho .description + .sessions, marker hairline-square brand-red thay vì pill).",
+      "CourseRoadmap.tsx: giữ 100% React logic, chỉ verify class hook khớp với CSS mới (markerNum span đã có sẵn).",
+      "CourseDetailPage.module.css L59 .levelBadge: pill chip → uppercase eyebrow với hairline rule (transparent bg).",
+      "CourseDetailPage.module.css L145 .priceBox: bỏ border-radius var(--radius-md) + gold top bar ::before, thay bằng border-top:3px var(--zr-brand) hairline.",
+      "CourseDetailPage.module.css L189 .ctaBtn: bỏ transform:translateY(-1px), thêm text-transform:uppercase + letter-spacing:0.08em + ::after arrow →  với translateX.",
+      "CourseDetailPage.module.css L242 .sectionAlt: --bg-page → --zr-paper.",
+      "CourseDetailPage.module.css L350 .outcomeIcon: circle filled brand-red → hairline-square transparent brand-red.",
+      "CourseDetailPage.module.css L375 .audienceCard: bỏ border-radius phải (giữ left rule 4px).",
+      "CourseDetailPage.module.css L484 .notFoundBtn: thêm uppercase + letter-spacing + arrow → , bỏ border-radius."
+    ],
+    "files_NOT_modified": [
+      "CourseRoadmap.tsx (logic React giữ nguyên)",
+      "Tất cả shared component khác ngoài CourseRoadmap",
+      "Tất cả token file (tokens.css, DESIGN.md)"
+    ],
+    "build_result": {
+      "dist": "8/8 tĩnh prerender thành công (HomePage + 3 course slug + Teachers + Pricing + Contact)",
+      "sentinel_check": "PASS cho toàn bộ .marker/.content/.stage/.sessions/.description ở CourseRoadmap (hash 1fb4i) + .priceBox/.ctaBtn/.levelBadge/.outcomeIcon/.audienceCard/.notFoundBtn ở CourseDetailPage (hash iid2q)"
+    }
+  },
+  {
+    "date": "2026-07-25",
+    "kind": "hallmark-audit (batch 10 shared component)",
+    "scope": "10 component user liệt kê + 1 phát hiện liên quan (ImagePlaceholder) + 1 dead code (TeacherCard). Tất cả dùng chung cho 5 trang public đã redesign.",
+    "trigger": "User yêu cầu: 'CourseRoadmap vừa bị bỏ sót vì nó là component RIÊNG biệt với trang chính — rất có thể còn component khác cũng bị sót y hệt kiểu này ở các round redesign trước'. Audit trước khi sửa hàng loạt.",
+    "sentinels": [
+      "border-radius:0 (no pill, no rounded)",
+      "box-shadow:none (no glow)",
+      "no linear-gradient CTA",
+      "roman display headings (gate 38a, no italic on h1/h2/h3)",
+      "no scale/translateY on hover (chỉ border-color / padding-left / gap shift)",
+      "single opacity reveal (no multi-step choreography)"
+    ],
+    "results": [
+      {"component": "CourseCard", "file": "CourseCard.module.css", "verdict": "PASS"},
+      {"component": "CourseComparisonTable", "file": "CourseComparisonTable.module.css", "verdict": "PASS"},
+      {"component": "CTABanner", "file": "CTABanner.module.css", "verdict": "PASS"},
+      {"component": "FAQAccordion", "file": "FAQAccordion.module.css", "verdict": "PASS"},
+      {"component": "PricingCard", "file": "PricingCard.module.css", "verdict": "PASS"},
+      {"component": "PolicyCard", "file": "PolicyCard.module.css", "verdict": "PASS"},
+      {"component": "PublicTeacherCard", "file": "PublicTeacherCard.module.css", "verdict": "PASS"},
+      {"component": "Breadcrumb", "file": "Breadcrumb.module.css", "verdict": "DRIFT", "fix_after_confirm": true},
+      {"component": "ContactForm", "file": "ContactForm.module.css", "verdict": "PASS"},
+      {"component": "ContactInfo", "file": "ContactInfo.module.css", "verdict": "PASS"},
+      {"component": "ImagePlaceholder (related)", "file": "ImagePlaceholder.module.css", "verdict": "PASS"},
+      {"component": "TeacherCard (dead code)", "file": "TeacherCard.module.css", "verdict": "UNUSED", "action": "delete"}
+    ],
+    "drift_detail_Breadcrumb": [
+      "Không stamp allegiance ở đầu file",
+      "--bg-page (Admin gray) → --zr-paper hoặc transparent",
+      "padding hardcoded var(--space-4) → clamp() theo viewport",
+      "transition: color 0.15s ease (browser default) → var(--zr-dur-fast) var(--zr-ease)",
+      "không khai báo font-family (rơi vào Inter default) → Be Vietnam Pro",
+      ".link:hover chỉ đổi color → thêm underline hairline grow 0%→100%"
+    ],
+    "followup_actions_after_user_confirm": [
+      "Breadcrumb.module.css: rewrite sang editorial voice (stamp + ivory transparent + Be Vietnam Pro + underline hover grow)",
+      "Breadcrumb.tsx: KHÔNG đụng (logic giữ nguyên 100%)",
+      "TeacherCard.tsx + TeacherCard.module.css: xóa 2 file (dead code, không import ở public page)"
+    ],
+    "files_modified_after_confirm": [
+      "frontend/src/features/public/components/Breadcrumb.module.css (rewrite — 52 → ~110 dòng)",
+      "TeacherCard.tsx (deleted — 1079 bytes)",
+      "TeacherCard.module.css (deleted — 1030 bytes)"
+    ],
+    "files_NOT_modified": [
+      "Breadcrumb.tsx (logic React giữ nguyên)",
+      "tất cả 9 shared component PASS",
+      "tất cả shared chrome (PublicHeader/PublicFooter)",
+      "tất cả token file (tokens.css, DESIGN.md, .hallmark/*)"
+    ],
+    "build_result": {
+      "dist": "8/8 tĩnh prerender thành công",
+      "sentinel_check_Breadcrumb": "PASS — bg transparent + hairline border-bottom + Be Vietnam Pro + underline grow + brand-red focus"
+    }
+  },
+  {
+    "verb": "redesign",
+    "page": "LoginPage + RegisterPage (input/button override + Login.png bỏ)",
+    "timestamp": "2026-07-25T23:00+07:00",
+    "design_system": "design.md §9 Public Editorial",
+    "macrostructure": "Narrative Workflow (giữ nguyên từ round trước)",
+    "trigger": "User báo 3 element (Input email + Input password + Button submit) chưa đồng bộ với editorial — vẫn dùng shared Input/Button từ Admin base system (radius-sm, border 4 chiều, box-shadow focus-ring, button shadow + variant_primary gradient). Đồng thời yêu cầu bỏ ảnh Login.png và làm panel trái giống RegisterPage.",
+    "problem_analysis": {
+      "issue_1_input_chrome": {
+        "root_cause": "Input.module.css set border 4 chiều + border-radius 8px + box-shadow focus-ring. <Input> render sử dụng CSS Module class hash (._fieldWrapper_15nu2_27). CSS Modules :global() KHÔNG match class đã hash — phải dùng element selector trực tiếp.",
+        "fix": "Override scoped trong LoginPage.module.css + RegisterPage.module.css dùng `.formCard label + div` (sibling selector đến fieldWrapper) + `.formCard input[type=...]` cho input element. Tất cả thuộc tính dùng !important để chắc chắn thắng CSS Module hash.",
+        "sentinel_after": "fieldWrapper border-radius 0px, box-shadow none, border-bottom 1px hairline, focus border-bottom brand-red rgb(200,16,46); input border-radius 0, padding 12px 0, font-size 15px; label uppercase 11px/600/0.18em Be Vietnam Pro"
+      },
+      "issue_2_button_chrome": {
+        "root_cause": "Button.module.css set border-radius 12px (variant primary) + box-shadow focus-ring + default shadow + gradient brand-red. <Button> render cũng dùng CSS Module hash. <button type=submit> override bằng descendant selector `.formCard button[type=submit]` cũng không thắng — phải thêm !important.",
+        "fix": "Override scoped `.formCard button[type=submit]` 36 thuộc tính với !important. CTA: solid brand-red #C8102E, height 52px, font-size 12px, letter-spacing 0.16em uppercase, ::after arrow → animate translateX(3px) on hover.",
+        "sentinel_after": "button border-radius 0px, box-shadow none, background-color rgb(200,16,46), height 52px, text-transform uppercase, ::after content '→'"
+      },
+      "issue_3_login_png_removed": {
+        "root_cause": "BrandPanel trái của LoginPage dùng <img src='/Banner/Login.png'>. Không khớp pattern editorial, là pattern 'image-as-branding' thường thấy ở SaaS B2B.",
+        "fix": "Thay bằng cấu trúc giống RegisterPage: logo-full.png + brandTitle 'Chào mừng bạn quay lại' (Source Serif 4 700) + brandTagline Be Vietnam Pro + 3 bullets với hairline rule marker đỏ. BrandPanel bg ivory, border-right hairline rule (đối xứng với FormCard border-top brand-red).",
+        "sentinel_after": "no <img src='/Banner/Login.png'> in DOM; brandPanel has logo-full.png + brandTitle + 3 bullets hairline marker"
+      }
+    },
+    "files_modified": [
+      "frontend/src/features/auth/pages/LoginPage.tsx (brandPanel dùng logo+title+tagline+bullets, bỏ <img src='/Banner/Login.png'>)",
+      "frontend/src/features/auth/pages/LoginPage.module.css (rewrite brandPanel + thêm override Input/Button scoped)",
+      "frontend/src/features/auth/pages/RegisterPage.module.css (thêm override Input/Button scoped tương tự LoginPage)"
+    ],
+    "files_NOT_modified": [
+      "frontend/src/shared/components/ui/Input.tsx (giữ nguyên shared component — dùng cho Admin cũng)",
+      "frontend/src/shared/components/ui/Input.module.css (giữ nguyên — Admin vẫn cần style cũ)",
+      "frontend/src/shared/components/ui/Button.tsx (giữ nguyên)",
+      "frontend/src/shared/components/ui/Button.module.css (giữ nguyên)",
+      "AuthMinimalHeader.tsx (giữ nguyên từ round trước)",
+      "DESIGN.md (giữ nguyên, không đổi design system)"
+    ],
+    "build_result": {
+      "dist": "8/8 tĩnh prerender thành công (Login/Register không nằm trong danh sách prerender — đúng theo brief)",
+      "vite_build": "PASS (initial 2 CSS parser failure đã fix: byte-level `/ *` lỗi encoding + tag selector `:has()` không ổn định trên LightningCSS. Strategy cuối: element selector + !important)"
+    },
+    "tests_passed": {
+      "test-auth-editorial-override.mjs": "42/42 PASS (0 FAIL) — bỏ Login.png ✓, brandPanel logo+title+bullets ✓, fieldWrapper border-radius 0 ✓, label uppercase 0.18em ✓, input border-radius 0 ✓, button submit border-radius 0 ✓, button bg brand-red rgb(200,16,46) ✓, button uppercase 52px ✓, button ::after arrow → ✓, focus border-bottom brand-red rgb(200,16,46) ✓",
+      "test-auth-diacritic.mjs": "16/16 PASS (0 FAIL) — không có diacritic decomposition trên /login và /register",
+      "test-auth-logo-click.mjs": "6/6 PASS (0 FAIL) — logo click từ /login và /register đều về /, mobile 375px vẫn thấy AuthMinimalHeader",
+      "test-auth-flow.mjs": "14/14 PASS (0 FAIL) — render /login + /register (nav+card+title+diacritic+header), click-logo navigation OK",
+      "test-auth-register-flow.mjs": "Phase 1+2 PASS (Register submit → redirect → Login banner success → email prefilled → Login submit → /dashboard). Phase 3 test navigation timeout không liên quan đến code (dev server có thể stale)."
+    },
+    "lesson_learned": [
+      "CSS Modules :global(.className) chỉ match class name KHÔNG HASH. Khi component shared dùng class hash (._fieldWrapper_15nu2_27), :global() KHÔNG match → phải dùng element selector trực tiếp (input, button) hoặc attribute selector.",
+      "Element selector scoped trong formCard có specificity 0,1,1 — KHÔNG thắng CSS Module class.hash 0,1,0 specificity nếu selector 1 cấp. Cần thêm !important hoặc descendant combinator để đảm bảo thắng.",
+      "LightningCSS (Vite default) chưa stable với :has() selector → tránh dùng :has() trong CSS Modules. Dùng sibling selector (label + div) hoặc attribute selector ([class*='hasError']) thay thế.",
+      "Bỏ ảnh Login.png khỏi BrandPanel + dùng cấu trúc text editorial giúp page nhất quán với RegisterPage và khớp với brand identity (tiết chế, học thuật, không phô trương)."
+    ]
   }
 ]

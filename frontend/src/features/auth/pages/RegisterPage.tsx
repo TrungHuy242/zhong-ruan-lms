@@ -1,9 +1,10 @@
 ﻿import { FormEvent, useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Alert, Button, Card, Input } from "../../../shared/components/ui";
+import { Alert, Button, Input } from "../../../shared/components/ui";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { register } from "../services/authApi";
 import { ApiError } from "../../../shared/api";
+import { AuthMinimalHeader } from "../components/AuthMinimalHeader";
 import styles from "./RegisterPage.module.css";
 
 interface FieldErrors {
@@ -203,142 +204,147 @@ export function RegisterPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.brandPanel} aria-hidden="true">
-        <div className={styles.brandInner}>
-          <div className={styles.logoMark}>
-            <img
-              src="/logo/logo-full.png"
-              alt="Zhong Ruan LMS"
-              className={styles.logoImg}
-            />
-          </div>
-          <h1 className={styles.brandTitle}>Tạo tài khoản học viên</h1>
-          <p className={styles.brandTagline}>
-            Đăng ký để bắt đầu hành trình học tiếng Trung cùng Trung tâm Trung Quốc học
-            Zhong Ruan.
-          </p>
-          <ul className={styles.bullets}>
-            <li>Tài khoản học viên tạo trong vài giây</li>
-            <li>Theo dõi lớp học, điểm danh, học phí</li>
-            <li>Báo cáo tiến độ học tập cá nhân</li>
-          </ul>
-        </div>
-      </section>
+      <div className={styles.headerWrap}>
+        <AuthMinimalHeader />
+      </div>
 
-      <section className={styles.formPanel}>
-        <Card className={styles.formCard} padding="lg">
-          <header className={styles.formHeader}>
-            <h2 className={styles.formTitle}>Đăng ký tài khoản</h2>
-            <p className={styles.formSubtitle}>
-              Điền thông tin bên dưới để tạo tài khoản học viên mới.
-            </p>
-          </header>
-
-          {apiError ? (
-            <div className={styles.alertWrap}>
-              <Alert variant="error" onClose={() => setApiError(null)}>
-                {apiError}
-              </Alert>
+      <section className={styles.layout}>
+        <section className={styles.brandPanel} aria-hidden="true">
+          <div className={styles.brandInner}>
+            <div className={styles.logoMark}>
+              <img
+                src="/logo/logo-full.png"
+                alt="Zhong Ruan LMS"
+                className={styles.logoImg}
+              />
             </div>
-          ) : null}
+            <h1 className={styles.brandTitle}>Tạo tài khoản học viên</h1>
+            <p className={styles.brandTagline}>
+              Đăng ký để bắt đầu hành trình học tiếng Trung cùng Trung tâm Trung Quốc học
+              Zhong Ruan.
+            </p>
+            <ul className={styles.bullets}>
+              <li>Tài khoản học viên tạo trong vài giây</li>
+              <li>Theo dõi lớp học, điểm danh, học phí</li>
+              <li>Báo cáo tiến độ học tập cá nhân</li>
+            </ul>
+          </div>
+        </section>
 
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            aria-busy={isLoading || undefined}
-            className={styles.form}
-          >
-            <fieldset disabled={isLoading} className={styles.fieldset}>
-              <Input
-                type="text"
-                name="fullName"
-                label="Họ và tên"
-                autoComplete="name"
-                placeholder="Nguyễn Văn A"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                onBlur={() => handleBlur("fullName")}
-                error={errors.fullName}
-                required
-              />
+        <section className={styles.formPanel}>
+          <div className={styles.formCard}>
+            <header className={styles.formHeader}>
+              <span className={styles.eyebrow}>Đăng ký</span>
+              <h2 className={styles.formTitle}>Mở tài khoản học viên mới</h2>
+            </header>
 
-              <Input
-                type="email"
-                name="email"
-                label="Email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={() => handleBlur("email")}
-                error={errors.email}
-                required
-              />
+            {apiError ? (
+              <div className={styles.alertWrap}>
+                <Alert variant="error" onClose={() => setApiError(null)}>
+                  {apiError}
+                </Alert>
+              </div>
+            ) : null}
 
-              <Input
-                type="tel"
-                name="phone"
-                label="Số điện thoại"
-                autoComplete="tel"
-                placeholder="VD: 0912345678"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                onBlur={() => handleBlur("phone")}
-                error={errors.phone}
-                hint="Gồm đúng 10 chữ số, bắt đầu bằng 0 (VD: 0912345678)"
-                required
-              />
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              aria-busy={isLoading || undefined}
+              className={styles.form}
+            >
+              <fieldset disabled={isLoading} className={styles.fieldset}>
+                <Input
+                  type="text"
+                  name="fullName"
+                  label="Họ và tên"
+                  autoComplete="name"
+                  placeholder="Nguyễn Văn A"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  onBlur={() => handleBlur("fullName")}
+                  error={errors.fullName}
+                  required
+                />
 
-              <Input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                label="Mật khẩu"
-                autoComplete="new-password"
-                placeholder="Ít nhất 6 ký tự"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onBlur={() => handleBlur("password")}
-                error={errors.password}
-                required
-                rightIcon={showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                onRightIconClick={() => setShowPassword((v) => !v)}
-              />
+                <Input
+                  type="email"
+                  name="email"
+                  label="Email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => handleBlur("email")}
+                  error={errors.email}
+                  required
+                />
 
-              <Input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                label="Xác nhận mật khẩu"
-                autoComplete="new-password"
-                placeholder="Nhập lại mật khẩu"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onBlur={() => handleBlur("confirmPassword")}
-                error={errors.confirmPassword}
-                required
-                rightIcon={showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
-                onRightIconClick={() => setShowConfirmPassword((v) => !v)}
-              />
+                <Input
+                  type="tel"
+                  name="phone"
+                  label="Số điện thoại"
+                  autoComplete="tel"
+                  placeholder="VD: 0912345678"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  onBlur={() => handleBlur("phone")}
+                  error={errors.phone}
+                  required
+                />
 
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                fullWidth
-                isLoading={isLoading}
-                loadingText="Đang tạo tài khoản..."
-              >
-                Đăng ký
-              </Button>
-            </fieldset>
-          </form>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  label="Mật khẩu"
+                  autoComplete="new-password"
+                  placeholder="Ít nhất 6 ký tự"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => handleBlur("password")}
+                  error={errors.password}
+                  required
+                  rightIcon={showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  onRightIconClick={() => setShowPassword((v) => !v)}
+                />
 
-          <footer className={styles.formFooter}>
-            <span>Đã có tài khoản?</span>{" "}
-            <Link to="/login" className={styles.footerLink}>
-              Đăng nhập ngay
-            </Link>
-          </footer>
-        </Card>
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  label="Xác nhận mật khẩu"
+                  autoComplete="new-password"
+                  placeholder="Nhập lại mật khẩu"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onBlur={() => handleBlur("confirmPassword")}
+                  error={errors.confirmPassword}
+                  required
+                  rightIcon={showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  onRightIconClick={() => setShowConfirmPassword((v) => !v)}
+                />
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  isLoading={isLoading}
+                  loadingText="Đang tạo tài khoản..."
+                >
+                  Đăng ký
+                </Button>
+              </fieldset>
+            </form>
+
+            <hr className={styles.divider} aria-hidden="true" />
+
+            <footer className={styles.formFooter}>
+              <span className={styles.formFooterLabel}>Đã có tài khoản?</span>
+              <Link to="/login" className={styles.footerLink}>
+                Đăng nhập ngay
+              </Link>
+            </footer>
+          </div>
+        </section>
       </section>
     </main>
   );

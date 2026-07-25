@@ -1,0 +1,145 @@
+/* Hallmark · component: AuthMinimalHeader · genre: editorial · design-system: design.md §9
+ *
+ * Header TỐI GIẢN riêng cho LoginPage + RegisterPage (conversion page).
+ * Đồng bộ Public Editorial system (giống PublicHeader chính, nhưng thu gọn
+ * về còn 1 logo + 1 anchor "Về trang chủ" — KHÔNG có menu, KHÔNG có CTA).
+ *
+ * Shape: ivory surface + hairline border-bottom 1px brand-rule (giống PublicHeader chính).
+ * Heading (logo link): font-style: normal (gate 38a).
+ * Body link: eyebrow uppercase với hairline rule 16px (gate 36 pattern từ
+ *   levelBadge, eyebrow, sessions…).
+ *
+ * Component-scope stamp — không có macrostructure pick.
+ */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--zr-surface, #ffffff);
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3);
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(14px, 1.6vw, 20px) clamp(16px, 4vw, 48px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4, 16px);
+  min-width: 0;
+}
+
+/* ===== Logo link — brand mark, click về "/" ===== */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  flex-shrink: 0;
+  min-width: 0;
+  transition: opacity var(--zr-dur-fast, 220ms)
+    var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.brand:hover {
+  opacity: 0.72;
+}
+
+.brand:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 4px;
+  border-radius: 0;
+}
+
+.logo {
+  height: clamp(28px, 3vw, 36px);
+  width: auto;
+  display: block;
+}
+
+/* ===== Back link — eyebrow uppercase với hairline rule ==== */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-decoration: none;
+  flex-shrink: 0;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+  min-width: 0;
+  transition: gap 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    color 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.backLinkRule {
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
+  flex-shrink: 0;
+  transition: width 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.backLink:hover {
+  gap: 14px;
+  color: var(--zr-brand-hover, #a50c24);
+}
+
+.backLink:hover .backLinkRule {
+  width: 22px;
+}
+
+.backLink:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 4px;
+  border-radius: 0;
+}
+
+/* ===== Mobile: thu padding, đảm bảo 2 phần tử không chồng ===== */
+@media (max-width: 480px) {
+  .inner {
+    padding: 12px clamp(14px, 4vw, 20px);
+    gap: var(--space-3, 12px);
+  }
+
+  .logo {
+    height: 28px;
+  }
+
+  .backLink {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    gap: 8px;
+  }
+
+  .backLinkRule {
+    width: 12px;
+  }
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .brand,
+  .backLink,
+  .backLinkRule {
+    transition: none;
+  }
+}

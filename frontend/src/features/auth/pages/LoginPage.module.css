@@ -1,23 +1,58 @@
+/* Hallmark · macrostructure: 14 - Narrative Workflow · tone: editorial · design-system: design.md §9
+ * Page: LoginPage — conversion page (chuyển đổi đăng nhập).
+ * Heading: Source Serif 4 (display) · Body: Be Vietnam Pro. Letter-spacing 0 ≤ -0.005em.
+ * Palette: brand-red #C8102E + brand-gold #D4AF37 + ivory #FAF7F2 + ink #1A1A1E.
+ * Sections: AuthMinimalHeader + 2-col split (BrandPanel trái ivory + FormCard phải).
+ * Shape: 0 radius · 0 shadow · hairline border-top brand-red 3px trên FormCard ivory.
+ * Motion: opacity 0→1 transition 240ms ease-out + border-color shift, KHÔNG translateY/scale.
+ *
+ * Nguyên tắc login page:
+ * - FormCard KHÔNG có shadow. Nổi bật nhờ border-top brand-red 3px + ivory paper.
+ * - BrandPanel trái giống RegisterPage: logo + title + tagline + bullets (KHÔNG dùng ảnh Login.png).
+ * - Input + Button shared override sang editorial: 0 radius, hairline border-bottom duy nhất,
+ *   underline cho label uppercase eyebrow, CTA brand-red solid không shadow.
+ *
+ * Override strategy cho shared Input + Button (không modify Input.module.css /
+ * Button.module.css): dùng ELEMENT type selector `.formCard input` và
+ * `.formCard button[type="submit"]` — selector cuối là element, luôn match
+ * bất kể class hash thay đổi bao nhiêu lần build.
+ */
+
 .page {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
   min-height: 100vh;
-  background-color: var(--bg-page);
+  background: var(--zr-paper, #faf7f2);
+}
+
+/* ===== AuthMinimalHeader wrapper ===== */
+.headerWrap {
+  grid-row: 1;
+}
+
+/* ===== Main split ===== */
+.layout {
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100%;
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {
-  .page {
+  .layout {
     grid-template-columns: 1fr minmax(480px, 560px);
   }
 }
 
-/* ===== Brand panel (trái — desktop only) ===== */
+/* ===== Brand panel (trái — desktop only) — ivory paper giống Register ===== */
 .brandPanel {
   display: none;
   position: relative;
   overflow: hidden;
-  background-color: var(--bg-page);
-  padding: var(--space-6);
+  background: var(--zr-paper, #faf7f2);
+  padding: clamp(32px, 5vw, 64px);
+  border-right: 1px solid var(--zr-rule, #d9d0c3);
 }
 
 @media (min-width: 1024px) {
@@ -28,27 +63,100 @@
   }
 }
 
-/* Ảnh banner hiển thị đầy đủ (contain) để không crop 2 bên — căn giữa panel. */
-.brandImage {
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
+.brandInner {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2.4vw, 28px);
+  min-width: 0;
+}
+
+.logoMark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  width: fit-content;
+}
+
+.logoImg {
+  height: clamp(48px, 5vw, 64px);
   width: auto;
-  height: auto;
-  object-fit: contain;
-  object-position: center;
+  display: block;
+}
+
+/* Brand title — Source Serif 4 700 roman (gate 38a) */
+.brandTitle {
+  margin: 0;
+  font-family: var(--zr-font-serif, "Source Serif 4", "Georgia", serif);
+  font-size: clamp(28px, 3.6vw, 40px);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.15;
+  color: var(--zr-ink, #1a1a1e);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.brandTagline {
+  margin: 0;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: clamp(15px, 1.4vw, 17px);
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.7;
+  color: var(--zr-ink-soft, #4a4540);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+/* Bullets — hairline rule marker, không pill */
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 14px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.bullets li {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  margin: 0;
+  padding: 0;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.6;
+  color: var(--zr-ink, #1a1a1e);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .bullets li::before {
   content: "";
-  position: absolute;
-  left: 0;
-  top: 8px;
-  width: 14px;
-  height: 14px;
-  background-color: var(--brand-accent);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+  width: 12px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
+  margin-top: 0.7em;
+  flex-shrink: 0;
 }
 
 /* ===== Form panel (phải) ===== */
@@ -56,45 +164,115 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-6);
+  padding: clamp(24px, 4vw, 56px) clamp(16px, 4vw, 24px);
+  min-width: 0;
+  background: var(--zr-paper, #faf7f2);
 }
 
 @media (min-width: 768px) {
   .formPanel {
-    padding: var(--space-10);
+    padding: clamp(40px, 6vw, 80px) clamp(24px, 4vw, 48px);
   }
 }
 
+/* ===== Form Card — ivory paper + hairline border-top brand-red 3px ===== */
 .formCard {
   width: 100%;
   max-width: 460px;
+  background: var(--zr-paper, #faf7f2);
+  border-top: 3px solid var(--zr-brand, #c8102e);
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: clamp(28px, 4vw, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2.4vw, 28px);
+  min-width: 0;
 }
 
+.formCard :global(.card) {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* ===== Header — eyebrow label + Source Serif 4 heading ===== */
 .formHeader {
-  margin-bottom: var(--space-6);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
+  flex-shrink: 0;
 }
 
 .formTitle {
-  font-size: 24px;
+  margin: 0;
+  font-family: var(--zr-font-serif, "Source Serif 4", "Georgia", serif);
+  font-size: clamp(28px, 3.6vw, 36px);
   font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-  margin-bottom: var(--space-2);
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.15;
+  color: var(--zr-ink, #1a1a1e);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .formSubtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.5;
+  margin: 0;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 15px;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.65;
+  color: var(--zr-ink-soft, #4a4540);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
+/* ===== Alert wrap ===== */
 .alertWrap {
-  margin-bottom: var(--space-5);
+  margin: 0;
+  padding: 0;
 }
 
+/* ===== Form ===== */
 .form {
   display: block;
   width: 100%;
+  min-width: 0;
 }
 
 .fieldset {
@@ -103,30 +281,377 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: clamp(16px, 1.8vw, 22px);
   min-width: 0;
 }
 
+.fieldset:disabled {
+  opacity: 0.7;
+}
+
+.divider {
+  height: 1px;
+  background: var(--zr-rule, #d9d0c3);
+  margin: 0;
+  border: 0;
+}
+
+/* ===== Forgot row ===== */
 .forgotRow {
   display: flex;
   justify-content: flex-end;
-  margin-top: calc(-1 * var(--space-2));
+  margin: calc(-1 * var(--space-2, 8px)) 0 0;
 }
 
+.forgotBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+  cursor: pointer;
+  transition: color var(--zr-dur-fast, 220ms)
+    var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.forgotBtn::before {
+  content: "";
+  width: 12px;
+  height: 1px;
+  background: currentColor;
+  flex-shrink: 0;
+  transition: width 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.forgotBtn:hover {
+  color: var(--zr-brand-hover, #a50c24);
+}
+
+.forgotBtn:hover::before {
+  width: 18px;
+}
+
+.forgotBtn:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
+  border-radius: 0;
+}
+
+/* ===== Form footer — link chuyển Register ===== */
 .formFooter {
-  margin-top: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
   text-align: center;
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.5;
+  color: var(--zr-ink-soft, #4a4540);
+}
+
+.formFooterLabel {
+  font-size: 14px;
+  color: var(--zr-ink-soft, #4a4540);
 }
 
 .footerLink {
-  color: var(--brand-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--zr-brand, #c8102e);
   font-weight: 600;
-  transition: color 0.15s ease;
+  font-family: inherit;
+  font-size: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  padding-bottom: 2px;
+  transition: color var(--zr-dur-fast, 220ms)
+    var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    background-size var(--zr-dur-fast, 220ms)
+    var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.footerLink::after {
+  content: "→";
+  display: inline-block;
+  font-weight: 400;
+  transition: transform 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .footerLink:hover {
-  color: var(--brand-primary-hover);
-  text-decoration: underline;
+  color: var(--zr-brand-hover, #a50c24);
+  background-size: 100% 1px;
+}
+
+.footerLink:hover::after {
+  transform: translateX(3px);
+}
+
+.footerLink:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
+  border-radius: 0;
+}
+
+/* ============================================================
+ * Override shared Input + Button trong scope formCard → editorial.
+ *
+ * Cách dùng: CSS Modules compile `:global(.fieldWrapper)` thành selector
+ * `.fieldWrapper` (không hash), nhưng `<Input>` JSX render class gốc đã hash
+ * (`_fieldWrapper_15nu2_47`). Hai selector KHÔNG match nhau.
+ *
+ * Giải pháp: dùng ELEMENT type selector (`input`, `button`) + descendant
+ * combinator `.formCard input` — selector cuối là element, luôn match
+ * bất kể class hash thay đổi bao nhiêu lần build.
+ *
+ * KHÔNG dùng `:has()` — LightningCSS (PostCSS của Vite) chưa ổn định.
+ * Chỉ target bằng element type + attribute selector.
+ * ============================================================ */
+
+/* ---- Input label (Be Vietnam Pro uppercase eyebrow) ---- */
+.formCard label {
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  color: var(--zr-ink-soft, #4a4540) !important;
+}
+
+/* ---- Input field — hairline border-bottom (target div cha qua :has là không ổn định,
+   dùng descendant selector trên wrapper div có chứa input là phương án dễ vỡ) ---- */
+/* Thay vào đó target div là wrapper của Input. Cấu trúc Input.tsx:
+   <div class="wrapper">
+     <label>...</label>
+     <div class="fieldWrapper">
+       <input/>
+     </div>
+   </div>
+   → `formCard label + div` chọn fieldWrapper (label là sibling trước) */
+.formCard label + div {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  height: 48px !important;
+  transition: border-bottom-color var(--zr-dur-fast, 220ms)
+    var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.formCard label + div:hover {
+  border-bottom-color: var(--zr-ink-soft, #4a4540) !important;
+}
+
+.formCard label + div:focus-within {
+  border-bottom-color: var(--zr-brand, #c8102e) !important;
+  box-shadow: none !important;
+}
+
+/* Attribute selector cho error state (browser support ổn định hơn :has) */
+.formCard div[class*="hasError"] {
+  border-bottom-color: var(--color-error, #dc2626) !important;
+  box-shadow: none !important;
+}
+
+.formCard label + div:has([aria-invalid="true"]),
+.formCard div[class*="hasError"] {
+  border-bottom-color: var(--color-error, #dc2626);
+}
+
+/* ---- Input element ---- */
+.formCard input[type="email"],
+.formCard input[type="password"],
+.formCard input[type="text"],
+.formCard input[type="tel"] {
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif) !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  letter-spacing: 0 !important;
+  color: var(--zr-ink, #1a1a1e) !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  padding: 12px 0 !important;
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: 0 !important;
+  min-width: 0 !important;
+  box-shadow: none !important;
+}
+
+.formCard input::placeholder {
+  color: var(--zr-ink-muted, #6b6058) !important;
+  opacity: 1 !important;
+}
+
+.formCard input:disabled {
+  cursor: not-allowed !important;
+}
+
+/* ---- Input rightIconButton (eye toggle) ---- */
+.formCard button[type="button"][aria-label="Toggle password visibility"] {
+  position: absolute !important;
+  right: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--zr-ink-soft, #4a4540) !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: color var(--zr-dur-fast, 220ms)
+    var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)) !important;
+}
+
+.formCard button[type="button"][aria-label="Toggle password visibility"]:hover {
+  color: var(--zr-brand, #c8102e) !important;
+  background: transparent !important;
+}
+
+.formCard button[type="button"][aria-label="Toggle password visibility"]:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* ---- Input errorText / hintText ---- */
+.formCard span[role="alert"] {
+  display: block !important;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
+  letter-spacing: 0 !important;
+  line-height: 1.45 !important;
+  color: var(--color-error, #dc2626) !important;
+  margin-top: 4px !important;
+  overflow-wrap: anywhere !important;
+  min-width: 0 !important;
+}
+
+.formCard span[id$="-hint"] {
+  display: block !important;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  letter-spacing: 0 !important;
+  line-height: 1.45 !important;
+  color: var(--zr-ink-muted, #6b6058) !important;
+  margin-top: 4px !important;
+  overflow-wrap: anywhere !important;
+  min-width: 0 !important;
+}
+
+/* ---- Button submit — editorial: 0 radius, 0 shadow, brand-red, uppercase + arrow ---- */
+.formCard button[type="submit"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif) !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  user-select: none !important;
+  cursor: pointer !important;
+  background-color: var(--zr-brand, #c8102e) !important;
+  color: var(--text-on-primary, #ffffff) !important;
+  height: 52px !important;
+  padding: 0 var(--space-6, 24px) !important;
+  font-size: 12px !important;
+  width: 100% !important;
+  transition: background-color var(--zr-dur-fast, 220ms)
+      var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)) !important;
+}
+
+.formCard button[type="submit"]:hover:not(:disabled) {
+  background-color: var(--zr-brand-hover, #a50c24) !important;
+}
+
+.formCard button[type="submit"]:active:not(:disabled) {
+  background-color: var(--brand-primary-active, #8a0a1e) !important;
+}
+
+.formCard button[type="submit"]:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e) !important;
+  outline-offset: 3px !important;
+  box-shadow: none !important;
+}
+
+.formCard button[type="submit"]:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* Arrow → trên button submit */
+.formCard button[type="submit"]::after {
+  content: "→";
+  display: inline-block;
+  font-weight: 400;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 14px;
+  margin-left: 4px;
+  transition: transform 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.formCard button[type="submit"]:hover:not(:disabled)::after {
+  transform: translateX(3px);
+}
+
+/* ===== Mobile: panel trái ẩn hoàn toàn, form full width ===== */
+@media (max-width: 1023px) {
+  .brandPanel {
+    display: none;
+  }
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .forgotBtn,
+  .forgotBtn::before,
+  .footerLink,
+  .footerLink::after {
+    transition: none;
+  }
 }

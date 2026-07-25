@@ -1,9 +1,10 @@
 ﻿import { FormEvent, useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Alert, Button, Card, Input } from "../../../shared/components/ui";
+import { Alert, Button, Input } from "../../../shared/components/ui";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { login } from "../services/authApi";
 import { ApiError } from "../../../shared/api";
+import { AuthMinimalHeader } from "../components/AuthMinimalHeader";
 import styles from "./LoginPage.module.css";
 
 interface FieldErrors {
@@ -141,107 +142,126 @@ export function LoginPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.brandPanel} aria-hidden="true">
-        <img
-          src="/Banner/Login.png"
-          alt=""
-          className={styles.brandImage}
-        />
-      </section>
+      <div className={styles.headerWrap}>
+        <AuthMinimalHeader />
+      </div>
 
-      <section className={styles.formPanel}>
-        <Card className={styles.formCard} padding="lg">
-          <header className={styles.formHeader}>
-            <h2 className={styles.formTitle}>Đăng nhập</h2>
-            <p className={styles.formSubtitle}>
-              Đăng nhập để tiếp tục vào hệ thống Zhong Ruan LMS.
+      <section className={styles.layout}>
+        <section className={styles.brandPanel} aria-hidden="true">
+          <div className={styles.brandInner}>
+            <div className={styles.logoMark}>
+              <img
+                src="/logo/logo-full.png"
+                alt="Zhong Ruan LMS"
+                className={styles.logoImg}
+              />
+            </div>
+            <h1 className={styles.brandTitle}>Chào mừng bạn quay lại</h1>
+            <p className={styles.brandTagline}>
+              Tiếp tục hành trình học tiếng Trung cùng Trung tâm Trung Quốc học
+              Zhong Ruan.
             </p>
-          </header>
+            <ul className={styles.bullets}>
+              <li>Truy cập lớp học, bài tập và tài liệu đã lưu</li>
+              <li>Theo dõi lịch học, điểm danh và học phí</li>
+              <li>Báo cáo tiến độ học tập cá nhân</li>
+            </ul>
+          </div>
+        </section>
 
-          {apiError ? (
-            <div className={styles.alertWrap}>
-              <Alert variant="error" onClose={() => setApiError(null)}>
-                {apiError}
-              </Alert>
-            </div>
-          ) : null}
+        <section className={styles.formPanel}>
+          <div className={styles.formCard}>
+            <header className={styles.formHeader}>
+              <span className={styles.eyebrow}>Đăng nhập</span>
+              <h2 className={styles.formTitle}>Tiếp tục hành trình học</h2>
+            </header>
 
-          {justRegistered && !apiError ? (
-            <div className={styles.alertWrap}>
-              <Alert variant="success">
-                Đăng ký tài khoản thành công. Vui lòng đăng nhập để tiếp tục.
-              </Alert>
-            </div>
-          ) : null}
-
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            aria-busy={isLoading || undefined}
-            className={styles.form}
-          >
-            <fieldset disabled={isLoading} className={styles.fieldset}>
-              <Input
-                type="email"
-                name="email"
-                label="Email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={() => handleBlur("email")}
-                error={errors.email}
-                required
-              />
-
-              <Input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                label="Mật khẩu"
-                autoComplete="current-password"
-                placeholder="Nhập mật khẩu"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onBlur={() => handleBlur("password")}
-                error={errors.password}
-                required
-                rightIcon={showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                onRightIconClick={() => setShowPassword((v) => !v)}
-              />
-
-              <div className={styles.forgotRow}>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    // TODO: nối route /forgot-password khi BE màn quên mật khẩu sẵn sàng.
-                  }}
-                >
-                  Quên mật khẩu?
-                </Button>
+            {apiError ? (
+              <div className={styles.alertWrap}>
+                <Alert variant="error" onClose={() => setApiError(null)}>
+                  {apiError}
+                </Alert>
               </div>
+            ) : null}
 
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                fullWidth
-                isLoading={isLoading}
-                loadingText="Đang đăng nhập..."
-              >
-                Đăng nhập
-              </Button>
-            </fieldset>
-          </form>
+            {justRegistered && !apiError ? (
+              <div className={styles.alertWrap}>
+                <Alert variant="success">
+                  Đăng ký tài khoản thành công. Vui lòng đăng nhập để tiếp tục.
+                </Alert>
+              </div>
+            ) : null}
 
-          <footer className={styles.formFooter}>
-            <span>Chưa có tài khoản?</span>{" "}
-            <Link to="/register" className={styles.footerLink}>
-              Đăng ký ngay
-            </Link>
-          </footer>
-        </Card>
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              aria-busy={isLoading || undefined}
+              className={styles.form}
+            >
+              <fieldset disabled={isLoading} className={styles.fieldset}>
+                <Input
+                  type="email"
+                  name="email"
+                  label="Email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => handleBlur("email")}
+                  error={errors.email}
+                  required
+                />
+
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  label="Mật khẩu"
+                  autoComplete="current-password"
+                  placeholder="Nhập mật khẩu"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => handleBlur("password")}
+                  error={errors.password}
+                  required
+                  rightIcon={showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  onRightIconClick={() => setShowPassword((v) => !v)}
+                />
+
+                <div className={styles.forgotRow}>
+                  <button
+                    type="button"
+                    className={styles.forgotBtn}
+                    onClick={() => {
+                      // TODO: nối route /forgot-password khi BE màn quên mật khẩu sẵn sàng.
+                    }}
+                  >
+                    Quên mật khẩu?
+                  </button>
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  isLoading={isLoading}
+                  loadingText="Đang đăng nhập..."
+                >
+                  Đăng nhập
+                </Button>
+              </fieldset>
+            </form>
+
+            <hr className={styles.divider} aria-hidden="true" />
+
+            <footer className={styles.formFooter}>
+              <span className={styles.formFooterLabel}>Chưa có tài khoản?</span>
+              <Link to="/register" className={styles.footerLink}>
+                Đăng ký ngay
+              </Link>
+            </footer>
+          </div>
+        </section>
       </section>
     </main>
   );
