@@ -1,52 +1,125 @@
+/* Hallmark · component: Breadcrumb (shared) · genre: editorial · design-system: design.md §9
+ *
+ * Dùng chung cho 7 trang public: HomePage, CoursesPage, CourseDetailPage,
+ * TeachersListPage, TeacherDetailPage, PricingPage, ContactPage.
+ *
+ * Editorial voice: ivory transparent bg, hairline border-bottom 1px,
+ * Be Vietnam Pro 13px body, eyebrow-style separator (lowercase "›"),
+ * underline-grow on link hover (0% → 100% hairline brand-red).
+ * Không stamp icon nặng — chỉ <Home /> lucide (đã có trong JSX, không sửa).
+ *
+ * Logic React giữ nguyên 100%: items, isLast, aria-current, Lucide icons.
+ */
+
 .nav {
-  background: var(--bg-page);
-  border-bottom: 1px solid var(--border-default);
-  padding: var(--space-4) 0;
+  background: transparent;
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3);
+  padding: clamp(14px, 1.6vw, 20px) 0;
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  min-width: 0;
 }
 
 .list {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0 clamp(16px, 4vw, 48px);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 6px;
   list-style: none;
   font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  font-style: normal;
+  color: var(--zr-ink-soft, #4a4540);
+  min-width: 0;
 }
 
 .item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 6px;
+  min-width: 0;
 }
 
 .separator {
-  color: var(--text-placeholder);
+  color: var(--zr-ink-muted, #6b6058);
   flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
 }
 
+/* Link — hairline underline grow on hover */
 .link {
-  color: var(--text-secondary);
+  color: var(--zr-ink-soft, #4a4540);
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0;
   text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  padding-bottom: 2px;
+  transition: color var(--zr-dur-fast, 220ms) var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    background-size var(--zr-dur-fast, 220ms) var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
   display: inline-flex;
   align-items: center;
-  transition: color 0.15s ease;
+  min-width: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .link:hover {
-  color: var(--brand-primary);
+  color: var(--zr-brand, #c8102e);
+  background-size: 100% 1px;
 }
 
+.link:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
+  border-radius: 0;
+}
+
+/* Current — roman weight, no italic, ink solid */
 .current {
-  color: var(--text-primary);
+  color: var(--zr-ink, #1a1a1e);
+  font-family: var(--zr-font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 13px;
   font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.5;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .nav {
+    padding: 12px 0;
+  }
+
   .list {
-    padding: 0 var(--space-4);
+    padding: 0 clamp(14px, 4vw, 20px);
     font-size: 12px;
+    gap: 4px;
+  }
+
+  .link,
+  .current {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link,
+  .link:hover {
+    transition: none;
   }
 }
