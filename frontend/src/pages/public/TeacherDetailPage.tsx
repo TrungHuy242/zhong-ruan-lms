@@ -6,16 +6,16 @@
  * Luồng:
  *  - Gọi GET /public/teachers/:slug (BE trả 404 nếu không tồn tại hoặc chưa publish)
  *  - Breadcrumb: Trang chủ / Giảng viên / {Tên}
- *  - Hero: ảnh lớn + tên + chức danh + số năm KN nổi bật + tags chuyên môn
- *  - Mô tả chi tiết (bio, full)
- *  - Nếu 404 → "Không tìm thấy giảng viên" + nút về /giang-vien
+ *  - Masthead (Letter register): ảnh trái + identity phải + tags + CTA
+ *  - Bio section: prose measure, hairline divider, drop-cap first paragraph
+ *  - Nếu 404 → "Không tìm thấy giảng viên" + editorial link về /giang-vien
  *  - CTA "Đăng ký học thử với giáo viên này" → /register?ref=teacher&slug=...
  *
  * SEO: title/description động theo data.
  *   title: `Giảng viên ${fullName} — ${title} | Zhong Ruan`
  *   description: `${bioShort}` (fallback về bio cắt 160 ký tự).
  *
- * Pattern tham chiếu: CourseDetailPage (breadcrumb + hero + 404 fallback).
+ * Pattern tham chiếu: CourseDetailPage (breadcrumb + masthead + 404 fallback).
  */
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -32,9 +32,6 @@ import {
 import {
   ArrowLeft,
   BadgeCheck,
-  GraduationCap,
-  Sparkles,
-  Star,
 } from "lucide-react";
 import styles from "./TeacherDetailPage.module.css";
 
@@ -133,14 +130,19 @@ export function TeacherDetailPage() {
         />
         <section className={styles.notFound}>
           <div className={styles.notFoundInner}>
-            <GraduationCap size={64} className={styles.notFoundIcon} aria-hidden="true" />
-            <h1 className={styles.notFoundTitle}>Không tìm thấy giảng viên</h1>
+            <span className={styles.notFoundKicker}>404 · Chưa công bố</span>
+            <h1 className={styles.notFoundTitle}>
+              Không tìm thấy{" "}
+              <span style={{ fontStyle: "italic", color: "var(--zr-brand, #c8102e)" }}>
+                giảng viên
+              </span>
+            </h1>
             <p className={styles.notFoundText}>
-              Giảng viên bạn đang tìm không tồn tại, đã bị ẩn hoặc đường dẫn không
-              chính xác. Vui lòng xem danh sách giảng viên hiện có.
+              Giảng viên bạn đang tìm không tồn tại, đã bị ẩn hoặc đường dẫn
+              không chính xác. Vui lòng xem danh sách giảng viên hiện có.
             </p>
             <Link to="/giang-vien" className={styles.notFoundBtn}>
-              <ArrowLeft size={16} />
+              <ArrowLeft size={14} aria-hidden="true" />
               Xem danh sách giảng viên
             </Link>
           </div>
@@ -160,9 +162,10 @@ export function TeacherDetailPage() {
         <Breadcrumb items={[{ label: "Giảng viên", to: "/giang-vien" }]} />
         <section className={styles.notFound}>
           <div className={styles.notFoundInner}>
+            <span className={styles.notFoundKicker}>Không tải được</span>
             <Alert variant="error">{error}</Alert>
             <Link to="/giang-vien" className={styles.notFoundBtn}>
-              <ArrowLeft size={16} />
+              <ArrowLeft size={14} aria-hidden="true" />
               Quay lại danh sách
             </Link>
           </div>
@@ -180,7 +183,7 @@ export function TeacherDetailPage() {
           description="Đang tải thông tin giảng viên."
         />
         <Breadcrumb items={[{ label: "Giảng viên", to: "/giang-vien" }]} />
-        <section className={styles.loadingWrap}>
+        <section className={styles.loadingWrap} aria-busy="true">
           <div className={styles.loadingAvatar} aria-hidden="true" />
           <div className={styles.loadingBody}>
             <div className={styles.loadingTitle} aria-hidden="true" />
@@ -210,10 +213,10 @@ export function TeacherDetailPage() {
         ]}
       />
 
-      {/* ===== HERO ===== */}
-      <section className={styles.hero} aria-labelledby="teacher-hero-heading">
+      {/* ===== MASTHEAD — Letter register ===== */}
+      <section className={styles.masthead} aria-labelledby="teacher-hero-heading">
         <div className={styles.container}>
-          <div className={styles.heroGrid}>
+          <div className={styles.mastheadGrid}>
             <div className={styles.avatarWrap}>
               {teacher.avatarUrl ? (
                 <img
@@ -231,20 +234,14 @@ export function TeacherDetailPage() {
                   className={styles.avatar}
                 />
               )}
-              {teacher.isFeatured ? (
-                <span className={styles.featuredBadge}>
-                  <Star size={14} strokeWidth={2.5} />
-                  Giảng viên nổi bật
-                </span>
-              ) : null}
+              <p className={styles.portraitCaption}>
+                Ảnh giảng viên — chờ cập nhật
+              </p>
             </div>
 
-            <div className={styles.heroInfo}>
+            <div className={styles.identity}>
               {teacher.isFeatured ? (
-                <span className={styles.kicker}>
-                  <Sparkles size={14} aria-hidden="true" />
-                  Giảng viên nổi bật
-                </span>
+                <span className={styles.kicker}>Giảng viên nổi bật</span>
               ) : null}
 
               <h1 id="teacher-hero-heading" className={styles.name}>
@@ -266,10 +263,23 @@ export function TeacherDetailPage() {
               {teacher.yearsOfExperience != null ? (
                 <div className={styles.expCard}>
                   <div className={styles.expIcon}>
-                    <GraduationCap size={28} aria-hidden="true" />
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        fontFamily: "var(--zr-font-serif)",
+                        fontStyle: "italic",
+                        fontSize: "26px",
+                        lineHeight: 1,
+                        color: "var(--zr-brand, #c8102e)",
+                      }}
+                    >
+                      {teacher.yearsOfExperience}+
+                    </span>
                   </div>
                   <div className={styles.expBody}>
-                    <span className={styles.expLabel}>Kinh nghiệm giảng dạy</span>
+                    <span className={styles.expLabel}>
+                      Kinh nghiệm giảng dạy
+                    </span>
                     <strong className={styles.expValue}>
                       {formatExperience(teacher.yearsOfExperience)}
                     </strong>
@@ -279,10 +289,11 @@ export function TeacherDetailPage() {
 
               {teacher.specialties && teacher.specialties.length > 0 ? (
                 <div className={styles.tags} aria-label="Chuyên môn">
-                  <span className={styles.tagsLabel}>Chuyên môn:</span>
-                  {teacher.specialties.map((s) => (
+                  <span className={styles.tagsLabel}>Chuyên môn</span>
+                  {teacher.specialties.map((s, i) => (
                     <span key={s} className={styles.tag}>
                       {s}
+                      {i < teacher.specialties.length - 1 ? " ·" : ""}
                     </span>
                   ))}
                 </div>
@@ -293,7 +304,7 @@ export function TeacherDetailPage() {
                   Đăng ký học thử với giáo viên này
                 </Link>
                 <Link to="/giang-vien" className={styles.secondaryCta}>
-                  <ArrowLeft size={16} />
+                  <ArrowLeft size={14} aria-hidden="true" />
                   Xem giảng viên khác
                 </Link>
               </div>
@@ -305,13 +316,16 @@ export function TeacherDetailPage() {
       {/* ===== BIO chi tiết ===== */}
       {teacher.bio ? (
         <section
-          className={`${styles.section} ${styles.sectionAlt}`}
+          className={`${styles.section} ${styles.sectionWhite}`}
           aria-labelledby="bio-heading"
         >
           <div className={styles.container}>
-            <div className={styles.bioCard}>
+            <article className={styles.bioCard}>
               <h2 id="bio-heading" className={styles.bioTitle}>
-                Về {teacher.fullName}
+                Về{" "}
+                <span className={styles.bioTitleAccent}>
+                  {teacher.fullName}
+                </span>
               </h2>
               <div className={styles.bioContent}>
                 {teacher.bio.split(/\n\n+/).map((paragraph, idx) => (
@@ -320,7 +334,7 @@ export function TeacherDetailPage() {
                   </p>
                 ))}
               </div>
-            </div>
+            </article>
           </div>
         </section>
       ) : null}

@@ -1,0 +1,348 @@
+{
+  "timestamp": "2026-07-25T09:56:50.596Z",
+  "pages": [
+    {
+      "id": "khoa-hoc",
+      "url": "/khoa-hoc",
+      "components": {
+        "courseCard": {
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "background": "rgb(250, 247, 242) none repeat scroll 0% 0% / auto padding-box border-box",
+          "backgroundColor": "rgb(250, 247, 242)",
+          "backgroundImage": "none",
+          "fontFamily": "Inter, \"Be Vietnam Pro\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+          "fontStyle": "normal",
+          "fontWeight": "400",
+          "fontSize": "14px",
+          "color": "rgb(26, 26, 30)",
+          "border": "",
+          "borderTop": "3px solid rgb(217, 208, 195)",
+          "padding": "30.72px"
+        },
+        "courseCardDetailed": {
+          "name": "HSK Sơ cấp (HSK 1-2)",
+          "tagName": "DIV",
+          "className": "_card_4elm2_11 _cardDetailed_4elm2_30",
+          "styles": {
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "backgroundColor": "rgb(250, 247, 242)",
+            "border": ""
+          }
+        },
+        "comparisonTable": {
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "backgroundImage": "none",
+          "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+          "fontStyle": "normal",
+          "fontWeight": "400",
+          "fontSize": "14px",
+          "color": "rgb(26, 26, 30)",
+          "border": "0px none rgb(26, 26, 30)",
+          "borderTop": "0px none rgb(26, 26, 30)",
+          "padding": "0px"
+        },
+        "tableWrap": {
+          "className": "_tableWrap_1dpat_12",
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "borderTop": "1px solid rgb(217, 208, 195)",
+          "borderBottom": "1px solid rgb(217, 208, 195)"
+        },
+        "ctaBanner": {
+          "banner": {
+            "className": "_banner_18lib_12",
+            "background": "rgb(26, 26, 30) none repeat scroll 0% 0% / auto padding-box border-box",
+            "backgroundColor": "rgb(26, 26, 30)",
+            "backgroundImage": "none",
+            "borderRadius": "0px",
+            "boxShadow": "none"
+          },
+          "headline": {
+            "text": "Bắt Đầu Hành Trình Chinh Phục Tiếng Trung Ngay Hôm Nay",
+            "fontFamily": "\"Source Serif 4\", Georgia, serif",
+            "fontSize": "46.08px",
+            "fontStyle": "normal",
+            "color": "rgb(250, 247, 242)"
+          },
+          "ctaBtn": {
+            "text": "Đăng ký học thử miễn phí",
+            "backgroundColor": "rgb(200, 16, 46)",
+            "color": "rgb(250, 247, 242)",
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+          }
+        }
+      }
+    },
+    {
+      "id": "khoa-hoc-hsk-1-2",
+      "url": "/khoa-hoc/hsk-1-2",
+      "components": {
+        "courseCard": {
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "background": "rgb(250, 247, 242) none repeat scroll 0% 0% / auto padding-box border-box",
+          "backgroundColor": "rgb(250, 247, 242)",
+          "backgroundImage": "none",
+          "fontFamily": "Inter, \"Be Vietnam Pro\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+          "fontStyle": "normal",
+          "fontWeight": "400",
+          "fontSize": "14px",
+          "color": "rgb(26, 26, 30)",
+          "border": "",
+          "borderTop": "3px solid rgb(217, 208, 195)",
+          "padding": "30.72px"
+        },
+        "courseCardDetailed": {
+          "name": "HSK Trung cấp (HSK 3-4)",
+          "tagName": "DIV",
+          "className": "_card_4elm2_11 ",
+          "styles": {
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "backgroundColor": "rgb(250, 247, 242)",
+            "border": ""
+          }
+        },
+        "ctaBanner": {
+          "banner": {
+            "className": "_banner_18lib_12",
+            "background": "rgb(26, 26, 30) none repeat scroll 0% 0% / auto padding-box border-box",
+            "backgroundColor": "rgb(26, 26, 30)",
+            "backgroundImage": "none",
+            "borderRadius": "0px",
+            "boxShadow": "none"
+          },
+          "headline": {
+            "text": "Bắt Đầu Hành Trình Chinh Phục Tiếng Trung Ngay Hôm Nay",
+            "fontFamily": "\"Source Serif 4\", Georgia, serif",
+            "fontSize": "46.08px",
+            "fontStyle": "normal",
+            "color": "rgb(250, 247, 242)"
+          },
+          "ctaBtn": {
+            "text": "Đăng ký học thử miễn phí",
+            "backgroundColor": "rgb(200, 16, 46)",
+            "color": "rgb(250, 247, 242)",
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+          }
+        }
+      }
+    },
+    {
+      "id": "khoa-hoc-hsk-3-4",
+      "url": "/khoa-hoc/hsk-3-4",
+      "components": {
+        "courseCard": {
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "background": "rgb(250, 247, 242) none repeat scroll 0% 0% / auto padding-box border-box",
+          "backgroundColor": "rgb(250, 247, 242)",
+          "backgroundImage": "none",
+          "fontFamily": "Inter, \"Be Vietnam Pro\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+          "fontStyle": "normal",
+          "fontWeight": "400",
+          "fontSize": "14px",
+          "color": "rgb(26, 26, 30)",
+          "border": "",
+          "borderTop": "3px solid rgb(217, 208, 195)",
+          "padding": "30.72px"
+        },
+        "courseCardDetailed": {
+          "name": "HSK Sơ cấp (HSK 1-2)",
+          "tagName": "DIV",
+          "className": "_card_4elm2_11 ",
+          "styles": {
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "backgroundColor": "rgb(250, 247, 242)",
+            "border": ""
+          }
+        },
+        "ctaBanner": {
+          "banner": {
+            "className": "_banner_18lib_12",
+            "background": "rgb(26, 26, 30) none repeat scroll 0% 0% / auto padding-box border-box",
+            "backgroundColor": "rgb(26, 26, 30)",
+            "backgroundImage": "none",
+            "borderRadius": "0px",
+            "boxShadow": "none"
+          },
+          "headline": {
+            "text": "Bắt Đầu Hành Trình Chinh Phục Tiếng Trung Ngay Hôm Nay",
+            "fontFamily": "\"Source Serif 4\", Georgia, serif",
+            "fontSize": "46.08px",
+            "fontStyle": "normal",
+            "color": "rgb(250, 247, 242)"
+          },
+          "ctaBtn": {
+            "text": "Đăng ký học thử miễn phí",
+            "backgroundColor": "rgb(200, 16, 46)",
+            "color": "rgb(250, 247, 242)",
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+          }
+        }
+      }
+    },
+    {
+      "id": "khoa-hoc-hsk-5-6",
+      "url": "/khoa-hoc/hsk-5-6",
+      "components": {
+        "courseCard": {
+          "borderRadius": "0px",
+          "boxShadow": "none",
+          "background": "rgb(250, 247, 242) none repeat scroll 0% 0% / auto padding-box border-box",
+          "backgroundColor": "rgb(250, 247, 242)",
+          "backgroundImage": "none",
+          "fontFamily": "Inter, \"Be Vietnam Pro\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+          "fontStyle": "normal",
+          "fontWeight": "400",
+          "fontSize": "14px",
+          "color": "rgb(26, 26, 30)",
+          "border": "",
+          "borderTop": "3px solid rgb(217, 208, 195)",
+          "padding": "30.72px"
+        },
+        "courseCardDetailed": {
+          "name": "HSK Sơ cấp (HSK 1-2)",
+          "tagName": "DIV",
+          "className": "_card_4elm2_11 ",
+          "styles": {
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "backgroundColor": "rgb(250, 247, 242)",
+            "border": ""
+          }
+        },
+        "ctaBanner": {
+          "banner": {
+            "className": "_banner_18lib_12",
+            "background": "rgb(26, 26, 30) none repeat scroll 0% 0% / auto padding-box border-box",
+            "backgroundColor": "rgb(26, 26, 30)",
+            "backgroundImage": "none",
+            "borderRadius": "0px",
+            "boxShadow": "none"
+          },
+          "headline": {
+            "text": "Bắt Đầu Hành Trình Chinh Phục Tiếng Trung Ngay Hôm Nay",
+            "fontFamily": "\"Source Serif 4\", Georgia, serif",
+            "fontSize": "46.08px",
+            "fontStyle": "normal",
+            "color": "rgb(250, 247, 242)"
+          },
+          "ctaBtn": {
+            "text": "Đăng ký học thử miễn phí",
+            "backgroundColor": "rgb(200, 16, 46)",
+            "color": "rgb(250, 247, 242)",
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+          }
+        }
+      }
+    },
+    {
+      "id": "bang-gia",
+      "url": "/bang-gia",
+      "components": {
+        "ctaBanner": {
+          "banner": {
+            "className": "_banner_18lib_12",
+            "background": "rgb(26, 26, 30) none repeat scroll 0% 0% / auto padding-box border-box",
+            "backgroundColor": "rgb(26, 26, 30)",
+            "backgroundImage": "none",
+            "borderRadius": "0px",
+            "boxShadow": "none"
+          },
+          "headline": {
+            "text": "Sẵn sàng bắt đầu hành trình học tiếng Trung của bạn?",
+            "fontFamily": "\"Source Serif 4\", Georgia, serif",
+            "fontSize": "46.08px",
+            "fontStyle": "normal",
+            "color": "rgb(250, 247, 242)"
+          },
+          "ctaBtn": {
+            "text": "Đăng ký học thử miễn phí",
+            "backgroundColor": "rgb(200, 16, 46)",
+            "color": "rgb(250, 247, 242)",
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+          }
+        }
+      }
+    },
+    {
+      "id": "giang-vien",
+      "url": "/giang-vien",
+      "components": {
+        "ctaBanner": {
+          "banner": {
+            "className": "_banner_18lib_12",
+            "background": "rgb(26, 26, 30) none repeat scroll 0% 0% / auto padding-box border-box",
+            "backgroundColor": "rgb(26, 26, 30)",
+            "backgroundImage": "none",
+            "borderRadius": "0px",
+            "boxShadow": "none"
+          },
+          "headline": {
+            "text": "Bắt Đầu Hành Trình Chinh Phục Tiếng Trung Ngay Hôm Nay",
+            "fontFamily": "\"Source Serif 4\", Georgia, serif",
+            "fontSize": "46.08px",
+            "fontStyle": "normal",
+            "color": "rgb(250, 247, 242)"
+          },
+          "ctaBtn": {
+            "text": "Đăng ký học thử miễn phí",
+            "backgroundColor": "rgb(200, 16, 46)",
+            "color": "rgb(250, 247, 242)",
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+          }
+        }
+      }
+    },
+    {
+      "id": "giang-vien-truong-minh-trung-huy",
+      "url": "/giang-vien/truong-minh-trung-huy",
+      "components": {
+        "ctaBanner": {
+          "banner": {
+            "className": "_banner_18lib_12",
+            "background": "rgb(26, 26, 30) none repeat scroll 0% 0% / auto padding-box border-box",
+            "backgroundColor": "rgb(26, 26, 30)",
+            "backgroundImage": "none",
+            "borderRadius": "0px",
+            "boxShadow": "none"
+          },
+          "headline": {
+            "text": "Sẵn sàng học cùng Trương Minh Trung Huy?",
+            "fontFamily": "\"Source Serif 4\", Georgia, serif",
+            "fontSize": "46.08px",
+            "fontStyle": "normal",
+            "color": "rgb(250, 247, 242)"
+          },
+          "ctaBtn": {
+            "text": "Đăng ký học thử miễn phí",
+            "backgroundColor": "rgb(200, 16, 46)",
+            "color": "rgb(250, 247, 242)",
+            "borderRadius": "0px",
+            "boxShadow": "none",
+            "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+﻿[
+  {
+    "page": "PricingPage",
+    "url": "http://localhost:4173/bang-gia",
+    "item": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "borderTopColor": "rgb(200, 16, 46)",
+      "borderTopWidth": "1px",
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box"
+    },
+    "button": {
+      "padding": "28px 0px 28px 8px",
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "grid",
+      "gridTemplateColumns": "28px 1089.06px 18px"
+    },
+    "question": {
+      "fontFamily": "\"Source Serif 4\", Georgia, serif",
+      "fontStyle": "normal",
+      "fontWeight": "700",
+      "fontSize": "19.2px",
+      "letterSpacing": "normal",
+      "overflowWrap": "anywhere",
+      "lineHeight": "25.92px"
+    },
+    "answerText": {
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+      "fontStyle": "normal",
+      "fontWeight": "400",
+      "fontSize": "15px",
+      "lineHeight": "26.25px",
+      "color": "rgb(74, 69, 64)",
+      "overflowWrap": "anywhere",
+      "borderTopColor": "rgb(217, 208, 195)",
+      "paddingLeft": "48.48px"
+    },
+    "indicator": {
+      "width": "18px",
+      "height": "18px",
+      "position": "relative"
+    },
+    "indicatorBefore": {
+      "width": "18px",
+      "height": "1.5px",
+      "background": "rgb(200, 16, 46) none repeat scroll 0% 0% / auto padding-box border-box",
+      "position": "absolute"
+    },
+    "indicatorAfter": {
+      "opacity": "0",
+      "transform": "matrix(0, 1, -1, 0, -0.75, 0)",
+      "background": "rgb(200, 16, 46) none repeat scroll 0% 0% / auto padding-box border-box"
+    },
+    "overflow": {
+      "htmlOverflowX": "visible",
+      "bodyOverflowX": "visible"
+    },
+    "h1Count": 1,
+    "headingItalic": []
+  },
+  {
+    "page": "CourseDetailPage",
+    "url": "http://localhost:4173/khoa-hoc/hsk-1-2",
+    "item": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "borderTopColor": "rgb(200, 16, 46)",
+      "borderTopWidth": "1px",
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box"
+    },
+    "button": {
+      "padding": "28px 0px 28px 8px",
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "boxShadow": "none",
+      "borderRadius": "0px",
+      "display": "grid",
+      "gridTemplateColumns": "28px 889.062px 18px"
+    },
+    "question": {
+      "fontFamily": "\"Source Serif 4\", Georgia, serif",
+      "fontStyle": "normal",
+      "fontWeight": "700",
+      "fontSize": "19.2px",
+      "letterSpacing": "normal",
+      "overflowWrap": "anywhere",
+      "lineHeight": "25.92px"
+    },
+    "answerText": {
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+      "fontStyle": "normal",
+      "fontWeight": "400",
+      "fontSize": "15px",
+      "lineHeight": "26.25px",
+      "color": "rgb(74, 69, 64)",
+      "overflowWrap": "anywhere",
+      "borderTopColor": "rgb(217, 208, 195)",
+      "paddingLeft": "48.48px"
+    },
+    "indicator": {
+      "width": "18px",
+      "height": "18px",
+      "position": "relative"
+    },
+    "indicatorBefore": {
+      "width": "18px",
+      "height": "1.5px",
+      "background": "rgb(200, 16, 46) none repeat scroll 0% 0% / auto padding-box border-box",
+      "position": "absolute"
+    },
+    "indicatorAfter": {
+      "opacity": "0",
+      "transform": "matrix(0, 1, -1, 0, -0.75, 0)",
+      "background": "rgb(200, 16, 46) none repeat scroll 0% 0% / auto padding-box border-box"
+    },
+    "overflow": {
+      "htmlOverflowX": "visible",
+      "bodyOverflowX": "visible"
+    },
+    "h1Count": 1,
+    "headingItalic": []
+  },
+  {
+    "page": "PricingPage@375",
+    "buttonGridTemplateColumns": "24px 273px 18px",
+    "questionFontSize": "16px",
+    "answerTextPaddingLeft": "34px",
+    "htmlOverflowX": "visible",
+    "bodyOverflowX": "visible"
+  }
+]

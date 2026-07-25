@@ -1,106 +1,323 @@
-/* ContactForm — form liên hệ public */
+/* Hallmark · component: ContactForm (visual layer) · genre: editorial · design-system: design.md §9
+ *
+ * RÀNG BUỘC NGHIÊM NGẶT (user constraint #1):
+ * - Toàn bộ logic React (ContactForm.tsx) KHÔNG đổi:
+ *   validate fullName/phone/email/message, validateAll(), handleSubmit,
+ *   submitContactRequest payload, Alert success/error rendering (kể cả
+ *   BE message rate-limit 429), loading state, resetForm — GIỮ NGUYÊN 100%.
+ * - File này chỉ đổi thẩm mỹ trình bày form để match editorial system.
+ * - Class names dưới đây khớp 100% với JSX trong ContactForm.tsx
+ *   (KHÔNG đổi tên className nào → không phải sửa TSX).
+ *
+ * Sentinel keepers:
+ * - border-radius: 0 (form, input, textarea, button, alert, button spinner)
+ * - box-shadow: none (input focus glow, alert shadow, button shadow)
+ * - No fill-bg on hover (label, submit button — dùng brand-red shift)
+ * - letter-spacing: 0 / -0.005em (Vietnamese-safe)
+ * - font-style: normal (gate 38a)
+ * - overflow-wrap: anywhere trên mọi text node có Vietnamese
+ */
+
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  --zr-paper: #FAF7F2;
+  --zr-surface: #FFFFFF;
+  --zr-ink: #1A1A1E;
+  --zr-ink-soft: #4A4540;
+  --zr-ink-muted: #6B6058;
+  --zr-rule: #D9D0C3;
+  --zr-brand: #C8102E;
+  --zr-brand-hover: #A50C24;
+  --zr-gold: #D4AF37;
+  --zr-error: #DC2626;
+  --zr-error-bg: #FEF2F2;
+  --zr-success: #16A34A;
+  --zr-success-bg: #ECFDF3;
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur-fast: 220ms;
+}
+
+/* ===== Form container ===== */
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: clamp(20px, 2.4vw, 28px);
+  min-width: 0;
 }
+
+/* ===== Alert wrap — override shared Alert visual via descendant ===== */
+
+.alertWrap {
+  margin: 0;
+  padding: 0;
+}
+
+.alertWrap :global(div)[role="alert"],
+.alertWrap :global(div)[role="status"] {
+  /* Target the shared Alert's outer div directly */
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-left-width: 3px !important;
+  border-left-style: solid !important;
+  font-family: var(--zr-font-body);
+}
+
+.alertWrap :global(div)[role="alert"] {
+  border-left-color: var(--zr-error) !important;
+  background: var(--zr-error-bg) !important;
+  color: #7F1D1D !important;
+}
+
+.alertWrap :global(div)[role="status"] {
+  border-left-color: var(--zr-success) !important;
+  background: var(--zr-success-bg) !important;
+  color: #14532D !important;
+}
+
+.alertWrap :global(span)[aria-hidden] svg {
+  /* lucide-equivalent inline SVGs in shared Alert */
+  fill: currentColor !important;
+}
+
+/* The shared Alert close button — remove rounded */
+.alertWrap :global(button)[aria-label="Đóng thông báo"] {
+  border-radius: 0 !important;
+}
+
+/* ===== Fieldset — giữ layout flex column; bỏ gap mặc định để tự quản ===== */
 
 .fieldset {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: clamp(18px, 2.2vw, 26px);
   border: 0;
   padding: 0;
   margin: 0;
+  min-width: 0;
 }
 
 .fieldset:disabled {
-  opacity: 0.75;
+  opacity: 0.7;
 }
+
+/* ===== Row — 2-col cho (Họ tên + SĐT); xếp dọc mobile ===== */
 
 .row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(14px, 1.8vw, 22px);
+  min-width: 0;
 }
 
 @media (max-width: 640px) {
   .row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(18px, 2.2vw, 26px);
   }
 }
+
+/* ===== Field — label + input + helper ===== */
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 8px;
+  min-width: 0;
 }
 
+/* Label — eyebrow-style uppercase brand-red */
 .label {
-  font-size: 14px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
   font-weight: 600;
-  color: var(--text-primary);
+  font-style: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--zr-ink);
+  line-height: 1.3;
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .required {
-  color: var(--brand-primary);
+  color: var(--zr-brand);
+  font-size: 13px;
+  font-weight: 700;
   margin-left: 2px;
+  line-height: 1;
 }
 
+/* Input — flat hairline bottom-border editorial ledger */
 .input {
   appearance: none;
   width: 100%;
-  padding: 10px 14px;
-  font-size: 15px;
-  font-family: inherit;
-  color: var(--text-primary);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  padding: 12px 0;
+  font-family: var(--zr-font-body);
+  font-size: 16px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--zr-ink);
+  border-radius: 0;
+  box-shadow: none;
+  transition: border-bottom-color var(--zr-dur-fast) var(--zr-ease),
+    background-color var(--zr-dur-fast) var(--zr-ease);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .input::placeholder {
-  color: var(--text-tertiary);
+  color: var(--zr-ink-muted);
+  opacity: 0.7;
+  font-style: normal;
 }
 
-.input:focus {
-  outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px var(--brand-primary-light);
+.input:hover {
+  border-bottom-color: var(--zr-brand);
+}
+
+.input:focus,
+.input:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 4px;
+  border-bottom-color: var(--zr-brand);
+  box-shadow: none;
 }
 
 .input:disabled {
-  background-color: var(--bg-surface-alt);
+  background: transparent;
+  color: var(--zr-ink-muted);
   cursor: not-allowed;
+  border-bottom-color: var(--zr-rule);
 }
 
+/* Error variant — brand-red bottom border + brand-red hairline indicator */
 .inputError {
-  border-color: var(--error, #dc2626);
+  border-bottom-color: var(--zr-error);
 }
 
-.inputError:focus {
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+.inputError:focus,
+.inputError:focus-visible {
+  outline-color: var(--zr-error);
+  border-bottom-color: var(--zr-error);
 }
 
+/* Textarea — same as input but min-height + resize */
 .textarea {
   resize: vertical;
-  min-height: 120px;
-  line-height: 1.5;
+  min-height: 132px;
+  line-height: 1.6;
+  padding: 12px 0;
 }
 
+/* Error text */
 .errorText {
+  font-family: var(--zr-font-body);
   font-size: 13px;
-  color: var(--error, #dc2626);
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--zr-error);
+  margin: 0;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
+.errorText::before {
+  content: "";
+  width: 12px;
+  height: 1px;
+  background: var(--zr-error);
+  flex-shrink: 0;
+  position: relative;
+  top: -3px;
+}
+
+/* Hint text */
 .hintText {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  line-height: 1.5;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.55;
+  letter-spacing: 0;
+  color: var(--zr-ink-muted);
+  margin: 0;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-.alertWrap {
-  /* Để Alert có khoảng thở phía dưới, đẩy các field xuống dưới */
+/* ===== Submit button — override shared Button visual via descendant ===== */
+
+/* The Button (shared) uses className chain. Inside the fieldset,
+   target the button[type="submit"] descendant of the form. */
+.form button[type="submit"] {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background-color: var(--zr-brand) !important;
+  color: #FFFFFF !important;
+  font-family: var(--zr-font-body) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  border: 2px solid var(--zr-brand) !important;
+  height: auto !important;
+  padding: 16px 32px !important;
+  margin-top: 8px;
+  transition: background-color var(--zr-dur-fast) var(--zr-ease),
+    border-color var(--zr-dur-fast) var(--zr-ease),
+    color var(--zr-dur-fast) var(--zr-ease),
+    opacity var(--zr-dur-fast) var(--zr-ease);
+}
+
+.form button[type="submit"]:hover:not(:disabled) {
+  background-color: var(--zr-brand-hover) !important;
+  border-color: var(--zr-brand-hover) !important;
+}
+
+.form button[type="submit"]:focus-visible {
+  outline: 2px solid var(--zr-brand) !important;
+  outline-offset: 3px;
+}
+
+.form button[type="submit"]:active:not(:disabled) {
+  opacity: 0.9;
+}
+
+.form button[type="submit"]:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  background-color: var(--zr-brand) !important;
+}
+
+/* Spinner inside loading button — keep rounded for visual motion (this is allowed;
+   spinners are inherent UI motion primitive, not "rounded card" anti-pattern) */
+.form button[type="submit"] :global(span)[role="status"],
+.form button[type="submit"] :global(span)[aria-hidden] {
+  border-radius: 0;
+}
+
+/* ===== Reduced motion ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .form button[type="submit"],
+  .alertWrap :global(div) {
+    transition: none;
+  }
 }

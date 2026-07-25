@@ -1,0 +1,25 @@
+{
+  "scanned_at": "2026-07-25",
+  "design_md": true,
+  "log_json": true,
+  "font_stack": {
+    "display": "Source Serif 4 (via @fontsource/source-serif-4 + Vietnamese subset)",
+    "body": "Be Vietnam Pro (via @fontsource/be-vietnam-pro + Vietnamese subset)",
+    "fallback": "Inter via @fontsource/inter"
+  },
+  "palette": {
+    "brand_primary": "#C8102E",
+    "brand_primary_hover": "#A50C24",
+    "brand_primary_active": "#8A0A1E",
+    "brand_accent": "#D4AF37",
+    "bg_page": "#F7F7F9",
+    "bg_surface": "#FFFFFF",
+    "ivory_paper": "#FAF7F2",
+    "ink": "#1A1A1E"
+  },
+  "motion": "motion-on (useReveal, useCountUp, ImagePlaceholder)",
+  "spacing_scale": "4pt (--space-1 → --space-12)",
+  "framework": "Vite + React 18 + TypeScript + CSS Modules",
+  "prerender": "Node script → static HTML (dist/khoa-hoc/*)",
+  "lock_letter_spacing": "max -0.01em on headings (rút kinh nghiệm lỗi tách dấu)"
+}

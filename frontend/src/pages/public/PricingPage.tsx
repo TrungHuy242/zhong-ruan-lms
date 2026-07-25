@@ -10,7 +10,15 @@
  *   - FAQ accordion về học phí
  *   - Loading skeleton, Empty state, Error state
  *
- * Pattern tham chiếu: TeachersListPage (loading/empty/error states).
+ * Hallmark · Quote-Led macrostructure (round 26-07 redesign):
+ *   - Pull-quote hero (lead voice owns the fold)
+ *   - 3-promise row (hairline rules)
+ *   - Pricing grid (4-col → 2-col → 1-col, featured brand-red border-top)
+ *   - Policies (3-col → 1-col)
+ *   - FAQ + CTA
+ *
+ * Pattern tham chiếu: macrostructure 09 - Quote-Led (references/macrostructures/09-quote-led.md).
+ * System locked: design.md §9 (palette/typography/letter-spacing).
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -27,7 +35,7 @@ import {
   type PublicPricingPlan,
 } from "../../features/public/services/publicPricingApi";
 import { policiesContent } from "../../features/public/data/policiesContent";
-import { RotateCcw, Tag } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import styles from "./PricingPage.module.css";
 
 interface FaqItem {
@@ -118,29 +126,77 @@ export function PricingPage() {
 
       <Breadcrumb items={[{ label: "Bảng giá" }]} />
 
-      {/* ===== Hero ===== */}
-      <section className={styles.hero}>
-        <div className={styles.heroContainer}>
-          <span className={styles.heroBadge}>Bảng giá</span>
-          <h1 className={styles.heroHeading}>
-            Học Phí Minh Bạch — Không Phát Sinh Chi Phí Ẩn
+      {/* ===== MASTHEAD — Quote-Led register =====
+          Cấu trúc ngữ nghĩa:
+            eyebrow (kicker) → <blockquote> display-italic quote (lede)
+            → <h1> roman serif (page identity) → sub → attribution → 3-promise row
+          Gate 38a: italic chỉ ở blockquote body, không phải heading.
+          SEO: <h1> giữ 1 duy nhất, hiển thị rõ cho cả người + bot. */}
+      <section className={styles.masthead}>
+        <div className={styles.mastheadInner}>
+          <p className={styles.mastheadEyebrow}>Bảng giá · Học kỳ 2026</p>
+
+          <blockquote className={styles.pullQuote}>
+            <span className={styles.pullQuoteMark} aria-hidden="true">“</span>
+            <p className={styles.pullQuoteText}>
+              Học phí là một lời hứa — hứa rằng bạn sẽ tiến bộ, hoặc chúng tôi
+              hoàn lại.
+            </p>
+          </blockquote>
+
+          <h1 className={styles.mastheadTitle}>
+            Học Phí Minh Bạch —{" "}
+            <span className={styles.mastheadTitleAccent}>
+              Không Phát Sinh Chi Phí Ẩn
+            </span>
           </h1>
-          <p className={styles.heroSubheading}>
-            Cam kết hoàn học phí 100% nếu không hiệu quả. Bảo lưu không
-            giới hạn. Đổi lịch linh hoạt trước 3 giờ.
+
+          <p className={styles.mastheadSub}>
+            Cam kết hoàn học phí 100% nếu không hiệu quả. Bảo lưu không giới
+            hạn. Đổi lịch linh hoạt trước 3 giờ.
           </p>
+
+          <div className={styles.pullQuoteAttribution}>
+            <span className={styles.pullQuoteAttributionName}>
+              Học viện Zhong Ruan
+            </span>
+            <span className={styles.pullQuoteAttributionRole}>
+              Tuyên ngôn giáo dục
+            </span>
+          </div>
+
+          <div className={styles.promises}>
+            <div className={styles.promise}>
+              <span className={styles.promiseLabel}>Cam kết 01</span>
+              <p className={styles.promiseValue}>Minh bạch tuyệt đối</p>
+            </div>
+            <div className={styles.promiseRule} aria-hidden="true" />
+            <div className={styles.promise}>
+              <span className={styles.promiseLabel}>Cam kết 02</span>
+              <p className={styles.promiseValue}>Hoàn 100% nếu không hiệu quả</p>
+            </div>
+            <div className={styles.promiseRule} aria-hidden="true" />
+            <div className={styles.promise}>
+              <span className={styles.promiseLabel}>Cam kết 03</span>
+              <p className={styles.promiseValue}>Bảo lưu không thời hạn</p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ===== Pricing Grid ===== */}
-      <section className={styles.pricingSection}>
+      <section className={`${styles.section} ${styles.sectionWhite}`}>
         <div className={styles.container}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Gói học phí</h2>
+          <header className={styles.sectionHeader}>
+            <p className={styles.sectionEyebrow}>Gói học phí</p>
+            <h2 className={styles.sectionTitle}>
+              Bốn gói — <span className={styles.sectionTitleAccent}>một chuẩn</span>
+            </h2>
             <p className={styles.sectionSubtitle}>
-              Chọn gói phù hợp với nhu cầu và mục tiêu học tập của bạn
+              Chọn gói phù hợp với nhu cầu và mục tiêu học tập của bạn. Mọi gói
+              đều đồng giá 90.000đ/buổi, học cùng giảng viên Thạc sĩ, Tiến sĩ.
             </p>
-          </div>
+          </header>
 
           {loadError ? (
             <div className={styles.errorState} role="alert">
@@ -158,7 +214,7 @@ export function PricingPage() {
             </div>
           ) : loading ? (
             <div className={styles.pricingGrid}>
-              {[0, 1, 2].map((i) => (
+              {[0, 1, 2, 3].map((i) => (
                 <div key={i} className={styles.skeletonCard}>
                   <div className={styles.skeletonHeader} />
                   <div className={styles.skeletonPrice} />
@@ -173,13 +229,13 @@ export function PricingPage() {
             </div>
           ) : isEmpty ? (
             <div className={styles.emptyState}>
-              <Tag size={48} aria-hidden="true" />
-              <p className={styles.emptyTitle}>Chưa có bảng giá công khai</p>
+              <p className={styles.emptyEyebrow}>Trống</p>
+              <h3 className={styles.emptyTitle}>Chưa có bảng giá công khai</h3>
               <p className={styles.emptyHint}>
-                Bảng giá sẽ sớm được cập nhật. Vui lòng liên hệ để được tư
-                vấn về học phí.
+                Bảng giá sẽ sớm được cập nhật. Vui lòng liên hệ để được tư vấn
+                về học phí và lộ trình học tập phù hợp.
               </p>
-              <Link to="/lien-he" className={styles.emptyCta}>
+              <Link to="/lien-he" className={styles.emptyLink}>
                 Liên hệ tư vấn
               </Link>
             </div>
@@ -198,14 +254,17 @@ export function PricingPage() {
       </section>
 
       {/* ===== Policies ===== */}
-      <section className={styles.policiesSection}>
+      <section className={`${styles.section} ${styles.sectionIvory}`}>
         <div className={styles.container}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Cam kết của chúng tôi</h2>
+          <header className={styles.sectionHeader}>
+            <p className={styles.sectionEyebrow}>Cam kết của chọn người</p>
+            <h2 className={styles.sectionTitle}>
+              Học thử miễn phí — và <span className={styles.sectionTitleAccent}>ba điều sau đây</span>
+            </h2>
             <p className={styles.sectionSubtitle}>
               Học thử miễn phí và trải nghiệm trước khi đăng ký chính thức
             </p>
-          </div>
+          </header>
           <div className={styles.policiesGrid}>
             {policiesContent.map((policy, idx) => (
               <PolicyCard
@@ -220,14 +279,17 @@ export function PricingPage() {
       </section>
 
       {/* ===== FAQ ===== */}
-      <section className={styles.faqSection}>
+      <section className={`${styles.section} ${styles.sectionWhite}`}>
         <div className={styles.container}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Câu hỏi thường gặp</h2>
+          <header className={styles.sectionHeader}>
+            <p className={styles.sectionEyebrow}>Câu hỏi thường gặp</p>
+            <h2 className={styles.sectionTitle}>
+              Về học phí — <span className={styles.sectionTitleAccent}>trước khi đăng ký</span>
+            </h2>
             <p className={styles.sectionSubtitle}>
               Giải đáp thắc mắc về học phí và chính sách tại Zhong Ruan
             </p>
-          </div>
+          </header>
           <FAQAccordion items={PRICING_FAQ} />
         </div>
       </section>

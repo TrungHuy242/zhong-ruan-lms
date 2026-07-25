@@ -1,15 +1,27 @@
 /**
  * ContactPage — Trang liên hệ công khai (/lien-he).
  *
- * Bố cục:
- *   - Hero (badge + h1 + subtitle) ở trên cùng, full-width.
- *   - Bên dưới: 2 cột trên desktop
- *       Trái: <ContactForm> trong Card.
- *       Phải: <ContactInfo> (aside thông tin tĩnh).
- *     Mobile: xếp dọc — form trước, info sau.
+ * Macrostructure: Workbench (composer-left + reference-right)
+ * Theme: editorial — locked từ design.md §9
+ * System diff: container count (2-col asymmetric surface) vs PricingPage Quote-Led (1-col narrative)
  *
- * SEO: dùng <SEO> chuẩn (react-helmet-async) đã được cấu hình sẵn.
- * Prerender: route /lien-he đã có trong scripts/prerender.js STATIC_ROUTES.
+ * Bố cục GIỮ NGUYÊN (constraint #3):
+ *   - Hero (eyebrow + h1 + lede) ở trên cùng.
+ *   - Bên dưới: 2 cột trên desktop (form trái | info phải).
+ *   - Mobile: xếp dọc — form trước, info sau.
+ *
+ * SEO: <SEO> chuẩn + 1 <h1> duy nhất (constraint #4).
+ *
+ * Lint sentinel: ContactForm.tsx + ContactInfo.tsx KHÔNG đụng tới (constraint #1, #2).
+ * Chỉ đổi className keys + bọc composer head mới ở page level.
+ *
+ * Composer side: <Card padding="lg"> bọc ContactForm + page-level composer head
+ *   (.composerTitle + .composerSubtitle) — Card bị override bởi .surface để
+ *   thành flat hairline frame (border-top brand-red, 0 radius, 0 shadow).
+ *
+ * Reference side: <ContactInfo /> render free-floating <aside.panel> có sẵn
+ *   padding + border-top brand-gold (đã redesign trong ContactInfo.module.css).
+ *   KHÔNG bọc Card ở đây để tránh double chrome.
  */
 import { Card } from "../../shared/components/ui";
 import { SEO } from "../../shared/components/SEO";
@@ -25,27 +37,33 @@ export function ContactPage() {
         description="Gửi yêu cầu tư vấn khoá học tiếng Trung cho Zhong Ruan. Hỗ trợ qua Zalo 0795 508 242, hotline và email huytruong061004@gmail.com. Địa chỉ 110 Lê Sỹ, Đà Nẵng."
       />
 
-      <section className={styles.hero}>
-        <span className={styles.badge}>Liên hệ</span>
-        <h1 className={styles.title}>Liên hệ tư vấn</h1>
-        <p className={styles.subtitle}>
-          Bạn đang cân nhắc theo học tiếng Trung? Hãy để lại thông tin — chúng tôi
-          sẽ liên hệ tư vấn lộ trình phù hợp trong vòng 24 giờ làm việc.
-        </p>
-      </section>
-
-      <section className={styles.grid}>
-        <Card padding="lg" className={styles.formCard}>
-          <header className={styles.formHeader}>
-            <h2 className={styles.formTitle}>Gửi yêu cầu tư vấn</h2>
-            <p className={styles.formSubtitle}>
-              Điền form bên dưới, đội ngũ Zhong Ruan sẽ liên hệ lại sớm nhất.
+      <section className={styles.page}>
+        <div className={styles.container}>
+          <header className={styles.masthead}>
+            <span className={styles.eyebrow}>Liên hệ</span>
+            <h1 className={styles.title}>
+              Liên hệ <span className={styles.titleAccent}>tư vấn</span>
+            </h1>
+            <p className={styles.lede}>
+              Bạn đang cân nhắc theo học tiếng Trung? Hãy để lại thông tin — chúng tôi
+              sẽ liên hệ tư vấn lộ trình phù hợp trong vòng 24 giờ làm việc.
             </p>
           </header>
-          <ContactForm />
-        </Card>
 
-        <ContactInfo />
+          <section className={styles.workbench}>
+            <Card padding="lg" className={styles.surface}>
+              <header className={styles.composerHead}>
+                <h2 className={styles.composerTitle}>Gửi yêu cầu tư vấn</h2>
+                <p className={styles.composerSubtitle}>
+                  Điền form bên dưới, đội ngũ Zhong Ruan sẽ liên hệ lại sớm nhất.
+                </p>
+              </header>
+              <ContactForm />
+            </Card>
+
+            <ContactInfo />
+          </section>
+        </div>
       </section>
     </>
   );

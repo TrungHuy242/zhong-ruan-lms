@@ -1,29 +1,43 @@
-/* PublicTeacherCard — card giảng viên cho trang public list/detail. */
+/* Hallmark · component: PublicTeacherCard (shared) · genre: editorial
+ * theme: editorial education · design-system: design.md (locked §9)
+ * states: default · hover · focus-visible
+ * contrast: pass · Vietnamese glyphs: pass (Source Serif 4 + Be Vietnam Pro)
+ * Đồng bộ hệ thống editorial: border-radius:0, box-shadow:none, hairline border-top,
+ * featured override border-top → brand-red. Hover border-color shift, no scale, no lift.
+ * Name Source Serif 4 roman. Title italic serif. Tags uppercase hairline (no pill bg).
+ * CTA: editorial link voice (uppercase + tracking + arrow shift).
+ * Logic React (props: teacher, showCta) giữ nguyên 100%.
+ */
 
 .card {
   display: flex;
   flex-direction: column;
-  background: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-default);
-  overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  gap: clamp(14px, 1.4vw, 20px);
+  padding: clamp(20px, 2.4vw, 32px);
+  background: var(--zr-paper, #faf7f2);
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  border-top: 3px solid var(--zr-rule, #d9d0c3);
+  border-radius: 0;
+  position: relative;
+  transition: border-color 250ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
   height: 100%;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card);
-  border-color: var(--brand-primary-light);
+  border-color: var(--zr-brand, #c8102e);
+  border-top-color: var(--zr-brand, #c8102e);
 }
 
-/* ===== Media (avatar) ===== */
+/* ----- Media (avatar link) ----- */
+
 .media {
   display: block;
   position: relative;
-  background: var(--hero-gradient, linear-gradient(135deg, var(--brand-primary-light) 0%, var(--brand-accent-light) 100%));
+  background: rgba(217, 208, 195, 0.25);
+  border: 1px solid var(--zr-rule, #d9d0c3);
   aspect-ratio: 1 / 1;
   overflow: hidden;
+  border-radius: 0;
 }
 
 .avatar {
@@ -31,145 +45,213 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.3s ease;
 }
 
-.card:hover .avatar {
-  transform: scale(1.05);
-}
-
+/* Featured badge — uppercase label với hairline rule, không pill bg */
 .featuredBadge {
   position: absolute;
-  top: var(--space-3);
-  left: var(--space-3);
+  top: var(--space-3, 12px);
+  left: var(--space-3, 12px);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: var(--brand-accent-light);
-  color: var(--brand-accent-hover);
-  border: 1px solid var(--brand-accent);
-  border-radius: var(--radius-full);
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--zr-paper, #faf7f2);
+  color: var(--zr-brand, #c8102e);
+  border: none;
+  border-radius: 0;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: var(--shadow-sm);
+  line-height: 1.4;
 }
 
-/* ===== Body ===== */
+.featuredBadge::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
+  flex-shrink: 0;
+}
+
+/* ----- Body ----- */
+
 .body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-5);
+  gap: clamp(8px, 1vw, 12px);
   flex: 1;
+  min-width: 0;
 }
 
 .nameRow {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .name {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-size: clamp(18px, 1.6vw, 24px);
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.2;
+  letter-spacing: var(--zr-track-flat);
+  color: var(--zr-ink, #1a1a1e);
   margin: 0;
-  line-height: 1.3;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
   flex: 1;
 }
 
 .nameLink {
   color: inherit;
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .nameLink:hover {
-  color: var(--brand-primary);
+  color: var(--zr-brand, #c8102e);
 }
 
+.nameLink:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
+}
+
+/* Title — Source Serif 4 italic */
 .title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--brand-primary);
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(14px, 1.1vw, 16px);
+  color: var(--zr-brand, #c8102e);
   margin: 0;
   line-height: 1.4;
+  letter-spacing: 0;
 }
 
+/* Experience — uppercase hairline label */
 .experience {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.4;
+  gap: 8px;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-ink-muted, #6b6058);
+  margin: 4px 0 0;
 }
 
 .experience svg {
-  color: var(--brand-accent);
+  color: var(--zr-brand, #c8102e);
   flex-shrink: 0;
 }
 
-/* ===== Tags ===== */
+/* ----- Tags — hairline list, no pill bg ----- */
+
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: var(--space-1);
+  gap: var(--space-2, 8px);
+  margin-top: clamp(4px, 0.6vw, 8px);
+  padding-top: clamp(8px, 1vw, 12px);
+  border-top: 1px solid var(--zr-rule, #d9d0c3);
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  background: var(--color-info-bg);
-  color: var(--color-info);
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-  line-height: 1.6;
+  padding: 0;
+  background: transparent;
+  color: var(--zr-ink, #1a1a1e);
+  border: none;
+  border-radius: 0;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  white-space: normal;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-decoration-color: var(--zr-rule, #d9d0c3);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.tag:hover {
+  text-decoration-color: var(--zr-brand, #c8102e);
 }
 
 .tagMore {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  background: var(--bg-surface-alt);
-  color: var(--text-secondary);
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.6;
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--zr-ink-muted, #6b6058);
+  background: transparent;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  line-height: 1.5;
 }
 
-/* ===== CTA ===== */
+/* ----- CTA — editorial link voice ----- */
+
 .cta {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: auto;
-  padding: var(--space-2) var(--space-4);
-  background: var(--brand-primary-light);
-  color: var(--brand-primary);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: clamp(10px, 1.2vw, 16px);
+  padding: clamp(10px, 1.2vw, 14px) 0 0;
+  border-top: 1px solid var(--zr-rule, #d9d0c3);
+  background: transparent;
+  color: var(--zr-brand, #c8102e);
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-decoration: none;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  border-radius: 0;
+  transition: gap 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    color 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+  align-self: flex-start;
+}
+
+.cta svg {
+  transition: transform 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .cta:hover {
-  background: var(--brand-primary);
-  color: var(--text-on-primary);
+  color: var(--zr-brand-hover, #a50c24);
+  gap: 12px;
+}
+
+.cta:hover svg {
+  transform: translateX(3px);
 }
 
 .cta:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .nameLink,
+  .cta,
+  .cta svg {
+    transition: none;
+  }
 }

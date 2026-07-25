@@ -19,9 +19,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Alert,
-  Button,
   Pagination,
-  Skeleton,
 } from "../../shared/components/ui";
 import { SEO } from "../../shared/components/SEO";
 import { Breadcrumb } from "../../features/public/components/Breadcrumb";
@@ -35,7 +33,6 @@ import {
 } from "../../features/public/services/publicTeacherApi";
 import {
   Filter,
-  GraduationCap,
   RotateCcw,
   Search,
   X as XIcon,
@@ -172,47 +169,51 @@ export function TeachersListPage() {
 
       <Breadcrumb items={[{ label: "Giảng viên" }]} />
 
-      {/* ===== Hero ===== */}
-      <section className={styles.hero} aria-labelledby="teachers-hero-heading">
-        <div className={styles.container}>
-          <span className={styles.badge}>Đội ngũ giảng dạy</span>
+      {/* ===== Masthead ===== */}
+      <section className={styles.masthead} aria-labelledby="teachers-hero-heading">
+        <div className={styles.mastheadInner}>
+          <span className={styles.eyebrow}>Đội ngũ giảng dạy</span>
           <h1 id="teachers-hero-heading" className={styles.heading}>
-            Đội Ngũ Giảng Viên Zhong Ruan
+            Những người sẽ dạy bạn{" "}
+            <span className={styles.headingAccent}>tiếng Trung</span>
           </h1>
           <p className={styles.subheading}>
-            Thạc sĩ, Tiến sĩ ngôn ngữ học với nhiều năm kinh nghiệm giảng dạy
-            tiếng Trung — từ giao tiếp cơ bản đến luyện thi HSK chứng chỉ quốc tế.
+            Thạc sĩ, Tiến sĩ ngôn ngữ học — bản ngữ và Việt Nam — với nhiều năm
+            kinh nghiệm giảng dạy, từ giao tiếp cơ bản đến luyện thi HSK chứng
+            chỉ quốc tế.
           </p>
         </div>
       </section>
 
-      {/* ===== Filter bar ===== */}
+      {/* ===== Ecosystem Index: Ledger (count) + Filter (controls) ===== */}
       <section
-        className={`${styles.section} ${styles.sectionAlt}`}
+        className={`${styles.section} ${styles.sectionWhite}`}
         aria-labelledby="teachers-list-heading"
       >
         <div className={styles.container}>
-          <div className={styles.sectionHeader}>
-            <h2 id="teachers-list-heading" className={styles.sectionTitle}>
-              Giảng viên hiện có
-              {!loading ? (
-                <span className={styles.count} aria-live="polite">
-                  {total > 0 ? ` (${total})` : ""}
-                </span>
-              ) : null}
-            </h2>
-            <p className={styles.sectionSubtitle}>
-              Lọc theo chuyên môn hoặc tìm theo tên — chọn giảng viên phù hợp để
-              xem hồ sơ chi tiết.
-            </p>
+          <div className={styles.ledger}>
+            <div>
+              <h2 id="teachers-list-heading" className={styles.ledgerTitle}>
+                Giảng viên hiện có
+                {!loading ? (
+                  <span className={styles.count} aria-live="polite">
+                    {total > 0 ? ` ${total}` : ""}
+                  </span>
+                ) : null}
+              </h2>
+              <p className={styles.ledgerSub}>
+                Lọc theo chuyên môn hoặc tìm theo tên — chọn giảng viên phù hợp
+                để xem hồ sơ chi tiết.
+              </p>
+            </div>
           </div>
 
-          <div className={styles.filterBar}>
-            <div className={styles.searchWrap}>
-              <Search size={16} aria-hidden="true" className={styles.searchIcon} />
+          <div className={styles.filterBar} role="search">
+            <div className={styles.filterField}>
+              <Search size={16} aria-hidden="true" className={styles.filterFieldIcon} />
               <input
                 type="search"
-                className={styles.searchInput}
+                className={styles.filterInput}
                 placeholder="Tìm theo tên giảng viên..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
@@ -230,10 +231,10 @@ export function TeachersListPage() {
               ) : null}
             </div>
 
-            <div className={styles.specialtyWrap}>
-              <Filter size={16} aria-hidden="true" className={styles.filterIcon} />
+            <div className={styles.filterField}>
+              <Filter size={16} aria-hidden="true" className={styles.filterFieldIcon} />
               <select
-                className={styles.specialtySelect}
+                className={styles.filterSelect}
                 value={specialty}
                 onChange={(e) => {
                   setSpecialty(e.target.value);
@@ -256,14 +257,14 @@ export function TeachersListPage() {
             </div>
 
             {isFiltered ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                leftIcon={<RotateCcw size={14} />}
+              <button
+                type="button"
+                className={styles.filterReset}
                 onClick={clearFilters}
               >
+                <RotateCcw size={14} aria-hidden="true" />
                 Đặt lại
-              </Button>
+              </button>
             ) : null}
           </div>
 
@@ -273,14 +274,13 @@ export function TeachersListPage() {
               <Alert variant="error" className={styles.alertSpacing}>
                 {loadError}
               </Alert>
-              <Button
-                variant="secondary"
-                size="md"
-                leftIcon={<RotateCcw size={14} />}
+              <button
+                type="button"
+                className={styles.emptyLink}
                 onClick={() => setReloadToken((n) => n + 1)}
               >
                 Thử lại
-              </Button>
+              </button>
             </div>
           ) : null}
 
@@ -289,18 +289,20 @@ export function TeachersListPage() {
             <div className={styles.grid}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className={styles.skeletonCard}>
-                  <Skeleton variant="rectangular" height={240} />
+                  <div className={styles.skeletonAvatar} aria-hidden="true" />
                   <div className={styles.skeletonBody}>
-                    <Skeleton variant="text" width="70%" />
-                    <Skeleton variant="text" width="50%" />
-                    <Skeleton variant="text" width="40%" />
+                    <div className={styles.skeletonLine} style={{ width: "70%" }} />
+                    <div className={styles.skeletonLine} style={{ width: "50%" }} />
+                    <div className={styles.skeletonLine} style={{ width: "40%" }} />
                   </div>
                 </div>
               ))}
             </div>
           ) : isEmpty ? (
             <div className={styles.emptyState}>
-              <GraduationCap size={48} aria-hidden="true" />
+              <span className={styles.emptyEyebrow}>
+                {isFiltered ? "Không có kết quả" : "Chưa công bố"}
+              </span>
               <p className={styles.emptyTitle}>
                 {isFiltered
                   ? "Không tìm thấy giảng viên phù hợp"
@@ -311,20 +313,21 @@ export function TeachersListPage() {
                   ? "Thử bỏ bộ lọc hoặc đổi từ khoá tìm kiếm."
                   : "Đội ngũ giảng viên sẽ sớm được cập nhật. Vui lòng quay lại sau."}
               </p>
-              {isFiltered ? (
-                <Button
-                  variant="secondary"
-                  size="md"
-                  leftIcon={<RotateCcw size={14} />}
-                  onClick={clearFilters}
-                >
-                  Đặt lại bộ lọc
-                </Button>
-              ) : (
-                <Link to="/lien-he" className={styles.emptyCta}>
-                  Liên hệ tư vấn
-                </Link>
-              )}
+              <div className={styles.emptyActions}>
+                {isFiltered ? (
+                  <button
+                    type="button"
+                    className={styles.emptyLink}
+                    onClick={clearFilters}
+                  >
+                    Đặt lại bộ lọc
+                  </button>
+                ) : (
+                  <Link to="/lien-he" className={styles.emptyLink}>
+                    Liên hệ tư vấn
+                  </Link>
+                )}
+              </div>
             </div>
           ) : (
             <>
@@ -337,7 +340,8 @@ export function TeachersListPage() {
               {/* ===== Pagination + total ===== */}
               <div className={styles.footerRow}>
                 <span className={styles.totalLabel}>
-                  Hiển thị <b>{teachers.length}</b> / <b>{total}</b> giảng viên
+                  Hiển thị <strong>{teachers.length}</strong> /{" "}
+                  <strong>{total}</strong> giảng viên
                 </span>
                 {totalPages > 1 ? (
                   <Pagination

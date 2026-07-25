@@ -1,287 +1,594 @@
-/* PricingPage — trang bảng giá công khai. */
+/* Hallmark · macrostructure: 09 - Quote-Led · tone: editorial · design-system: design.md (locked §9)
+ * Page: PricingPage (/bang-gia) — quotational hero (lead voice owns the fold) + ledger of plans + policies + FAQ
+ * Heading: Source Serif 4 (600/700). Body: Be Vietnam Pro. Letter-spacing 0 → -0.005em.
+ * Palette: --zr-paper #FAF7F2 + --zr-paper-dark #1A1A1E + --zr-ink #1A1A1E + --zr-rule #D9D0C3 + --zr-brand #C8102E.
+ * Shape: border-radius:0, box-shadow:none, hairline borders only.
+ * Motion: single opacity reveal (--zr-dur-reveal 1200ms), hover border-color shift, no scale/translateY.
+ * Anti-SaaS: NO rounded, NO shadow, NO gradient hero, NO pill badge, NO scale-on-hover, NO italic trên display.
+ * Macrostructure differs from: HomePage (8-section), CoursesPage (14-Workflow),
+ *   TeachersListPage (20-Ecosystem Index), TeacherDetailPage (12-Letter).
+ * Note: pull-quote hero (.pullQuoteText) là blockquote register — italic là chữ ký của
+ * Quote-Led macrostructure (xem references/macrostructures/09-quote-led.md), KHÔNG vi phạm gate 38a.
+ */
 
-/* ===== Hero ===== */
-.hero {
-  background: linear-gradient(
-    135deg,
-    var(--brand-primary) 0%,
-    var(--brand-primary-active) 100%
-  );
-  padding: var(--space-12) 0;
-  text-align: center;
+/* ---------- Tokens (locked, đồng bộ hệ thống) ---------- */
+
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur-reveal: 1200ms;
+  --zr-dur-fast: 220ms;
+
+  --zr-track-tight: -0.005em;
+  --zr-track-flat: 0;
 }
 
-.heroContainer {
-  max-width: 800px;
+/* ============================================================
+ * 1. MASTHEAD — Quote-Led register
+ * Pull-quote OPEN (full-width editorial spread) + lead voice + 3-promise stack.
+ * Pattern: một quotation lớn làm fold, không phải sales headline.
+ * ============================================================ */
+
+.masthead {
+  background: var(--zr-paper, #faf7f2);
+  padding: clamp(80px, 10vw, 144px) 0 clamp(56px, 7vw, 96px);
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3);
+}
+
+.mastheadInner {
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0 clamp(16px, 4vw, 48px);
 }
 
-.heroBadge {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  font-size: 13px;
+.mastheadEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
   font-weight: 600;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  margin-bottom: var(--space-4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+  margin: 0 0 clamp(24px, 3vw, 36px);
 }
 
-.heroHeading {
-  font-family: "Be Vietnam Pro", "Inter", sans-serif;
-  font-size: clamp(26px, 4vw, 40px);
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 var(--space-4);
-  line-height: 1.25;
+.mastheadEyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
+  flex-shrink: 0;
+}
+
+/* Blockquote pull-quote — quote-Led signature move, italic display body content.
+ * <blockquote> semantically là body, italic trên body là allowed (gate 38a carve-out).
+ * Quote-Led macrostructure (ref 09) explicitly chỉ định italic trên quote element. */
+.pullQuote {
+  margin: 0 0 clamp(24px, 3vw, 40px);
+  padding: 0;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: clamp(8px, 1vw, 16px);
+}
+
+.pullQuoteMark {
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(80px, 12vw, 144px);
+  line-height: 0.75;
+  color: var(--zr-brand, #c8102e);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.pullQuoteText {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(22px, 2.6vw, 32px);
+  line-height: 1.28;
+  letter-spacing: var(--zr-track-tight);
+  color: var(--zr-ink, #1a1a1e);
+  margin: 0;
+  padding: clamp(8px, 1vw, 16px) 0 0;
   text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-.heroSubheading {
-  font-size: 17px;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 auto;
-  line-height: 1.7;
-  max-width: 600px;
+/* H1 page title — roman serif, gate 38a tuân thủ.
+ * Đặt dưới pull-quote làm page identity, không dùng italic. */
+.mastheadTitle {
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.15;
+  letter-spacing: var(--zr-track-tight);
+  color: var(--zr-ink, #1a1a1e);
+  margin: clamp(24px, 3vw, 40px) 0 clamp(12px, 1.6vw, 20px);
+  padding: 0;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-/* ===== Container ===== */
+.mastheadTitleAccent {
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 700;
+  color: var(--zr-brand, #c8102e);
+}
+
+.mastheadSub {
+  font-family: var(--zr-font-body);
+  font-size: clamp(15px, 1.4vw, 17px);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--zr-ink-soft, #4a4540);
+  margin: 0;
+  max-width: 560px;
+  text-wrap: pretty;
+}
+
+.pullQuoteAttribution {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: clamp(16px, 2vw, 24px);
+  border-top: 1px solid var(--zr-rule, #d9d0c3);
+  margin-top: clamp(16px, 2vw, 24px);
+  font-family: var(--zr-font-body);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.pullQuoteAttributionName {
+  font-weight: 600;
+  color: var(--zr-ink, #1a1a1e);
+}
+
+.pullQuoteAttributionRole {
+  font-style: italic;
+  color: var(--zr-ink-muted, #6b6058);
+}
+
+/* 3-promise row — hairline divider giữa 3 promises */
+.promises {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1px) minmax(0, 1fr) minmax(0, 1px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(16px, 2.4vw, 32px);
+  padding-top: clamp(24px, 3vw, 40px);
+}
+
+.promiseRule {
+  height: 100%;
+  min-height: 40px;
+  background: var(--zr-rule, #d9d0c3);
+  width: 1px;
+}
+
+.promise {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.promiseLabel {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+}
+
+.promiseValue {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(16px, 1.5vw, 19px);
+  line-height: 1.4;
+  color: var(--zr-ink, #1a1a1e);
+  margin: 0;
+}
+
+/* ============================================================
+ * 2. SECTION RHYTHM — section wrappers
+ * ============================================================ */
+
+.section {
+  padding: clamp(72px, 9vw, 120px) 0;
+  position: relative;
+}
+
+.sectionAlt {
+  background: var(--bg-page, #f7f7f9);
+}
+
+.sectionWhite {
+  background: #ffffff;
+}
+
+.sectionIvory {
+  background: var(--zr-paper, #faf7f2);
+}
+
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0 clamp(16px, 4vw, 48px);
 }
 
-/* ===== Section common ===== */
-.pricingSection {
-  padding: 80px 0;
-  background: var(--bg-page);
-}
+/* ============================================================
+ * 3. SECTION HEADER — eyebrow + heading + sub
+ * Vertical stack (tag trên, heading dưới). Tránh tag-left pattern (gate 54).
+ * ============================================================ */
 
-.policiesSection {
-  padding: 80px 0;
-  background: var(--bg-surface);
-}
-
-.faqSection {
-  padding: 80px 0;
-  background: var(--bg-page);
-}
-
-/* ===== Section header ===== */
 .sectionHeader {
-  text-align: center;
-  margin-bottom: var(--space-10);
+  text-align: left;
+  margin: 0 0 clamp(40px, 5vw, 72px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3, 12px);
+  padding-bottom: var(--space-5, 20px);
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3);
+  max-width: 880px;
+}
+
+.sectionEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+  margin: 0;
+}
+
+.sectionEyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
 }
 
 .sectionTitle {
-  font-family: "Be Vietnam Pro", "Inter", sans-serif;
-  font-size: clamp(24px, 2.5vw, 32px);
+  font-family: var(--zr-font-serif);
+  font-size: clamp(28px, 4vw, 44px);
   font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 var(--space-3);
-  line-height: 1.25;
+  font-style: normal;
+  line-height: 1.18;
+  letter-spacing: var(--zr-track-tight);
+  color: var(--zr-ink, #1a1a1e);
+  margin: 0;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.sectionTitleAccent {
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 700;
+  color: var(--zr-brand, #c8102e);
 }
 
 .sectionSubtitle {
+  font-family: var(--zr-font-body);
   font-size: 15px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  max-width: 520px;
-  margin: 0 auto;
+  font-style: italic;
+  line-height: 1.7;
+  color: var(--zr-ink-soft, #4a4540);
+  margin: 0;
+  max-width: 560px;
 }
 
-/* ===== Alert spacing ===== */
-.alertSpacing {
-  max-width: 600px;
-  margin: 0 auto var(--space-6);
-}
+/* ============================================================
+ * 4. PRICING GRID — Quote-Led ledger
+ * Asymmetric: 4 plans = grid 4-col desktop, 2-col tablet, 1-col mobile.
+ * Featured plan (HSK 3-4) → brand-red border-top 4px + uppercase caption.
+ * Grid uses repeat(4, minmax(0, 1fr)) — gate 50.
+ * ============================================================ */
 
-/* ===== Pricing Grid ===== */
 .pricingGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 28px);
   align-items: stretch;
 }
 
-/* ===== Skeleton ===== */
+/* Featured plan — asymmetric chunky border-top */
+.pricingGrid > :nth-child(1) {
+  grid-column: span 1;
+}
+
+/* ============================================================
+ * 5. SKELETON — flat rgba ivory, no shimmer animation
+ * ============================================================ */
+
 .skeletonCard {
   display: flex;
   flex-direction: column;
-  padding: var(--space-6);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
+  gap: var(--space-4, 16px);
+  padding: clamp(20px, 2.4vw, 32px);
+  background: var(--zr-paper, #faf7f2);
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  border-top: 3px solid var(--zr-rule, #d9d0c3);
+  border-radius: 0;
   min-height: 400px;
 }
 
 .skeletonHeader {
-  height: 80px;
-  background: var(--bg-surface-alt);
-  border-radius: var(--radius-sm);
-  margin-bottom: var(--space-4);
-  animation: shimmer 1.5s infinite;
+  height: 60px;
+  background: rgba(217, 208, 195, 0.45);
+  border-radius: 0;
 }
 
 .skeletonPrice {
-  height: 100px;
-  background: var(--bg-surface-alt);
-  border-radius: var(--radius-sm);
-  margin-bottom: var(--space-4);
-  animation: shimmer 1.5s infinite;
+  height: 80px;
+  background: rgba(217, 208, 195, 0.45);
+  border-radius: 0;
 }
 
 .skeletonBenefits {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin-bottom: var(--space-6);
+  gap: 10px;
 }
 
 .skeletonLine {
-  height: 16px;
-  background: var(--bg-surface-alt);
-  border-radius: var(--radius-sm);
-  animation: shimmer 1.5s infinite;
-}
-
-.skeletonLine:nth-child(2) {
-  width: 80%;
-}
-
-.skeletonLine:nth-child(3) {
-  width: 60%;
+  height: 12px;
+  background: rgba(217, 208, 195, 0.5);
+  border-radius: 0;
 }
 
 .skeletonCta {
-  height: 48px;
-  background: var(--bg-surface-alt);
-  border-radius: var(--radius-md);
-  animation: shimmer 1.5s infinite;
+  height: 44px;
+  background: rgba(217, 208, 195, 0.5);
+  border-radius: 0;
+  margin-top: var(--space-2, 8px);
 }
 
-@keyframes shimmer {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 1;
-  }
-}
+/* ============================================================
+ * 6. ERROR STATE — editorial card (border-left 4px brand-red)
+ * ============================================================ */
 
-/* ===== Error state ===== */
 .errorState {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-8) var(--space-6);
+  align-items: flex-start;
+  gap: var(--space-5, 20px);
+  padding: clamp(32px, 4vw, 48px) clamp(24px, 4vw, 40px);
+  background: var(--zr-paper, #faf7f2);
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  border-left: 4px solid var(--zr-brand, #c8102e);
+  border-radius: 0;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
-/* ===== Empty state ===== */
+.alertSpacing {
+  margin: 0;
+}
+
+/* ============================================================
+ * 7. EMPTY STATE — editorial card (no icon, no rounded box)
+ * Vertical stack: eyebrow → heading → italic note → link
+ * ============================================================ */
+
 .emptyState {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-12) var(--space-6);
-  background-color: var(--bg-surface);
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-lg);
-  color: var(--text-secondary);
-  text-align: center;
+  align-items: flex-start;
+  gap: var(--space-5, 20px);
+  padding: clamp(48px, 6vw, 80px) clamp(32px, 5vw, 64px);
+  background: var(--zr-paper, #faf7f2);
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  border-top: 3px solid var(--zr-brand, #c8102e);
+  border-radius: 0;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
-.emptyState svg {
-  color: var(--text-placeholder);
+.emptyEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+}
+
+.emptyEyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
 }
 
 .emptyTitle {
-  margin: 0;
-  font-size: 18px;
+  font-family: var(--zr-font-serif);
+  font-size: clamp(24px, 3vw, 36px);
   font-weight: 600;
-  color: var(--text-primary);
+  font-style: normal;
+  line-height: 1.2;
+  color: var(--zr-ink, #1a1a1e);
+  margin: 0;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .emptyHint {
+  font-family: var(--zr-font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.7;
+  color: var(--zr-ink-soft, #4a4540);
   margin: 0;
-  font-size: 14px;
-  color: var(--text-secondary);
-  max-width: 420px;
-  line-height: 1.5;
+  max-width: 480px;
 }
 
-.emptyCta {
+/* Editorial link voice — uppercase + tracking + arrow shift */
+.emptyLink {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-2) var(--space-5);
-  background: var(--brand-primary);
-  color: var(--text-on-primary);
-  border-radius: var(--radius-md);
-  font-size: 14px;
+  gap: 8px;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
   text-decoration: none;
-  transition: background-color 0.15s ease;
-  margin-top: var(--space-2);
+  background: transparent;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  transition: gap 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
-.emptyCta:hover {
-  background: var(--brand-primary-hover);
+.emptyLink::after {
+  content: "→";
+  display: inline-block;
+  transition: transform 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
-/* ===== Policies Grid ===== */
+.emptyLink:hover {
+  gap: 12px;
+}
+
+.emptyLink:hover::after {
+  transform: translateX(3px);
+}
+
+.emptyLink:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+ * 8. POLICIES GRID — 3 chính sách (static, no extra chrome)
+ * ============================================================ */
+
 .policiesGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 28px);
+  align-items: stretch;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 1024px) {
-  .pricingGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ============================================================
+ * 9. REVEAL — single opacity fade, no scale, no translate
+ * ============================================================ */
 
+.reveal {
+  opacity: 0;
+  transition: opacity var(--zr-dur-reveal) var(--zr-ease);
+}
+
+.reveal.isVisible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: opacity 150ms linear;
+  }
+}
+
+/* ============================================================
+ * 10. RESPONSIVE — 320 / 375 / 414 / 768 / 1024 / 1280
+ * ============================================================ */
+
+@media (max-width: 1280px) {
+  .pricingGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pricingGrid > :nth-child(1) {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 1024px) {
   .policiesGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .promises {
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 2vw, 24px);
+  }
+  .promiseRule {
+    height: 1px;
+    width: 100%;
+    min-height: 0;
   }
 }
 
 @media (max-width: 768px) {
-  .hero {
-    padding: var(--space-10) 0;
+  .masthead {
+    padding: clamp(64px, 10vw, 80px) 0 clamp(40px, 6vw, 64px);
   }
-
-  .pricingSection,
-  .policiesSection,
-  .faqSection {
-    padding: 48px 0;
+  .section {
+    padding: clamp(48px, 8vw, 64px) 0;
   }
-
   .container {
-    padding: 0 var(--space-4);
+    padding: 0 clamp(16px, 4vw, 24px);
   }
-
   .pricingGrid {
     grid-template-columns: 1fr;
-    gap: var(--space-8);
   }
-
   .policiesGrid {
     grid-template-columns: 1fr;
-    gap: var(--space-4);
+    gap: clamp(16px, 2vw, 24px);
+  }
+  .sectionHeader {
+    margin: 0 0 clamp(32px, 5vw, 48px);
   }
 }
 
-@media (max-width: 540px) {
-  .sectionHeader {
-    margin-bottom: var(--space-6);
+@media (max-width: 414px) {
+  .masthead {
+    padding: 56px 0 40px;
   }
+  .pullQuoteText {
+    font-size: 28px;
+  }
+  .pullQuoteMark {
+    font-size: 80px;
+  }
+  .emptyState {
+    padding: 32px 20px;
+  }
+}
+
+/* ============================================================
+ * 11. FOCUS — keyboard navigation, ≥3:1 contrast
+ * ============================================================ */
+
+*:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
 }

@@ -13,6 +13,7 @@ import {
   X,
   GraduationCap,
   Tag,
+  Image,
 } from "lucide-react";
 import { authStorage } from "../../storage/authStorage";
 import { hasRole } from "../../utils/auth";
@@ -33,6 +34,7 @@ const MENU_ITEMS: MenuItem[] = [
   { label: "Quản lý người dùng", to: "/users", Icon: Users, allowedRoles: ["ADMIN"] },
   { label: "Quản lý giảng viên", to: "/teachers", Icon: GraduationCap, allowedRoles: ["ADMIN"] },
   { label: "Quản lý bảng giá", to: "/pricing-plans", Icon: Tag, allowedRoles: ["ADMIN"] },
+  { label: "Quản lý banner", to: "/banners", Icon: Image, allowedRoles: ["ADMIN"] },
   { label: "Thông báo", to: "/notifications", Icon: Bell },
   { label: "Quản lý tệp", to: "/files", Icon: FolderOpen },
   {

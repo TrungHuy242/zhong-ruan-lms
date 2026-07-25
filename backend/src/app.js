@@ -19,6 +19,8 @@ const pricingPlanAdminRoutes = require("./modules/pricing-plans/pricing-plan.rou
 const pricingPlanPublicRoutes = require("./modules/pricing-plans/pricing-plan.public.routes");
 const contactRequestAdminRoutes = require("./modules/contact-requests/contact-request.routes");
 const contactRequestPublicRoutes = require("./modules/contact-requests/contact-request.public.routes");
+const bannerAdminRoutes = require("./modules/banners/banner.routes");
+const bannerPublicRoutes = require("./modules/banners/banner.public.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -110,6 +112,12 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/public/teachers", teacherPublicRoutes);
 app.use("/api/public/pricing-plans", pricingPlanPublicRoutes);
 app.use("/api/public/contact-requests", contactRequestPublicRoutes);
+app.use("/api/public/banners", bannerPublicRoutes);
+// ⚠️ CẢNH BÁO: mọi route PUBLIC mới (không cần auth) PHẢI mount TRƯỚC dòng này.
+// uploadRoutes dùng router.use(authenticate) ở đầu + path tổng quát '/api'
+// sẽ match và chặn (401) bất kỳ route public nào mount SAU nó, kể cả path
+// cụ thể hơn như /api/public/xxx. Xem lịch sử lỗi: banner carousel 401 do
+// sai thứ tự mount.
 app.use("/api", uploadRoutes);
 app.use("/api", filesRoutes);
 app.use("/api/settings", settingsRouter);
@@ -119,6 +127,7 @@ app.use("/api/trash", trashRouter);
 app.use("/api/admin/teachers", teacherAdminRoutes);
 app.use("/api/admin/pricing-plans", pricingPlanAdminRoutes);
 app.use("/api/admin/contact-requests", contactRequestAdminRoutes);
+app.use("/api/admin/banners", bannerAdminRoutes);
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);

@@ -1,0 +1,617 @@
+﻿[
+  {
+    "viewport": "desktop",
+    "h1": {
+      "text": "Li├¬n hß╗ç t╞░ vß║Ñn",
+      "fontFamily": "\"Source Serif 4\", Georgia, serif",
+      "fontStyle": "normal",
+      "fontWeight": "400",
+      "fontSize": "56px",
+      "letterSpacing": "-0.28px",
+      "overflowWrap": "anywhere"
+    },
+    "h2": [
+      {
+        "text": "Gß╗¡i y├¬u cß║ºu t╞░ vß║Ñn",
+        "fontFamily": "\"Source Serif 4\", Georgia, serif",
+        "fontStyle": "normal",
+        "fontWeight": "600",
+        "letterSpacing": "normal",
+        "overflowWrap": "anywhere"
+      },
+      {
+        "text": "Th├┤ng tin trung t├óm",
+        "fontFamily": "\"Source Serif 4\", Georgia, serif",
+        "fontStyle": "normal",
+        "fontWeight": "600",
+        "letterSpacing": "normal",
+        "overflowWrap": "anywhere"
+      }
+    ],
+    "labels": [
+      {
+        "text": "Hß╗ì v├á t├¬n *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Sß╗æ ─æiß╗çn thoß║íi *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Email *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Lß╗¥i nhß║»n *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      }
+    ],
+    "card": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "borderTop": "rgb(200, 16, 46)",
+      "borderTopWidth": "3px"
+    },
+    "infoPanel": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "borderTop": "rgb(212, 175, 55)",
+      "borderTopWidth": "3px"
+    },
+    "form": {
+      "display": "flex",
+      "gap": "28px"
+    },
+    "input": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "borderBottom": "rgb(26, 26, 30)",
+      "borderBottomWidth": "1px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+      "fontSize": "16px",
+      "overflowWrap": "anywhere"
+    },
+    "textarea": {
+      "borderRadius": "0px",
+      "borderBottom": "rgb(26, 26, 30)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+    },
+    "submitBtn": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "backgroundColor": "rgb(200, 16, 46)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+      "textTransform": "uppercase",
+      "letterSpacing": "1.96px",
+      "fontSize": "14px"
+    },
+    "italicHeadings": [],
+    "h1Count": 1,
+    "overflow": {
+      "htmlOverflowX": "visible",
+      "bodyOverflowX": "visible"
+    },
+    "radiusOffenders": [
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 _navLinkActive_zpdhe_68",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_loginLink_zpdhe_83",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_ctaButton_zpdhe_98",
+        "borderRadius": "12px"
+      },
+      {
+        "tag": "BUTTON",
+        "class": "_hamburger_zpdhe_120",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_drawerLink_zpdhe_171 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_drawerLink_zpdhe_171 ",
+        "borderRadius": "8px"
+      }
+    ],
+    "shadowOffenders": [
+      {
+        "tag": "DIV",
+        "class": "_drawer_zpdhe_141 ",
+        "boxShadow": "rgba(20, 20, 30, 0.16) 0px 16px 48px 0px"
+      }
+    ]
+  },
+  {
+    "viewport": "tablet",
+    "h1": {
+      "text": "Li├¬n hß╗ç t╞░ vß║Ñn",
+      "fontFamily": "\"Source Serif 4\", Georgia, serif",
+      "fontStyle": "normal",
+      "fontWeight": "400",
+      "fontSize": "34.56px",
+      "letterSpacing": "-0.1728px",
+      "overflowWrap": "anywhere"
+    },
+    "h2": [
+      {
+        "text": "Gß╗¡i y├¬u cß║ºu t╞░ vß║Ñn",
+        "fontFamily": "\"Source Serif 4\", Georgia, serif",
+        "fontStyle": "normal",
+        "fontWeight": "600",
+        "letterSpacing": "normal",
+        "overflowWrap": "anywhere"
+      },
+      {
+        "text": "Th├┤ng tin trung t├óm",
+        "fontFamily": "\"Source Serif 4\", Georgia, serif",
+        "fontStyle": "normal",
+        "fontWeight": "600",
+        "letterSpacing": "normal",
+        "overflowWrap": "anywhere"
+      }
+    ],
+    "labels": [
+      {
+        "text": "Hß╗ì v├á t├¬n *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Sß╗æ ─æiß╗çn thoß║íi *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Email *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Lß╗¥i nhß║»n *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      }
+    ],
+    "card": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "borderTop": "rgb(200, 16, 46)",
+      "borderTopWidth": "3px"
+    },
+    "infoPanel": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "borderTop": "rgb(212, 175, 55)",
+      "borderTopWidth": "3px"
+    },
+    "form": {
+      "display": "flex",
+      "gap": "20px"
+    },
+    "input": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "borderBottom": "rgb(26, 26, 30)",
+      "borderBottomWidth": "1px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+      "fontSize": "16px",
+      "overflowWrap": "anywhere"
+    },
+    "textarea": {
+      "borderRadius": "0px",
+      "borderBottom": "rgb(26, 26, 30)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+    },
+    "submitBtn": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "backgroundColor": "rgb(200, 16, 46)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+      "textTransform": "uppercase",
+      "letterSpacing": "1.96px",
+      "fontSize": "14px"
+    },
+    "italicHeadings": [],
+    "h1Count": 1,
+    "overflow": {
+      "htmlOverflowX": "visible",
+      "bodyOverflowX": "visible"
+    },
+    "radiusOffenders": [
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 _navLinkActive_zpdhe_68",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_loginLink_zpdhe_83",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_ctaButton_zpdhe_98",
+        "borderRadius": "12px"
+      },
+      {
+        "tag": "BUTTON",
+        "class": "_hamburger_zpdhe_120",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_drawerLink_zpdhe_171 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_drawerLink_zpdhe_171 ",
+        "borderRadius": "8px"
+      }
+    ],
+    "shadowOffenders": [
+      {
+        "tag": "DIV",
+        "class": "_drawer_zpdhe_141 ",
+        "boxShadow": "rgba(20, 20, 30, 0.16) 0px 16px 48px 0px"
+      }
+    ]
+  },
+  {
+    "viewport": "mobile@375",
+    "h1": {
+      "text": "Li├¬n hß╗ç t╞░ vß║Ñn",
+      "fontFamily": "\"Source Serif 4\", Georgia, serif",
+      "fontStyle": "normal",
+      "fontWeight": "400",
+      "fontSize": "34px",
+      "letterSpacing": "-0.17px",
+      "overflowWrap": "anywhere"
+    },
+    "h2": [
+      {
+        "text": "Gß╗¡i y├¬u cß║ºu t╞░ vß║Ñn",
+        "fontFamily": "\"Source Serif 4\", Georgia, serif",
+        "fontStyle": "normal",
+        "fontWeight": "600",
+        "letterSpacing": "normal",
+        "overflowWrap": "anywhere"
+      },
+      {
+        "text": "Th├┤ng tin trung t├óm",
+        "fontFamily": "\"Source Serif 4\", Georgia, serif",
+        "fontStyle": "normal",
+        "fontWeight": "600",
+        "letterSpacing": "normal",
+        "overflowWrap": "anywhere"
+      }
+    ],
+    "labels": [
+      {
+        "text": "Hß╗ì v├á t├¬n *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Sß╗æ ─æiß╗çn thoß║íi *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Email *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      },
+      {
+        "text": "Lß╗¥i nhß║»n *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "textTransform": "uppercase",
+        "overflowWrap": "normal"
+      }
+    ],
+    "card": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "borderTop": "rgb(200, 16, 46)",
+      "borderTopWidth": "3px"
+    },
+    "infoPanel": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "background": "rgb(255, 255, 255)",
+      "borderTop": "rgb(212, 175, 55)",
+      "borderTopWidth": "3px"
+    },
+    "form": {
+      "display": "flex",
+      "gap": "20px"
+    },
+    "input": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "borderBottom": "rgb(26, 26, 30)",
+      "borderBottomWidth": "1px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+      "fontSize": "16px",
+      "overflowWrap": "anywhere"
+    },
+    "textarea": {
+      "borderRadius": "0px",
+      "borderBottom": "rgb(26, 26, 30)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif"
+    },
+    "submitBtn": {
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "backgroundColor": "rgb(200, 16, 46)",
+      "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+      "textTransform": "uppercase",
+      "letterSpacing": "1.96px",
+      "fontSize": "14px"
+    },
+    "italicHeadings": [],
+    "h1Count": 1,
+    "overflow": {
+      "htmlOverflowX": "visible",
+      "bodyOverflowX": "visible"
+    },
+    "radiusOffenders": [
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_navLink_zpdhe_52 _navLinkActive_zpdhe_68",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_loginLink_zpdhe_83",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_ctaButton_zpdhe_98",
+        "borderRadius": "12px"
+      },
+      {
+        "tag": "BUTTON",
+        "class": "_hamburger_zpdhe_120",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_drawerLink_zpdhe_171 ",
+        "borderRadius": "8px"
+      },
+      {
+        "tag": "A",
+        "class": "_drawerLink_zpdhe_171 ",
+        "borderRadius": "8px"
+      }
+    ],
+    "shadowOffenders": [
+      {
+        "tag": "DIV",
+        "class": "_drawer_zpdhe_141 ",
+        "boxShadow": "rgba(20, 20, 30, 0.16) 0px 16px 48px 0px"
+      }
+    ]
+  },
+  {
+    "viewport": "diacritic-labels",
+    "labels": [
+      {
+        "text": "Hß╗ì v├á t├¬n *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "height": 14,
+        "width": 239
+      },
+      {
+        "text": "Sß╗æ ─æiß╗çn thoß║íi *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "height": 14,
+        "width": 239
+      },
+      {
+        "text": "Email *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "height": 14,
+        "width": 501
+      },
+      {
+        "text": "Lß╗¥i nhß║»n *",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "11px",
+        "letterSpacing": "1.54px",
+        "height": 14,
+        "width": 501
+      },
+      {
+        "text": "Tß╗æi thiß╗âu 10 k├╜ tß╗▒. ─Éß╗½ng chia sß║╗ th├┤ng tin nhß║íy cß║úm (CMND, mß║¡t khß║⌐u, ...).",
+        "fontFamily": "\"Be Vietnam Pro\", Inter, system-ui, sans-serif",
+        "fontStyle": "normal",
+        "fontSize": "12px",
+        "letterSpacing": "normal",
+        "height": 19,
+        "width": 501
+      }
+    ]
+  },
+  {
+    "viewport": "e2e-form-submit",
+    "submittedData": {
+      "fullName": "Nguyß╗àn V─ân A (E2E Test)",
+      "phone": "0912345678",
+      "email": "e2e_1784984989451@example.com",
+      "message": "─É├óy l├á test E2E tß╗▒ ─æß╗Öng tß╗½ Puppeteer ΓÇö kiß╗âm tra form li├¬n hß╗ç..."
+    },
+    "alert": {
+      "role": "status",
+      "text": "─É├ú gß╗¡i y├¬u cß║ºu, ch├║ng t├┤i sß║╜ li├¬n hß╗ç lß║íi sß╗¢m nhß║Ñt."
+    },
+    "postResponse": {
+      "status": 201,
+      "body": {
+        "message": "Gß╗¡i li├¬n hß╗ç th├ánh c├┤ng. Ch├║ng t├┤i sß║╜ phß║ún hß╗ôi trong thß╗¥i gian sß╗¢m nhß║Ñt.",
+        "data": {
+          "contact": {
+            "id": "1d7e7adb-08bc-4548-a0c6-3a9def92ab83",
+            "fullName": "E2E Verify 1784984996800",
+            "phone": "0987654321",
+            "email": "verify_1784984996800@example.com",
+            "message": "Verify record via direct API call after Puppeteer submit.",
+            "status": "NEW",
+            "createdAt": "2026-07-25T13:09:56.821Z",
+            "updatedAt": "2026-07-25T13:09:56.821Z",
+            "deletedAt": null,
+            "deletedById": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "viewport": "admin-verify",
+    "loginResult": {
+      "error": "TypeError: Failed to execute 'fetch' on 'Window': Failed to parse URL from /api/auth/login"
+    },
+    "adminRecord": null
+  }
+]

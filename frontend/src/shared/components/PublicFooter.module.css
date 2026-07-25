@@ -1,66 +1,163 @@
-/* ===== PublicFooter — nền đỏ đậm, chữ trắng ===== */
+/* Hallmark · shared-component: PublicFooter (chrome cho 5 trang public)
+ * theme: editorial · design-system: design.md §9 (locked)
+ * tokens: --zr-font-serif, --zr-font-body, --zr-paper, --zr-paper-dark,
+ *          --zr-ink, --zr-rule-dark, --zr-brand, --zr-gold, --zr-ease, --zr-dur-fast
+ *
+ * ĐẶC ĐIỆT: Footer dùng chung cho 5 trang với 5 macrostructures khác nhau.
+ * Tone phải "trung tính" — chỉ dùng editorial palette + typography đã lock.
+ *
+ * QUYẾT ĐỊNH THIẾT KẾ: Background đổi từ --brand-primary-active (đỏ đậm)
+ * sang --zr-paper-dark charcoal (#1A1A1E). Lý do:
+ * 1) Design.md §9.5 chỉ liệt kê 3 section bg hợp lệ: ivory / surface-white
+ *    / paper-dark. Đỏ đậm KHÔNG nằm trong system.
+ * 2) CTABanner cuối trang đã là charcoal → Footer charcoal tạo "charcoal wrap"
+ *    nhịp nhàng ở 2 đầu (đầu trang có banner-qua-HomePage, cuối trang là footer).
+ * 3) Paper-dark cho phép text ivory + brand-red accent + gold accent đều đọc rõ.
+ * 4) Logo /logo/logo-full.png vẫn giữ filter: brightness(0) invert(1) để có bản
+ *    trắng hiện trên nền charcoal (giống pattern đã verify ở ContactPage CTABanner).
+ *
+ * SENTINEL KEEPERS:
+ * - border-radius: 0 (social buttons, mọi interactive element)
+ * - box-shadow: none
+ * - no transform: translateY/scale on hover (cancel old socialBtn hover lift)
+ * - no fill-bg trên links (underline hairline grow thay vì rgba fill)
+ * - colTitle uppercase eyebrow: 11px Be Vietnam Pro 600 0.18em tracking (theo §9.4.1)
+ * - 4 cột: brand 1.4fr / links 1fr / contact 1fr / social 1fr (giữ § 9.5 ratio)
+ * - hairline border-top trên social buttons thay vì rounded fill
+ *
+ * React logic (PublicFooter.tsx) GIỮ NGUYÊN 100%:
+ * - QUICK_LINKS array (5 link NavLink)
+ * - Contact list (address/phone/email placeholder)
+ * - 3 socials (Facebook SVG inline / Youtube SVG inline / Zalo custom SVG inline)
+ * - © 2026 copyright line ở .bottom row
+ */
+
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  --zr-paper: #FAF7F2;
+  --zr-paper-dark: #1A1A1E;
+  --zr-ink: #1A1A1E;
+  --zr-ink-soft: #4A4540;
+  --zr-rule: #D9D0C3;
+  --zr-rule-dark: #3D362B;
+  --zr-brand: #C8102E;
+  --zr-brand-hover: #A50C24;
+  --zr-gold: #D4AF37;
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur-fast: 220ms;
+}
+
+/* =========================
+   Footer shell — solid charcoal
+   ========================= */
 
 .footer {
-  background: var(--brand-primary-active);
-  color: var(--text-on-primary);
-  margin-top: var(--space-12);
+  background: var(--zr-paper-dark);
+  color: var(--zr-paper);
+  border: none;
+  border-top: 3px solid var(--zr-brand);
+  margin-top: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: var(--space-12) var(--space-6) var(--space-6);
+  padding: clamp(56px, 7vw, 96px) clamp(20px, 4vw, 56px) clamp(28px, 3.5vw, 40px);
+  min-width: 0;
 }
+
+/* =========================
+   4-column grid
+   ========================= */
 
 .grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  gap: var(--space-8);
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(32px, 4vw, 64px);
+  min-width: 0;
 }
 
-/* ===== Cột brand ===== */
+/* =========================
+   Cột 1 — Brand
+   ========================= */
 
 .brandCol {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: clamp(14px, 1.6vw, 20px);
+  min-width: 0;
 }
 
 .logo {
   display: inline-flex;
   align-items: center;
+  border-radius: 0;
 }
 
 .logo img {
   height: 40px;
   width: auto;
-  /* Lật ngược để logo trắng có thể hiện trên nền đỏ. Nếu logo gốc có nền trắng,
-     filter này sẽ giữ nguyên. Điều chỉnh nếu designer thay đổi. */
+  /* Lật logo trắng hiện trên nền charcoal (giống pattern verify ở CTABanner) */
   filter: brightness(0) invert(1);
 }
 
 .brandDesc {
+  font-family: var(--zr-font-body);
   font-size: 14px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.65;
+  letter-spacing: 0;
+  color: rgba(250, 247, 242, 0.7);
   max-width: 360px;
+  margin: 0;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-/* ===== Cột chung ===== */
+/* =========================
+   Cột chung (col 2/3/4)
+   ========================= */
 
 .col {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: clamp(14px, 1.6vw, 22px);
+  min-width: 0;
 }
 
+/* Eyebrow column title — uppercase tracking theo §9.4.1 */
 .colTitle {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--text-on-primary);
+  line-height: 1.3;
+  color: var(--zr-paper);
+  margin: 0;
+  min-width: 0;
 }
+
+.colTitle::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand);
+  flex-shrink: 0;
+}
+
+/* =========================
+   Link list (column 2)
+   ========================= */
 
 .linkList,
 .contactList {
@@ -69,86 +166,182 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: clamp(10px, 1.2vw, 14px);
+  min-width: 0;
 }
 
 .link {
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration: none;
+  position: relative;
+  display: inline-block;
+  font-family: var(--zr-font-body);
   font-size: 14px;
-  transition: color 0.15s ease;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  color: rgba(250, 247, 242, 0.7);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  white-space: nowrap;
+  padding-bottom: 2px;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size var(--zr-dur-fast) var(--zr-ease),
+    color var(--zr-dur-fast) var(--zr-ease);
 }
 
 .link:hover {
-  color: var(--text-on-primary);
+  color: var(--zr-paper);
+  background-size: 100% 1px;
 }
+
+.link:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 3px;
+  border-radius: 0;
+}
+
+/* =========================
+   Contact list (column 3)
+   ========================= */
 
 .contactItem {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-2);
-  color: rgba(255, 255, 255, 0.75);
+  gap: clamp(8px, 1vw, 12px);
+  font-family: var(--zr-font-body);
   font-size: 14px;
-  line-height: 1.5;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  color: rgba(250, 247, 242, 0.7);
+  line-height: 1.55;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .contactItem svg {
   flex-shrink: 0;
-  margin-top: 2px;
-  color: rgba(255, 255, 255, 0.9);
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  color: var(--zr-gold);
 }
 
 .contactItem a {
   color: inherit;
   text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  padding-bottom: 2px;
+  transition: background-size var(--zr-dur-fast) var(--zr-ease),
+    color var(--zr-dur-fast) var(--zr-ease);
 }
 
 .contactItem a:hover {
-  color: var(--text-on-primary);
+  color: var(--zr-paper);
+  background-size: 100% 1px;
 }
 
-/* ===== Social ===== */
+.contactItem span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* =========================
+   Social (column 4)
+   ========================= */
 
 .socials {
   display: flex;
-  gap: var(--space-3);
+  gap: clamp(8px, 1vw, 12px);
+  flex-wrap: wrap;
 }
 
+/* Hairline-square social button — 0 radius, 1px border, no fill on rest */
 .socialBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  color: var(--text-on-primary);
+  background: transparent;
+  border: 1px solid rgba(250, 247, 242, 0.25);
+  border-radius: 0;
+  color: var(--zr-paper);
   text-decoration: none;
-  transition: background 0.15s ease, transform 0.15s ease;
+  box-shadow: none;
+  cursor: pointer;
+  transition: border-color var(--zr-dur-fast) var(--zr-ease),
+    color var(--zr-dur-fast) var(--zr-ease),
+    background-color var(--zr-dur-fast) var(--zr-ease);
+}
+
+.socialBtn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .socialBtn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  border-color: var(--zr-brand);
+  color: var(--zr-brand);
+  background-color: rgba(200, 16, 46, 0.08);
 }
 
-/* ===== Bottom row ===== */
+.socialBtn:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 2px;
+  border-radius: 0;
+}
+
+/* Zalo button — slight gold accent để phân biệt khỏi 2 social còn lại */
+.socialBtn[data-platform="zalo"] {
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.socialBtn[data-platform="zalo"]:hover {
+  border-color: var(--zr-gold);
+  color: var(--zr-gold);
+  background-color: rgba(212, 175, 55, 0.08);
+}
+
+/* =========================
+   Bottom row — © copyright
+   ========================= */
 
 .bottom {
-  margin-top: var(--space-10);
-  padding-top: var(--space-6);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  text-align: center;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  margin-top: clamp(40px, 5vw, 64px);
+  padding-top: clamp(20px, 2.4vw, 28px);
+  border-top: 1px solid var(--zr-rule-dark);
+  text-align: left;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0;
+  color: rgba(250, 247, 242, 0.55);
+  min-width: 0;
 }
 
-/* ===== Responsive ===== */
+.bottom p {
+  margin: 0;
+}
+
+/* =========================
+   Tablet — 2x2 grid
+   ========================= */
 
 @media (max-width: 1024px) {
   .grid {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-8);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 48px);
   }
 
   .brandCol {
@@ -160,17 +353,39 @@
   }
 }
 
+/* =========================
+   Mobile — stack 1-col
+   ========================= */
+
 @media (max-width: 640px) {
   .container {
-    padding: var(--space-10) var(--space-4) var(--space-4);
+    padding: clamp(40px, 8vw, 56px) clamp(16px, 4vw, 20px) clamp(20px, 4vw, 28px);
   }
 
   .grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(28px, 5vw, 40px);
   }
 
   .brandCol {
     grid-column: auto;
+  }
+
+  .logo img {
+    height: 36px;
+  }
+}
+
+/* =========================
+   Reduced motion
+   ========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .link,
+  .link:hover,
+  .contactItem a,
+  .contactItem a:hover,
+  .socialBtn {
+    transition: none;
   }
 }

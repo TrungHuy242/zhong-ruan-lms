@@ -1,84 +1,211 @@
-/* ContactPage — trang liên hệ công khai (/lien-he).
-   - Hero ở trên (centered)
-   - 2 cột (form trái | info phải) trên desktop, 1 cột trên mobile */
+/* Hallmark · macrostructure: Workbench (composer-left + reference-right + footer-action row)
+ * theme: editorial · design-system: design.md §9 (locked)
+ * genres: form + info panel · fonts: Source Serif 4 + Be Vietnam Pro
+ *
+ * Workbench pick rationale:
+ * - Contact page is a transaction surface (write a message + look up contact details).
+ * - 2-col asymmetric surface (form 1.15fr / info 1fr) reads as a working bench,
+ *   different from Quote-Led (1-col narrative lede).
+ * - Differ from PricingPage Quote-Led on axis: container count
+ *   (2-col asymmetric surface vs 1-col narrative).
+ *
+ * Sentinel keepers (per design.md §9.2 anti-SaaS rules):
+ * - border-radius: 0 everywhere (incl. Card wrapper, Alert, Input)
+ * - box-shadow: none (cancel Card shadow + Alert glow + Input focus glow)
+ * - No fill-bg on hover (label/CTA use hairline + opacity)
+ * - No transform: scale/translateY on hover
+ * - No gradient
+ * - font-style: normal on all headings (gate 38a)
+ * - letter-spacing: 0/-0.005em (Vietnamese-safe)
+ */
 
-.hero {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: var(--space-12) var(--space-6) var(--space-8);
-  text-align: center;
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  --zr-paper: #FAF7F2;
+  --zr-paper-dark: #1A1A1E;
+  --zr-surface: #FFFFFF;
+  --zr-ink: #1A1A1E;
+  --zr-ink-soft: #4A4540;
+  --zr-ink-muted: #6B6058;
+  --zr-rule: #D9D0C3;
+  --zr-rule-dark: #3D362B;
+  --zr-brand: #C8102E;
+  --zr-brand-hover: #A50C24;
+  --zr-gold: #D4AF37;
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur-fast: 220ms;
 }
 
-.badge {
-  display: inline-block;
-  background: var(--brand-primary-light);
-  color: var(--brand-primary);
-  font-size: 13px;
+/* =========================
+   Page-level layout
+   ========================= */
+
+.page {
+  background: var(--zr-paper);
+  padding-top: clamp(72px, 9vw, 128px);
+  padding-bottom: clamp(80px, 10vw, 144px);
+  min-width: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 56px);
+  min-width: 0;
+}
+
+/* =========================
+   Masthead — eyebrow + h1 + lede
+   (vertical stack; tag-left pattern forbidden — gate 54)
+   ========================= */
+
+.masthead {
+  max-width: 760px;
+  margin: 0 0 clamp(48px, 6vw, 80px) 0;
+  padding: 0;
+  text-align: left;
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
   font-weight: 600;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  margin-bottom: var(--space-6);
+  font-style: normal;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand);
+  margin: 0 0 clamp(16px, 2vw, 24px) 0;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand);
+  flex-shrink: 0;
 }
 
 .title {
-  font-size: clamp(32px, 5vw, 48px);
-  font-weight: 800;
-  color: var(--text-primary);
-  margin: 0 0 var(--space-4);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(34px, 4.5vw, 56px);
+  line-height: 1.08;
+  letter-spacing: -0.005em;
+  color: var(--zr-ink);
+  margin: 0 0 clamp(16px, 2vw, 22px) 0;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-.subtitle {
-  font-size: 16px;
-  color: var(--text-secondary);
-  max-width: 600px;
-  margin: 0 auto;
-  line-height: 1.6;
+.titleAccent {
+  font-style: normal; /* roman, no italic — gate 38a */
+  color: var(--zr-brand);
 }
 
-.grid {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-6) var(--space-16);
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: var(--space-8);
-  align-items: start;
-}
-
-.formCard {
-  /* Card đã có padding="lg" từ prop; không ghi đè */
-}
-
-.formHeader {
-  margin-bottom: var(--space-6);
-}
-
-.formTitle {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2);
-  letter-spacing: -0.01em;
-}
-
-.formSubtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
+.lede {
+  font-family: var(--zr-font-body);
+  font-size: clamp(16px, 1.6vw, 18px);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.65;
+  letter-spacing: 0;
+  color: var(--zr-ink-soft);
+  max-width: 620px;
   margin: 0;
-  line-height: 1.5;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-/* Mobile/tablet: xếp dọc — form trước, info sau */
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
-  }
+/* =========================
+   Workbench grid — composer-left + reference-right
+   (User constraint #3: GIỮ NGUYÊN 2 cột desktop / xếp dọc mobile)
+   ========================= */
 
-  .hero {
-    padding-top: var(--space-8);
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(24px, 3vw, 48px);
+  align-items: start;
+  min-width: 0;
+}
+
+/* The two surfaces — flat hairline frame, NOT rounded, NOT shadowed.
+   We override Card's border-radius/shadow via descendant selector.
+   Card's own padding prop is preserved (var(--space-8) for lg). */
+
+.surface {
+  background: var(--zr-surface);
+  border: 1px solid var(--zr-rule);
+  border-top: 3px solid var(--zr-brand);
+  border-radius: 0;
+  box-shadow: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Composer side: ContactForm section header */
+.composerHead {
+  margin-bottom: clamp(24px, 3vw, 36px);
+  padding-bottom: clamp(16px, 2vw, 24px);
+  border-bottom: 1px solid var(--zr-rule);
+}
+
+.composerTitle {
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(20px, 2vw, 24px);
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  margin: 0 0 clamp(6px, 0.8vw, 10px) 0;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.composerSubtitle {
+  font-family: var(--zr-font-body);
+  font-size: 14px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: var(--zr-ink-soft);
+  margin: 0;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+/* Reference side: ContactInfo.module.css already renders its own .title + .lead
+   inside .panel — không cần page-level override ở đây. */
+
+/* =========================
+   Mobile: xếp dọc — form trước, info sau (constraint #3)
+   ========================= */
+
+@media (max-width: 900px) {
+  .workbench {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(20px, 3vw, 32px);
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 var(--space-4);
+  }
+  .masthead {
+    margin-bottom: 36px;
   }
 }

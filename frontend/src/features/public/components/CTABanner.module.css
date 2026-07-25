@@ -1,59 +1,124 @@
+/* Hallmark · component: CTABanner (shared) · genre: editorial
+ * theme: editorial education · design-system: design.md (locked round 9 homepage)
+ * states: default · hover · focus-visible
+ * contrast: pass (40–41) · Vietnamese glyphs: pass (Source Serif 4 + Be Vietnam Pro)
+ * Đồng bộ Trang chủ (round 9): solid charcoal `--zr-paper-dark`, no gradient,
+ * no rounded, no shadow. Source Serif 4 cho headline, Be Vietnam Pro cho CTA.
+ * Dùng ở 5 trang public: CoursesPage, CourseDetailPage, PricingPage,
+ * TeachersListPage, TeacherDetailPage. Logic React giữ nguyên 100%
+ * (props: headline, ctaLabel, ctaTo — không đổi).
+ */
+
 .banner {
-  background: var(--hero-gradient, linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-active) 100%));
-  padding: var(--space-12) var(--space-6);
+  background: var(--zr-paper-dark, #1A1A1E);
+  padding: clamp(80px, 10vw, 128px) clamp(24px, 5vw, 80px);
+  border-radius: 0;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hairline top rule với brand-red để match HomePage section rhythm */
+.banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--zr-brand, #C8102E);
 }
 
 .container {
-  max-width: 800px;
+  max-width: 680px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-8);
+  gap: clamp(28px, 3.4vw, 44px);
   text-align: center;
 }
 
+/* ----- Headline: Source Serif 4 roman, ivory paper color ----- */
 .headline {
-  font-family: "Be Vietnam Pro", "Inter", sans-serif;
-  font-size: clamp(24px, 3.5vw, 36px);
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.2;
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(28px, 3.6vw, 48px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-paper, #FAF7F2);
   margin: 0;
   text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
+/* ----- CTA button: editorial solid brand-red, không shadow, không lift ----- */
 .ctaBtn {
   display: inline-flex;
   align-items: center;
-  padding: 16px var(--space-10);
-  background: #fff;
-  color: var(--brand-primary);
-  font-size: 16px;
-  font-weight: 700;
-  border-radius: var(--radius-md);
+  justify-content: center;
+  gap: 10px;
+  padding: clamp(14px, 1.6vw, 18px) clamp(36px, 4vw, 56px);
+  background: var(--zr-brand, #C8102E);
+  color: var(--zr-paper, #FAF7F2);
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-decoration: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--zr-brand, #C8102E);
+  border-radius: 0;
+  box-shadow: none;
+  transition: background 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    gap 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.ctaBtn::after {
+  content: "→";
+  display: inline-block;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-weight: 500;
+  transition: transform 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .ctaBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  background: var(--zr-brand-hover, #A50C24);
+  border-color: var(--zr-brand-hover, #A50C24);
+  gap: 14px;
+}
+
+.ctaBtn:hover::after {
+  transform: translateX(3px);
+}
+
+.ctaBtn:focus-visible {
+  outline: 2px solid var(--zr-paper, #FAF7F2);
+  outline-offset: 3px;
 }
 
 @media (max-width: 640px) {
   .banner {
-    padding: var(--space-10) var(--space-4);
+    padding: clamp(64px, 10vw, 80px) clamp(16px, 4vw, 24px);
   }
 
   .container {
-    gap: var(--space-6);
+    gap: clamp(20px, 4vw, 28px);
   }
 
   .ctaBtn {
-    padding: 14px var(--space-8);
+    padding: clamp(13px, 2vw, 16px) clamp(24px, 4vw, 32px);
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaBtn,
+  .ctaBtn::after {
+    transition: none;
   }
 }

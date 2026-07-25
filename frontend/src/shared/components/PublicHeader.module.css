@@ -1,4 +1,48 @@
-/* ===== PublicHeader ===== */
+/* Hallmark · shared-component: PublicHeader (chrome cho 5 trang public)
+ * theme: editorial · design-system: design.md §9 (locked)
+ * tokens: --zr-font-serif, --zr-font-body, --zr-paper, --zr-ink, --zr-ink-soft,
+ *          --zr-rule, --zr-brand, --zr-brand-hover, --zr-surface, --zr-ease, --zr-dur-fast
+ *
+ * ĐẶC ĐIỆT: Header dùng chung cho 5 trang với 5 macrostructures khác nhau
+ * (8-section grid / 14-Narrative / 20-Ecosystem / 12-Letter / 09-Quote-Led / Workbench).
+ * Tone phải "trung tính" — không lệch về phong cách bất kỳ trang nào, chỉ dùng
+ * palette + typography đã lock để mọi trang đều "mặc vừa".
+ *
+ * SENTINEL KEEPERS:
+ * - border-radius: 0 (navLink, loginLink, hamburger, drawerLink, ctaButton, drawerCta)
+ * - box-shadow: none (cancel --shadow-card ở .scrolled + --shadow-modal ở .drawer)
+ * - no transform on hover (cancel translateY(-1px) trên CTA button)
+ * - no fill-bg on hover (cancel brand-primary-lighter bg trên navLink:hover)
+ * - scrolled state dùng border-bottom hairline + opacity shift (không shadow)
+ * - underline grow pattern trên navLink hover (bg-image transition 0→100%)
+ *
+ * React logic (PublicHeader.tsx) GIỮ NGUYÊN 100%:
+ * - useState scrolled/mobileOpen
+ * - useEffect scroll listener (passive)
+ * - useEffect body.style.overflow = hidden khi drawer mở + ESC handler
+ * - 5 NAV_ITEMS (Trang chủ/Khóa học/Giảng viên/Bảng giá/Liên hệ)
+ * - 2 actions (Đăng nhập/Đăng ký học thử miễn phí)
+ * - Hamburger toggle Menu ↔ X icon (lucide-react)
+ */
+
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  --zr-paper: #FAF7F2;
+  --zr-surface: #FFFFFF;
+  --zr-ink: #1A1A1E;
+  --zr-ink-soft: #4A4540;
+  --zr-ink-muted: #6B6058;
+  --zr-rule: #D9D0C3;
+  --zr-brand: #C8102E;
+  --zr-brand-hover: #A50C24;
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur-fast: 220ms;
+}
+
+/* =========================
+   Header shell — fixed sticky, hairline border-bottom
+   ========================= */
 
 .header {
   position: fixed;
@@ -6,31 +50,37 @@
   left: 0;
   right: 0;
   height: 72px;
-  background: var(--bg-surface);
-  z-index: 100;
-  transition: box-shadow 0.2s ease;
+  background: var(--zr-surface);
   border-bottom: 1px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 100;
+  transition: border-bottom-color var(--zr-dur-fast) var(--zr-ease),
+    background-color var(--zr-dur-fast) var(--zr-ease);
 }
 
+/* Scrolled state — hairline ink rule + opacity shift, KHÔNG shadow */
 .scrolled {
-  box-shadow: var(--shadow-card);
-  border-bottom-color: var(--border-default);
+  border-bottom-color: var(--zr-rule);
+  background-color: rgba(255, 255, 255, 0.92);
 }
 
 .container {
   max-width: 1280px;
   height: 100%;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0 clamp(20px, 3vw, 40px);
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: clamp(16px, 2vw, 32px);
+  min-width: 0;
 }
 
 .logo {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  border-radius: 0;
 }
 
 .logo img {
@@ -39,83 +89,176 @@
   display: block;
 }
 
-/* ===== Desktop nav ===== */
+/* =========================
+   Desktop nav
+   ========================= */
 
 .desktopNav {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: clamp(2px, 0.4vw, 8px);
   flex: 1;
   justify-content: center;
+  min-width: 0;
 }
 
 .navLink {
-  padding: var(--space-2) var(--space-4);
-  font-size: 15px;
+  position: relative;
+  display: inline-block;
+  padding: 10px clamp(10px, 1.2vw, 16px);
+  font-family: var(--zr-font-body);
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
+  font-style: normal;
+  letter-spacing: 0;
+  color: var(--zr-ink);
   text-decoration: none;
-  border-radius: var(--radius-sm);
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  min-width: 0;
+  transition: color var(--zr-dur-fast) var(--zr-ease);
+}
+
+/* Hairline underline grow on hover — bg-image trick */
+.navLink::after {
+  content: "";
+  position: absolute;
+  left: clamp(10px, 1.2vw, 16px);
+  right: clamp(10px, 1.2vw, 16px);
+  bottom: 4px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--zr-dur-fast) var(--zr-ease);
 }
 
 .navLink:hover {
-  color: var(--brand-primary);
-  background: var(--brand-primary-lighter);
+  color: var(--zr-brand);
 }
 
+.navLink:hover::after {
+  transform: scaleX(1);
+}
+
+.navLink:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 4px;
+  border-radius: 0;
+}
+
+/* Active state — brand-red persistent underline */
 .navLinkActive {
-  color: var(--brand-primary);
-  border-bottom-color: var(--brand-primary);
+  color: var(--zr-brand);
   font-weight: 600;
 }
 
-/* ===== Actions (login + CTA) ===== */
+.navLinkActive::after {
+  transform: scaleX(1);
+  height: 2px;
+  bottom: 4px;
+  background: var(--zr-brand);
+}
+
+/* =========================
+   Actions (login + CTA)
+   ========================= */
 
 .actions {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: clamp(8px, 1vw, 16px);
   flex-shrink: 0;
 }
 
 .loginLink {
-  font-size: 15px;
+  display: inline-block;
+  padding: 10px clamp(8px, 1vw, 14px);
+  font-family: var(--zr-font-body);
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
+  font-style: normal;
+  letter-spacing: 0;
+  color: var(--zr-ink);
   text-decoration: none;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  transition: background 0.15s ease, color 0.15s ease;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  white-space: nowrap;
+  transition: color var(--zr-dur-fast) var(--zr-ease);
 }
 
 .loginLink:hover {
-  background: var(--bg-surface-alt);
-  color: var(--brand-primary);
+  color: var(--zr-brand);
 }
 
+.loginLink:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 4px;
+  border-radius: 0;
+}
+
+/* CTA — editorial CTA pattern (giống CTABanner .ctaBtn ở design.md §9.4.5) */
 .ctaButton {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px clamp(14px, 1.6vw, 22px);
+  background: var(--zr-brand);
+  color: #FFFFFF;
+  font-family: var(--zr-font-body);
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-on-primary);
-  background: var(--brand-primary);
+  font-style: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   text-decoration: none;
-  padding: 10px var(--space-5);
-  border-radius: var(--radius-md);
-  transition: background 0.15s ease, transform 0.15s ease;
+  border: 2px solid var(--zr-brand);
+  border-radius: 0;
+  box-shadow: none;
+  white-space: nowrap;
+  transition: background-color var(--zr-dur-fast) var(--zr-ease),
+    border-color var(--zr-dur-fast) var(--zr-ease),
+    gap 200ms var(--zr-ease);
 }
 
 .ctaButton:hover {
-  background: var(--brand-primary-hover);
-  transform: translateY(-1px);
+  background: var(--zr-brand-hover);
+  border-color: var(--zr-brand-hover);
+  gap: 12px;
 }
 
 .ctaButton:active {
-  background: var(--brand-primary-active);
+  opacity: 0.92;
 }
 
-/* ===== Hamburger ===== */
+.ctaButton:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 3px;
+}
+
+/* Arrow micro-interaction (giống .ctaBtn::after pattern) */
+.ctaButton::after {
+  content: "→";
+  font-size: 14px;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 200ms var(--zr-ease);
+}
+
+.ctaButton:hover::after {
+  transform: translateX(3px);
+}
+
+/* =========================
+   Hamburger (mobile only)
+   ========================= */
 
 .hamburger {
   display: none;
@@ -124,35 +267,48 @@
   width: 40px;
   height: 40px;
   background: transparent;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  border: 1px solid var(--zr-rule);
+  border-radius: 0;
+  color: var(--zr-ink);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  box-shadow: none;
+  margin-left: auto;
+  transition: border-color var(--zr-dur-fast) var(--zr-ease),
+    color var(--zr-dur-fast) var(--zr-ease);
 }
 
 .hamburger:hover {
-  background: var(--bg-surface-alt);
-  border-color: var(--border-strong);
+  border-color: var(--zr-brand);
+  color: var(--zr-brand);
 }
 
-/* ===== Mobile drawer ===== */
+.hamburger:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 2px;
+}
+
+/* =========================
+   Mobile drawer — slide từ trên xuống
+   ========================= */
 
 .drawer {
   position: fixed;
-  top: 72px;
+  top: 64px;
   left: 0;
   right: 0;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-default);
-  box-shadow: var(--shadow-modal);
+  background: var(--zr-surface);
+  border: none;
+  border-bottom: 1px solid var(--zr-rule);
+  border-radius: 0;
+  box-shadow: none;
   transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
-  transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+  transition: transform 280ms var(--zr-ease), opacity 280ms var(--zr-ease);
   z-index: 99;
-  max-height: calc(100vh - 72px);
+  max-height: calc(100vh - 64px);
   overflow-y: auto;
+  min-width: 0;
 }
 
 .drawerOpen {
@@ -164,58 +320,85 @@
 .drawerNav {
   display: flex;
   flex-direction: column;
-  padding: var(--space-4) var(--space-6);
-  gap: var(--space-1);
+  padding: clamp(16px, 3vw, 24px) clamp(20px, 4vw, 32px) clamp(24px, 4vw, 36px);
+  gap: 2px;
 }
 
 .drawerLink {
-  padding: var(--space-3) var(--space-4);
+  display: block;
+  padding: clamp(12px, 2vw, 16px) clamp(12px, 2vw, 16px);
+  font-family: var(--zr-font-body);
   font-size: 16px;
   font-weight: 500;
-  color: var(--text-primary);
+  font-style: normal;
+  letter-spacing: 0;
+  color: var(--zr-ink);
   text-decoration: none;
-  border-radius: var(--radius-sm);
-  transition: background 0.15s ease, color 0.15s ease;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  border-top: 1px solid var(--zr-rule);
+  transition: color var(--zr-dur-fast) var(--zr-ease),
+    padding-left var(--zr-dur-fast) var(--zr-ease);
+}
+
+.drawerLink:first-child {
+  border-top: 1px solid var(--zr-rule);
 }
 
 .drawerLink:hover {
-  background: var(--bg-surface-alt);
-  color: var(--brand-primary);
+  color: var(--zr-brand);
+  padding-left: 20px;
+}
+
+.drawerLink:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: -2px;
 }
 
 .drawerLinkActive {
-  color: var(--brand-primary);
-  background: var(--brand-primary-lighter);
+  color: var(--zr-brand);
   font-weight: 600;
 }
 
 .drawerCta {
-  margin-top: var(--space-3);
-  padding: 12px var(--space-5);
-  background: var(--brand-primary);
-  color: var(--text-on-primary);
-  font-size: 15px;
+  margin-top: clamp(16px, 2.4vw, 24px);
+  padding: clamp(14px, 2.2vw, 18px) clamp(20px, 3vw, 28px);
+  background: var(--zr-brand);
+  color: #FFFFFF;
+  font-family: var(--zr-font-body);
+  font-size: 14px;
   font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   text-align: center;
   text-decoration: none;
-  border-radius: var(--radius-md);
-  transition: background 0.15s ease;
+  border: 2px solid var(--zr-brand);
+  border-radius: 0;
+  box-shadow: none;
+  transition: background-color var(--zr-dur-fast) var(--zr-ease),
+    border-color var(--zr-dur-fast) var(--zr-ease);
 }
 
 .drawerCta:hover {
-  background: var(--brand-primary-hover);
+  background: var(--zr-brand-hover);
+  border-color: var(--zr-brand-hover);
 }
 
-/* ===== Backdrop ===== */
+/* =========================
+   Backdrop — ink overlay 0.45 (editorial ink, không gradient)
+   ========================= */
 
 .backdrop {
   position: fixed;
   inset: 0;
-  top: 72px;
-  background: rgba(20, 20, 30, 0.4);
+  top: 64px;
+  background: rgba(26, 26, 30, 0.45);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease-out;
+  transition: opacity 280ms var(--zr-ease);
   z-index: 98;
 }
 
@@ -224,7 +407,9 @@
   pointer-events: auto;
 }
 
-/* ===== Responsive ===== */
+/* =========================
+   Mobile breakpoint
+   ========================= */
 
 @media (max-width: 768px) {
   .header {
@@ -232,8 +417,8 @@
   }
 
   .container {
-    padding: 0 var(--space-4);
-    gap: var(--space-3);
+    padding: 0 clamp(16px, 4vw, 20px);
+    gap: 12px;
   }
 
   .logo img {
@@ -250,7 +435,6 @@
 
   .hamburger {
     display: flex;
-    margin-left: auto;
   }
 
   .drawer {
@@ -259,5 +443,25 @@
 
   .backdrop {
     top: 64px;
+  }
+}
+
+/* =========================
+   Reduced motion
+   ========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .navLink,
+  .navLink::after,
+  .loginLink,
+  .ctaButton,
+  .ctaButton::after,
+  .hamburger,
+  .drawer,
+  .drawerLink,
+  .drawerCta,
+  .backdrop {
+    transition: none;
   }
 }

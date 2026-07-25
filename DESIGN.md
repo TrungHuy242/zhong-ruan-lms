@@ -291,3 +291,312 @@ Public có animation nhiều hơn vì mục tiêu marketing là **gây ấn tư�
 | `Logo` | Logo dùng chung (đã có sẵn ở `public/logo/logo-full.png`) |
 
 Các component này sẽ được tạo ở các task tiếp theo, **không implement trong task hạ tầng này**.
+
+---
+
+## 9. Public Editorial Marketing System — Variants section
+
+> **Scope**: 5 trang marketing public — HomePage, CoursesPage, CourseDetailPage,
+> PricingPage, TeachersListPage, TeacherDetailPage, ContactPage. Locked từ
+> vòng redesign 7–9 (HomePage) + vòng redesign 14 (CoursesPage / CourseDetailPage) +
+> vòng redesign 3 component shared (CourseCard, CourseComparisonTable, CTABanner).
+>
+> **Kế thừa**: Brand anchor (red #C8102E + gold #D4AF37) + semantic colors
+> từ Section 1. Thay đổi: shape language, typography pairing, radius/shadow
+> stance, button voice, CTA banner system.
+>
+> **Khi nào dùng system này**: Bất kỳ trang public nào (route `/`, `/khoa-hoc*`,
+> `/giang-vien*`, `/bang-gia`, `/lien-he`). Khi redesign từng trang, dùng
+> các triết lý dưới đây làm mặc định — CHỈ vi phạm khi có lý do thiết kế cụ thể.
+
+### 9.1 Page-scope tokens (chỉ dùng cho Public Editorial)
+
+```css
+:root {
+  /* ===== Paper & Ink (ivory editorial — khác với Admin #F7F7F9/#FFFFFF) ===== */
+  --zr-paper:        #FAF7F2;  /* ivory chính — section nền chính */
+  --zr-paper-dark:   #1A1A1E;  /* charcoal — CTA banner, dark beat */
+  --zr-ink:          #1A1A1E;  /* heading + body chính */
+  --zr-ink-soft:     #4A4540;  /* body text phụ */
+  --zr-ink-muted:    #6B6058;  /* caption, helper text */
+  --zr-rule:         #D9D0C3;  /* hairline border, ivory paper */
+  --zr-rule-dark:    #3D362B;  /* hairline border trên paper-dark */
+  --zr-surface:      #FFFFFF;  /* card background, table row */
+
+  /* ===== Brand anchor (mirror từ Section 1) ===== */
+  --zr-brand:        var(--brand-primary);     /* #C8102E */
+  --zr-brand-hover:  var(--brand-primary-hover); /* #A50C24 */
+  --zr-brand-soft:   #E8B8BF;  /* border hover bg */
+  --zr-gold:         var(--brand-accent);      /* #D4AF37 */
+  --zr-gold-soft:    #F5EDD4;  /* gold tint subtle */
+
+  /* ===== Typography (LOCKED — 2 fonts, 1 purpose) ===== */
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body:  "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+
+  /* ===== Type scale (clamp-driven, responsive) ===== */
+  /* display 36–58px | h2 28–48px | h3 17–24px | body 13–17px | small 11–13px */
+
+  /* ===== Letter-spacing (an toàn Vietnamese subset) ===== */
+  --zr-track-tight: -0.005em;  /* max cho heading */
+  --zr-track-flat:  0;         /* eyebrow / body */
+
+  /* ===== Motion (LOCKED — single opacity reveal) ===== */
+  --zr-ease:        cubic-bezier(0.16, 1, 0.3, 1); /* editorial ease-out */
+  --zr-dur:         900ms;     /* reveal default */
+  --zr-dur-reveal:  1200ms;    /* page-level reveal */
+  --zr-dur-fast:    220ms;     /* hover, focus */
+
+  /* ===== NO radius, NO shadow (quantitative stance) ===== */
+  /* border-radius: 0 toàn bộ;
+   * box-shadow: none toàn bộ — KHÔNG dùng --shadow-card / --shadow-sm.
+   * Depth đến từ border-top hairline + solid paper color, không từ shadow.
+   */
+}
+```
+
+### 9.2 Anti-SaaS rules (bắt buộc — KHÔNG vi phạm)
+
+| Tell | KHÔNG dùng | Dùng thay |
+|------|-----------|-----------|
+| `border-radius` | `var(--radius-lg)`, `var(--radius-md)`, `var(--radius-full)` | **`0`** mọi nơi |
+| `box-shadow` | `var(--shadow-card)`, `var(--shadow-sm)`, `var(--shadow-modal)` | **none** — depth bằng border hairline |
+| Gradient hero | `linear-gradient(135deg, brand-primary, brand-primary-active)` | **Solid `--zr-paper-dark`** charcoal + hairline top brand-red 2px |
+| Pill badge | `border-radius: full` + bg fill | **Uppercase label với hairline rule 16px** (vertical bar phía trước) |
+| Hover scale | `transform: scale(1.03)` | **Border-color shift** sang brand-red |
+| Bg-fill quote | `background: brand-primary-lighter` + `border-left: 3px` | **Border-top hairline + italic text** (editorial voice) |
+| Italic headers | `font-style: italic` trên display type | **Roman headings**, italic chỉ dùng cho body emphasis + numerals |
+| Tag-left pattern | Hanging header (eyebrow trái, heading phải) | **Vertical stack** — tag trên, heading dưới |
+| Glassmorphism | `backdrop-filter: blur` + rgba bg | **Solid paper** + hairline borders |
+| Equal-padding rows | `padding: 24px` mọi card | **Per-component clamp()** — mỗi section rhythm riêng |
+| Motion `transform` | `translateY(-2px)` hover | **Background shift** đơn giản, hoặc `gap` shift trên arrow link |
+
+### 9.3 Typography pairing (LOCKED — chỉ 2 font, 1 purpose)
+
+| Role | Font | Weight | Letter-spacing | Use |
+|------|------|--------|----------------|-----|
+| Display heading | `--zr-font-serif` (Source Serif 4) | 400 / 600 / 700 | `0` → `-0.005em` | H1, H2, section title, course name, price |
+| Body | `--zr-font-body` (Be Vietnam Pro) | 400 / 500 / 600 | `0` | Description, meta, label, CTA button |
+| Eyebrow / label | `--zr-font-body` (Be Vietnam Pro) | 600 | `0.18em` uppercase | Section eyebrow, badge label, table header |
+| Numerals (CSS) | `--zr-font-serif` italic | 400 | `-0.02em` | Stat counters, large price figures |
+
+**Vietnamese subset**: Source Serif 4 + Be Vietnam Pro đều có Vietnamese subset
+(file `.woff2` vietnamese đã được `@fontsource` load đầy đủ). Giữ
+`letter-spacing ≤ -0.005em` là an toàn.
+
+### 9.4 Component contracts (LOCKED — kế thừa cho mọi trang public)
+
+#### 9.4.1 Eyebrow (section header label)
+```css
+.eyebrow {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-primary);
+  font-style: normal;  /* italic banned */
+}
+```
+Stack vertical: eyebrow trên, heading dưới cùng cột. KHÔNG `tag-left / heading-right`.
+
+#### 9.4.2 Heading (display)
+```css
+.heading {
+  font-family: var(--zr-font-serif);
+  font-size: clamp(28px, 3.2vw, 44px);  /* per-section override */
+  font-weight: 400;  /* roman, không italic */
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  text-wrap: balance;
+  overflow-wrap: anywhere;  /* gate 51 — long Vietnamese words */
+  min-width: 0;
+}
+```
+
+#### 9.4.3 Card (CourseCard, TeacherCard, PricingCard)
+```css
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 16px);
+  padding: clamp(20px, 2.4vw, 32px);
+  background: var(--zr-paper);
+  border: 1px solid var(--zr-rule);
+  border-top: 3px solid var(--zr-rule);  /* featured override → brand-red */
+  border-radius: 0;
+  transition: border-color 250ms var(--zr-ease);
+}
+.card:hover {
+  border-color: var(--zr-brand);
+  border-top-color: var(--zr-brand);
+}
+```
+**Không shadow, không scale, không rounded.**
+
+#### 9.4.4 Level badge / status label (uppercase, hairline rule)
+```css
+.levelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand);
+  background: transparent;  /* no fill */
+  border: none;
+  border-radius: 0;
+}
+.levelBadge::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand);
+}
+```
+
+#### 9.4.5 CTA button (primary)
+```css
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: clamp(14px, 1.6vw, 18px) clamp(36px, 4vw, 56px);
+  background: var(--zr-brand);
+  color: var(--zr-paper);
+  font-family: var(--zr-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 2px solid var(--zr-brand);
+  border-radius: 0;
+  box-shadow: none;
+  transition: background 220ms var(--zr-ease), border-color 220ms var(--zr-ease),
+    gap 200ms var(--zr-ease);
+}
+.ctaBtn:hover {
+  background: var(--zr-brand-hover);
+  border-color: var(--zr-brand-hover);
+  gap: 14px;
+}
+.ctaBtn::after {
+  content: "→";
+  display: inline-block;
+  transition: transform 200ms var(--zr-ease);
+}
+.ctaBtn:hover::after { transform: translateX(3px); }
+.ctaBtn:focus-visible {
+  outline: 2px solid var(--zr-paper);
+  outline-offset: 3px;
+}
+```
+
+#### 9.4.6 CTA banner (cuối trang — shared dùng 5 trang)
+```css
+.banner {
+  background: var(--zr-paper-dark);  /* solid charcoal, KHÔNG gradient */
+  padding: clamp(80px, 10vw, 128px) clamp(24px, 5vw, 80px);
+  position: relative;
+  overflow: hidden;
+}
+.banner::before {
+  /* Hairline top brand-red 2px — match section rhythm */
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--zr-brand);
+}
+.headline {
+  font-family: var(--zr-font-serif);
+  font-size: clamp(28px, 3.6vw, 48px);
+  font-weight: 400;
+  color: var(--zr-paper);
+  text-wrap: balance;
+}
+```
+
+### 9.5 Section rhythm (mỗi trang chọn 1, KHÔNG lặp giữa các trang)
+
+| Section bg | Token | Dùng cho |
+|------------|-------|----------|
+| Ivory paper | `var(--zr-paper)` | Hero, sections chính, banner-bg |
+| Surface white | `var(--zr-surface)` | Cards, table, FAQ accordion |
+| Paper-dark | `var(--zr-paper-dark)` | CTA banner cuối trang, dark beat |
+| Admin gray | `var(--bg-page)` | Chỉ dùng ở CoursesPage giữa các section (đã lock) |
+
+Padding section dùng `clamp()` responsive, ví dụ `clamp(72px, 9vw, 120px)` —
+KHÔNG dùng uniform `var(--space-12)` 48px.
+
+### 9.6 Motion stance (single opacity reveal — KHÔNG multi-reveal)
+
+- **Single reveal primitive**: `opacity: 0 → 1` transition qua `IntersectionObserver`.
+- **Duration**: `--zr-dur-reveal` 1200ms (page-level) / `--zr-dur` 900ms (component).
+- **Easing**: `--zr-ease` (cubic-bezier(0.16, 1, 0.3, 1)) — KHÔNG dùng `ease`,
+  `ease-in-out`, `ease-in-out` Linear.
+- **Hover**: `transform: opacity` / `background` / `border-color` / `gap` shifts
+  trong 200–250ms. KHÔNG `transform: translateY(-2px)` hoặc `scale(1.03)`.
+- **Reduced-motion**: `transition-duration: 150ms` + `opacity` crossfade.
+- **Focus-visible**: Hiện outline 2px brand primary instant, KHÔNG animate ring.
+
+### 9.7 Shared component library (CSS Modules — đã ship)
+
+| Component | File | Used in |
+|-----------|------|---------|
+| `CourseCard` | `features/public/components/CourseCard.module.css` | CoursesPage, CourseDetailPage |
+| `CourseComparisonTable` | `features/public/components/CourseComparisonTable.module.css` | CoursesPage |
+| `CTABanner` | `features/public/components/CTABanner.module.css` | 5 trang public |
+| `FAQAccordion` | `features/public/components/FAQAccordion.module.css` | HomePage, CourseDetailPage, PricingPage |
+| `Breadcrumb` | `features/public/components/Breadcrumb.module.css` | Tất cả trang public |
+| `CourseRoadmap` | `features/public/components/CourseRoadmap.module.css` | CourseDetailPage |
+
+**Khi tạo trang mới (TeachersListPage redesign, PricingPage redesign, etc.)**:
+1. Đọc phần 9.1–9.6 của file này trước.
+2. Pick macrostructure phù hợp (khác với trang đã ship — check `.hallmark/log.json`).
+3. Import các shared component từ bảng trên — KHÔNG viết lại CSS cho card/banner.
+4. Mọi màu mới phải refer `--zr-*` token; nếu thiếu, thêm token ở 9.1 rồi mới dùng.
+
+### 9.8 Rules for next redesign (TeachersListPage, PricingPage, ContactPage)
+
+1. **Đọc file này trước** (Section 9.1–9.7).
+2. **Pick macrostructure KHÁC** với đã ship: HomePage (8-section editorial grid),
+   CoursesPage (14-Narrative Workflow), CourseDetailPage (14-Narrative Workflow).
+   Options còn lại: Marquee Hero, Stat-Led, Workbench, Letter, Quote-Led, Bento, etc.
+3. **Theme**: Giữ editorial — ĐỪNG đổi sang theme khác. System đã lock.
+4. **Hero / section rhythm**: Tạo khác với Trang chủ (đã dùng 5fr/4fr asymmetric).
+   Ví dụ: PricingPage có thể dùng full-bleed masthead + 3-col asymmetric grid.
+5. **CTA banner**: Dùng `CTABanner` shared — đã redesign editorial sẵn, đừng viết lại.
+6. **Fonts**: Source Serif 4 + Be Vietnam Pro. KHÔNG thêm font mới.
+7. **Palette**: ivory + ink + brand-red + brand-gold. KHÔNG thêm màu.
+8. **Motion**: Single opacity reveal. KHÔNG count-up nếu trang chưa có.
+9. **Slop test**: 58/58 phải pass. Gate 38a (italic headers), 49 (two-line clickable),
+   51 (overflow-wrap), 54 (tag-left pattern) — 4 gate hay fail nhất.
+
+### 9.9 Locked fingerprint (dùng cho audit tự động)
+
+```
+Audience visual fingerprint:
+- Paper: ivory #FAF7F2 (chuẩn), charcoal #1A1A1E (CTA), white #FFFFFF (card)
+- Ink: #1A1A1E heading, #4A4540 body, #6B6058 muted
+- Brand: #C8102E primary, #D4AF37 accent, #A50C24 hover
+- Display: Source Serif 4 (no italic on display)
+- Body: Be Vietnam Pro (tracking 0.18em on uppercase labels)
+- Shape: 0 radius, 0 shadow, hairline borders only
+- Motion: single opacity reveal, 1200ms ease-out, 220ms hover
+- CTA: solid brand-red button, no ghost, no shadow, no scale
+
+Slop-test sentinel (mọi trang phải pass):
+- 0 border-radius values khác 0
+- 0 box-shadow values khác none
+- 0 linear-gradient trên CTA banner
+- 0 italic trên heading display
+- 0 transform: scale / translateY trên hover
+- 1 single reveal primitive (opacity only)
+```
+

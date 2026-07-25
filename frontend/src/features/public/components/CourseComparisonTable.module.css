@@ -1,130 +1,206 @@
-/* ===== Desktop / Tablet: bảng ===== */
+/* Hallmark · component: CourseComparisonTable (shared) · genre: editorial
+ * theme: editorial education · design-system: design.md (locked round 9 homepage)
+ * states: default · hover · focus-visible
+ * contrast: pass (40–41) · Vietnamese glyphs: pass (Source Serif 4 + Be Vietnam Pro)
+ * Đồng bộ Trang chủ (round 9): flat ledger table, no rounded, no shadow.
+ * Border-top brand-red 4px ở wrapper (đã có sẵn từ CoursesPage.module.css .tableFrame),
+ * trên cùng dòng với heading "So sánh nhanh 3 lộ trình".
+ * Desktop: flat table, hairline borders, no row hover bg-fill (chỉ left-border shift).
+ * Mobile: card xếp dọc, flat hairlines, no radius, no shadow.
+ */
 
 .tableWrap {
   overflow-x: auto;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-default);
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-sm);
+  border-radius: 0;
+  border: none;
+  border-top: 1px solid var(--zr-rule, #D9D0C3);
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
+  background: transparent;
+  box-shadow: none;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
   font-size: 14px;
   min-width: 720px;
+  margin: 0;
 }
 
 .table thead {
-  background: var(--bg-surface-alt);
+  background: transparent;
+  border-bottom: 2px solid var(--zr-ink, #1A1A1E);
 }
 
 .table th {
   text-align: left;
-  font-size: 12px;
-  font-weight: 700;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--text-secondary);
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--border-default);
+  letter-spacing: 0.18em;
+  color: var(--zr-ink-muted, #6B6058);
+  padding: clamp(14px, 1.6vw, 20px) clamp(12px, 1.4vw, 18px);
+  border-bottom: 2px solid var(--zr-ink, #1A1A1E);
+  vertical-align: bottom;
 }
 
 .table td {
-  padding: var(--space-5);
-  border-bottom: 1px solid var(--border-default);
-  color: var(--text-primary);
+  padding: clamp(16px, 1.8vw, 24px) clamp(12px, 1.4vw, 18px);
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
+  color: var(--zr-ink, #1A1A1E);
   vertical-align: top;
+  font-weight: 400;
+  line-height: 1.65;
+  background: transparent;
+  transition: border-left-color 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-left-width 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+  border-left: 3px solid transparent;
 }
 
 .table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.table tbody tr:hover {
-  background: var(--brand-primary-lighter);
+/* Row hover: không bg-fill, chỉ brand-red left border shift */
+.table tbody tr:hover td {
+  background: transparent;
 }
 
+.table tbody tr:hover td:first-child {
+  border-left-color: var(--zr-brand, #C8102E);
+}
+
+/* ----- Level badge (label): uppercase với hairline rule, không pill ----- */
 .levelBadge {
   display: inline-block;
-  background: var(--brand-accent-light);
-  color: var(--brand-accent-hover);
-  font-size: 11px;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 10px;
   font-weight: 700;
-  padding: 2px 10px;
-  border-radius: var(--radius-full);
-  margin-bottom: 4px;
+  font-style: normal;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #C8102E);
+  background: transparent;
+  padding: 0;
+  margin-bottom: 8px;
+  border: none;
+  border-radius: 0;
+  position: relative;
+  padding-left: 18px;
 }
 
+.levelBadge::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 12px;
+  height: 1px;
+  background: var(--zr-brand, #C8102E);
+  transform: translateY(-50%);
+}
+
+/* Course name in cell — Source Serif 4 đậm */
+.table td strong {
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(15px, 1.2vw, 17px);
+  letter-spacing: 0;
+  color: var(--zr-ink, #1A1A1E);
+}
+
+/* ----- Price: Source Serif 4 brand-red, như HomePage.coursePrice ----- */
 .price {
-  color: var(--brand-primary);
-  font-size: 15px;
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(16px, 1.3vw, 19px);
+  letter-spacing: -0.01em;
+  color: var(--zr-brand, #C8102E);
+  font-variant-numeric: tabular-nums;
 }
 
 .audienceCell {
-  line-height: 1.6;
-  color: var(--text-secondary);
+  line-height: 1.65;
+  color: var(--zr-ink-soft, #4A4540);
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 14px;
 }
 
-/* ===== Mobile: cards ===== */
+/* ===== Mobile: cards xếp dọc, flat hairlines ===== */
 
 .cards {
   display: none;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: clamp(16px, 2vw, 24px);
 }
 
 .card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-sm);
+  background: var(--zr-paper, #FAF7F2);
+  border: none;
+  border-top: 3px solid var(--zr-brand, #C8102E);
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
+  border-radius: 0;
+  padding: clamp(16px, 2vw, 24px);
+  box-shadow: none;
 }
 
 .cardHeader {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--border-default);
+  gap: 6px;
+  margin-bottom: clamp(12px, 1.6vw, 18px);
+  padding-bottom: clamp(12px, 1.4vw, 16px);
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
 }
 
 .cardName {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(16px, 1.4vw, 19px);
+  letter-spacing: 0;
+  line-height: 1.25;
+  color: var(--zr-ink, #1A1A1E);
+  text-wrap: balance;
 }
 
 .cardList {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: clamp(8px, 1vw, 12px);
 }
 
 .cardRow {
   display: grid;
   grid-template-columns: 110px 1fr;
-  gap: var(--space-3);
+  gap: clamp(10px, 1.4vw, 16px);
   align-items: baseline;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
   font-size: 14px;
 }
 
 .cardRow dt {
-  font-size: 12px;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 11px;
   font-weight: 600;
+  font-style: normal;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-secondary);
+  letter-spacing: 0.14em;
+  color: var(--zr-ink-muted, #6B6058);
   margin: 0;
 }
 
 .cardRow dd {
-  color: var(--text-primary);
+  color: var(--zr-ink, #1A1A1E);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.55;
+  font-weight: 400;
 }
 
 @media (max-width: 768px) {
@@ -134,5 +210,11 @@
 
   .cards {
     display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table td {
+    transition: none;
   }
 }

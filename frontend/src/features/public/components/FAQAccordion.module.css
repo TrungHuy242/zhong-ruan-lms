@@ -1,90 +1,251 @@
+/* Hallmark · component: FAQAccordion (shared) · genre: editorial · design-system: design.md (locked §9)
+ * states: default · hover · focus-visible · open · answer-revealing · reduced-motion
+ * contrast: pass (40-41) · Vietnamese glyphs: pass (Source Serif 4 + Be Vietnam Pro)
+ *
+ * Đồng bộ HomePage + PricingPage + CourseDetailPage (3 contexts):
+ *   - border-radius:0 (no rounded card)
+ *   - box-shadow:none (no glow)
+ *   - no fill bg on trigger hover (chỉ brand-red left-border shift)
+ *   - Source Serif 4 (700) cho .question (hierarchy nặng hơn .answer)
+ *   - Be Vietnam Pro (400) cho .answerText
+ *   - hairline rule marker thay chevron icon → 16px brand-red rule ngang
+ *   - open state: border-top brand-red 3px, ::after thành dấu "—" ngang
+ *   - answer dùng grid-template-rows: 0fr → 1fr transition (height auto + smooth)
+ *
+ * Logic React giữ nguyên 100% (FAQAccordion.tsx không đổi).
+ */
+
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur-fast: 220ms;
+  --zr-dur-reveal: 320ms;
+}
+
+/* ===== List — flat stack, no max-width margin (parent container đã set) ===== */
+
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  max-width: 760px;
-  margin: 0 auto;
+  gap: 0; /* mỗi item tự có border-top, không cần gap */
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
 }
+
+/* ===== Item — flat hairline stack ===== */
 
 .item {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--zr-rule, #d9d0c3);
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-top-color var(--zr-dur-fast) var(--zr-ease);
+  min-width: 0;
 }
 
-.item:hover,
-.itemOpen {
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 1px var(--brand-primary-light);
+.item:last-child {
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3);
 }
+
+/* Open state — brand-red top border signals "currently reading" */
+.itemOpen {
+  border-top-color: var(--zr-brand, #c8102e);
+}
+
+/* ===== Trigger button — full width, flat ===== */
 
 .trigger {
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-6);
+  gap: clamp(12px, 1.6vw, 24px);
+  padding: clamp(20px, 2.4vw, 28px) 0;
   background: transparent;
   border: none;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s ease;
+  color: var(--zr-ink, #1a1a1e);
+  font: inherit;
+  box-shadow: none;
+  border-radius: 0;
+  transition: color var(--zr-dur-fast) var(--zr-ease),
+    padding-left var(--zr-dur-fast) var(--zr-ease);
+  position: relative;
+  min-width: 0;
+}
+
+/* Eyebrow number — small caps, brand-red, fixed-width 32px column */
+.triggerNumber {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-ink-muted, #6b6058);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 28px;
+  transition: color var(--zr-dur-fast) var(--zr-ease);
+}
+
+.trigger:hover .triggerNumber,
+.itemOpen .triggerNumber {
+  color: var(--zr-brand, #c8102e);
 }
 
 .trigger:hover {
-  background: var(--brand-primary-lighter);
+  padding-left: 8px;
 }
 
+.trigger:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 4px;
+}
+
+/* Question — Source Serif 4 700, gate 38a roman */
 .question {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.4;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 700;
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.35;
+  letter-spacing: 0;
+  color: var(--zr-ink, #1a1a1e);
+  margin: 0;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-.chevron {
+/* Indicator — thay lucide chevron bằng hairline rule ngang (collapsed/expanded)
+ * Đây là editorial ledger pattern: open item hiện "−" (minus rule), closed hiện "+" (plus rule). */
+.indicator {
+  position: relative;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
-  color: var(--brand-primary);
-  transition: transform 0.2s ease;
+  display: inline-block;
 }
 
-.chevronOpen {
-  transform: rotate(180deg);
+.indicator::before,
+.indicator::after {
+  content: "";
+  position: absolute;
+  background: var(--zr-brand, #c8102e);
+  transition: transform var(--zr-dur-fast) var(--zr-ease),
+    opacity var(--zr-dur-fast) var(--zr-ease);
 }
+
+.indicator::before {
+  /* Horizontal rule — luôn hiển thị */
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  transform: translateY(-50%);
+}
+
+.indicator::after {
+  /* Vertical rule — collapse khi open (rotated question = "−" thay vì "+") */
+  top: 0;
+  left: 50%;
+  width: 1.5px;
+  height: 100%;
+  transform: translateX(-50%) rotate(0deg);
+}
+
+.itemOpen .indicator::after {
+  transform: translateX(-50%) rotate(90deg);
+  opacity: 0;
+}
+
+/* Legacy lucide chevron — hide (logic vẫn render nhưng visually replaced) */
+.chevron {
+  display: none;
+}
+
+/* ===== Answer region — grid-rows 0fr → 1fr transition cho smooth height auto ===== */
 
 .answer {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--zr-dur-reveal) var(--zr-ease);
+  min-width: 0;
 }
 
 .answerOpen {
-  max-height: 400px;
-  padding: 0 var(--space-6) var(--space-5);
+  grid-template-rows: 1fr;
+}
+
+.answerInner {
+  overflow: hidden;
+  min-width: 0;
 }
 
 .answerText {
-  font-size: 15px;
-  color: var(--text-secondary);
-  line-height: 1.7;
   margin: 0;
-  padding-top: var(--space-1);
-  border-top: 1px solid var(--border-default);
+  padding: 0 0 clamp(20px, 2.4vw, 28px) 0;
+  padding-left: calc(28px + clamp(12px, 1.6vw, 24px));
+  font-family: var(--zr-font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.75;
+  letter-spacing: 0;
+  color: var(--zr-ink-soft, #4a4540);
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  border-top: 1px solid transparent;
+  transition: border-top-color var(--zr-dur-fast) var(--zr-ease);
 }
+
+.answerOpen .answerText {
+  border-top-color: var(--zr-rule, #d9d0c3);
+  padding-top: clamp(14px, 1.6vw, 20px);
+  margin-top: -1px;
+}
+
+/* ===== Responsive ===== */
 
 @media (max-width: 640px) {
   .trigger {
-    padding: var(--space-4);
+    padding: 18px 0;
+    gap: 10px;
+    grid-template-columns: 24px 1fr 18px;
   }
-
+  .triggerNumber {
+    font-size: 10px;
+    min-width: 24px;
+  }
   .question {
-    font-size: 15px;
+    font-size: 16px;
   }
+  .answerText {
+    font-size: 14px;
+    padding-left: calc(24px + 10px);
+  }
+}
 
-  .answerOpen {
-    padding: 0 var(--space-4) var(--space-4);
+/* ===== Reduced motion ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .trigger,
+  .triggerNumber,
+  .indicator,
+  .indicator::before,
+  .indicator::after,
+  .answer,
+  .answerText {
+    transition: none;
   }
 }

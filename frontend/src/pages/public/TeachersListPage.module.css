@@ -1,344 +1,620 @@
-/* TeachersListPage — trang danh sách giảng viên công khai. */
+/* Hallmark · macrostructure: 20 - Ecosystem Index · tone: editorial · design-system: design.md (locked §9)
+ * Page: TeachersListPage (/giang-vien) — multiple discovery surfaces: masthead → ledger → filter → grid → pagination
+ * Heading: Source Serif 4 (600/700). Body: Be Vietnam Pro. Letter-spacing 0 → -0.005em.
+ * Palette: --zr-paper #FAF7F2 + --zr-paper-dark #1A1A1E + --zr-ink #1A1A1E + --zr-rule #D9D0C3 + --zr-brand #C8102E.
+ * Shape: border-radius:0, box-shadow:none, hairline borders only.
+ * Motion: single opacity reveal (--zr-dur-reveal 1200ms), hover border-color shift, no scale/translateY.
+ * Anti-SaaS: NO rounded, NO shadow, NO gradient, NO pill badge, NO scale-on-hover, NO italic trên display.
+ * Macrostructure differs from: HomePage (8-section editorial grid), CoursesPage (14-Narrative Workflow).
+ */
 
-/* ===== Hero ===== */
-.hero {
-  background: var(--hero-gradient, linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-active) 100%));
-  padding: var(--space-12) 0;
+/* ---------- Tokens (locked, đồng bộ HomePage + CoursesPage) ---------- */
+
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur-reveal: 1200ms;
+  --zr-dur-fast: 220ms;
+
+  --zr-track-tight: -0.005em;
+  --zr-track-flat: 0;
+}
+
+/* ============================================================
+ * 1. MASTHEAD — single eyebrow + serif h1 + italic intro
+ * ============================================================ */
+
+.masthead {
+  background: var(--zr-paper, #faf7f2);
+  padding: clamp(72px, 9vw, 128px) 0 clamp(56px, 7vw, 96px);
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3);
+}
+
+.mastheadInner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 48px);
   text-align: center;
-  color: #fff;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+  margin: 0 0 var(--space-5, 20px);
+  padding: 0;
+}
+
+.eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
+  flex-shrink: 0;
+}
+
+.heading {
+  font-family: var(--zr-font-serif);
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1.15;
+  letter-spacing: var(--zr-track-flat);
+  color: var(--zr-ink, #1a1a1e);
+  margin: 0 0 var(--space-5, 20px);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+/* Accent emphasis inside heading — weight + brand-red underline,
+   NOT italic (gate 38a). */
+.headingAccent {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--zr-brand, #c8102e);
+  border-bottom: 2px solid var(--zr-brand, #c8102e);
+  padding-bottom: 2px;
+}
+
+.subheading {
+  font-family: var(--zr-font-body);
+  font-size: clamp(15px, 1.4vw, 17px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.75;
+  letter-spacing: var(--zr-track-flat);
+  color: var(--zr-ink-soft, #4a4540);
+  max-width: 640px;
+  margin: 0 auto;
+  text-wrap: pretty;
+}
+
+/* ============================================================
+ * 2. SECTION RHYTHM — section wrappers
+ * Ecosystem Index giữa các "discovery surfaces":
+ *   - Ledger section (count + filter)
+ *   - Grid section (cards)
+ *   - Pagination section (total + pager)
+ * ============================================================ */
+
+.section {
+  padding: clamp(64px, 8vw, 112px) 0;
+  position: relative;
+}
+
+.sectionIvory {
+  background: var(--zr-paper, #faf7f2);
+}
+
+.sectionWhite {
+  background: #ffffff;
 }
 
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0 clamp(16px, 4vw, 48px);
 }
 
-.badge {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  font-size: 13px;
+/* ============================================================
+ * 3. LEDGER — count + filter bar (single row hairline)
+ * Ecosystem Index: ledger là khung phân khu "bạn đang ở đâu trong dataset"
+ * ============================================================ */
+
+.ledger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: clamp(20px, 3vw, 40px);
+  padding-bottom: var(--space-6, 24px);
+  border-bottom: 1px solid var(--zr-rule, #d9d0c3);
+  margin-bottom: clamp(40px, 5vw, 72px);
+}
+
+.ledgerTitle {
+  font-family: var(--zr-font-serif);
+  font-size: clamp(22px, 2.6vw, 32px);
   font-weight: 600;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  margin-bottom: var(--space-4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.heading {
-  font-family: "Be Vietnam Pro", "Inter", sans-serif;
-  font-size: clamp(28px, 4vw, 44px);
-  font-weight: 800;
+  font-style: normal;
   line-height: 1.2;
-  margin: 0 auto var(--space-5);
-  max-width: 800px;
-  text-wrap: balance;
-}
-
-.subheading {
-  font-size: 17px;
-  line-height: 1.7;
-  max-width: 680px;
-  margin: 0 auto;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* ===== Section ===== */
-.section {
-  padding: 80px 0;
-}
-
-.sectionAlt {
-  background: var(--bg-page);
-}
-
-.sectionHeader {
-  text-align: center;
-  margin-bottom: var(--space-8);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.sectionTitle {
-  font-family: "Be Vietnam Pro", "Inter", sans-serif;
-  font-size: clamp(24px, 2.5vw, 32px);
-  font-weight: 700;
-  color: var(--text-primary);
+  letter-spacing: var(--zr-track-flat);
+  color: var(--zr-ink, #1a1a1e);
   margin: 0;
-  line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.ledgerTitleAccent {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--zr-brand, #c8102e);
+  margin-left: 4px;
+}
+
+.ledgerSub {
+  font-family: var(--zr-font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--zr-ink-muted, #6b6058);
+  margin: 8px 0 0;
+  max-width: 560px;
 }
 
 .count {
-  color: var(--text-secondary);
-  font-weight: 500;
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--zr-ink-muted, #6b6058);
+  font-size: clamp(20px, 2vw, 28px);
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--zr-track-tight);
 }
 
-.sectionSubtitle {
-  font-size: 15px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  max-width: 560px;
-  margin: 0 auto;
-}
+/* ============================================================
+ * 4. FILTER BAR — hairline form, no shadow, no rounded
+ * 2 input chains + reset button trên cùng 1 row
+ * ============================================================ */
 
-/* ===== Filter bar ===== */
 .filterBar {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  background: #ffffff;
+  margin-bottom: clamp(40px, 5vw, 64px);
   flex-wrap: wrap;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-8);
-  box-shadow: var(--shadow-sm);
 }
 
-.searchWrap {
-  position: relative;
+.filterField {
   display: flex;
   align-items: center;
+  gap: 0;
   flex: 1 1 280px;
   min-width: 220px;
+  padding: 0 var(--space-5, 20px);
+  border-right: 1px solid var(--zr-rule, #d9d0c3);
+  position: relative;
 }
 
-.searchIcon {
-  position: absolute;
-  left: 12px;
-  color: var(--text-secondary);
-  pointer-events: none;
+.filterField:last-of-type {
+  border-right: none;
 }
 
-.searchInput {
+.filterFieldIcon {
+  color: var(--zr-ink-muted, #6b6058);
+  flex-shrink: 0;
+}
+
+.filterInput,
+.filterSelect {
   width: 100%;
-  height: 44px;
-  padding: 0 36px 0 36px;
-  border: 1px solid var(--border-default);
-  background-color: var(--bg-surface);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  color: var(--text-primary);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  height: 56px;
+  padding: 0 0 0 12px;
+  border: none;
+  background: transparent;
+  font-family: var(--zr-font-body);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--zr-ink, #1a1a1e);
+  letter-spacing: var(--zr-track-flat);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  outline: none;
 }
 
-.searchInput:focus {
-  outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: var(--shadow-focus-ring);
+.filterInput::placeholder {
+  color: var(--zr-ink-muted, #6b6058);
+  font-style: italic;
+}
+
+.filterSelect {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231a1a1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  background-size: 14px 14px;
+  padding-right: 24px;
+}
+
+.filterSelect:disabled {
+  color: var(--zr-ink-muted, #6b6058);
+  cursor: not-allowed;
+  font-style: italic;
+}
+
+.filterInput:focus-visible,
+.filterSelect:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: -2px;
 }
 
 .clearBtn {
-  position: absolute;
-  right: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   background: transparent;
-  color: var(--text-secondary);
-  border: 0;
-  border-radius: var(--radius-full);
+  color: var(--zr-ink-muted, #6b6058);
+  border: 1px solid transparent;
+  border-radius: 0;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+  transition: color 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .clearBtn:hover {
-  background-color: var(--bg-surface-alt);
-  color: var(--text-primary);
+  color: var(--zr-brand, #c8102e);
+  border-color: var(--zr-brand, #c8102e);
 }
 
-.specialtyWrap {
-  position: relative;
-  display: flex;
+.filterReset {
+  display: inline-flex;
   align-items: center;
-  min-width: 220px;
-}
-
-.filterIcon {
-  position: absolute;
-  left: 12px;
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.specialtySelect {
-  width: 100%;
-  height: 44px;
-  padding: 0 36px 0 36px;
-  border: 1px solid var(--border-default);
-  background-color: var(--bg-surface);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  color: var(--text-primary);
+  gap: 8px;
+  padding: 0 var(--space-6, 24px);
+  background: transparent;
+  color: var(--zr-brand, #c8102e);
+  border: none;
+  border-left: 1px solid var(--zr-rule, #d9d0c3);
+  border-radius: 0;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+  transition: background 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
-.specialtySelect:focus {
-  outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: var(--shadow-focus-ring);
+.filterReset:hover {
+  background: var(--zr-paper, #faf7f2);
 }
 
-.specialtySelect:disabled {
-  background-color: var(--bg-surface-alt);
-  color: var(--text-disabled);
-  cursor: not-allowed;
+.filterReset:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: -2px;
 }
 
-/* ===== Grid ===== */
+/* ============================================================
+ * 5. GRID — Ecosystem Index: cards 3-col desktop, 2-col tablet, 1-col mobile
+ * Cards dùng PublicTeacherCard — đã redesign editorial
+ * ============================================================ */
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 28px);
 }
 
-/* ===== Skeleton ===== */
+/* ============================================================
+ * 6. SKELETON — hairline ivory, no shimmer
+ * ============================================================ */
+
 .skeletonCard {
   display: flex;
   flex-direction: column;
-  background: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-default);
-  overflow: hidden;
-  height: 100%;
+  gap: var(--space-4, 16px);
+  padding: clamp(20px, 2.4vw, 32px);
+  background: var(--zr-paper, #faf7f2);
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  border-top: 3px solid var(--zr-rule, #d9d0c3);
+  border-radius: 0;
+}
+
+.skeletonAvatar {
+  aspect-ratio: 1 / 1;
+  background: rgba(217, 208, 195, 0.35);
+  border-radius: 0;
 }
 
 .skeletonBody {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-5);
+  gap: 10px;
 }
 
-/* ===== Error state ===== */
-.errorState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-8) var(--space-6);
+.skeletonLine {
+  height: 12px;
+  background: rgba(217, 208, 195, 0.5);
+  border-radius: 0;
 }
 
-/* ===== Empty state ===== */
+/* ============================================================
+ * 7. EMPTY STATE — editorial card (không icon lớn, không CTA box)
+ * Vertical stack: eyebrow → heading → italic note → link
+ * ============================================================ */
+
 .emptyState {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-12) var(--space-6);
-  background-color: var(--bg-surface);
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-lg);
-  color: var(--text-secondary);
-  text-align: center;
+  align-items: flex-start;
+  gap: var(--space-5, 20px);
+  padding: clamp(48px, 6vw, 80px) clamp(32px, 5vw, 64px);
+  background: var(--zr-paper, #faf7f2);
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  border-top: 3px solid var(--zr-brand, #c8102e);
+  border-radius: 0;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
-.emptyState svg {
-  color: var(--text-placeholder);
+.emptyEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
+}
+
+.emptyEyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand, #c8102e);
 }
 
 .emptyTitle {
-  margin: 0;
-  font-size: 18px;
+  font-family: var(--zr-font-serif);
+  font-size: clamp(24px, 3vw, 36px);
   font-weight: 600;
-  color: var(--text-primary);
+  font-style: normal;
+  line-height: 1.2;
+  color: var(--zr-ink, #1a1a1e);
+  margin: 0;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .emptyHint {
+  font-family: var(--zr-font-body);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.7;
+  color: var(--zr-ink-soft, #4a4540);
   margin: 0;
-  font-size: 14px;
-  color: var(--text-secondary);
-  max-width: 420px;
-  line-height: 1.5;
+  max-width: 480px;
 }
 
-.emptyCta {
+.emptyActions {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2vw, 24px);
+  flex-wrap: wrap;
+  margin-top: var(--space-3, 12px);
+}
+
+/* Editorial link voice — uppercase + tracking + arrow shift */
+.emptyLink {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-2) var(--space-5);
-  background: var(--brand-primary);
-  color: var(--text-on-primary);
-  border-radius: var(--radius-md);
-  font-size: 14px;
+  gap: 8px;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #c8102e);
   text-decoration: none;
-  transition: background-color 0.15s ease;
-  margin-top: var(--space-2);
+  background: transparent;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  transition: gap 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
-.emptyCta:hover {
-  background: var(--brand-primary-hover);
+.emptyLink::after {
+  content: "→";
+  display: inline-block;
+  transition: transform 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.emptyLink:hover {
+  gap: 12px;
+}
+
+.emptyLink:hover::after {
+  transform: translateX(3px);
+}
+
+.emptyLink:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+ * 8. ERROR STATE — same editorial card, accent ink-soft
+ * ============================================================ */
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5, 20px);
+  padding: clamp(32px, 4vw, 48px) clamp(24px, 4vw, 40px);
+  background: var(--zr-paper, #faf7f2);
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  border-left: 4px solid var(--zr-brand, #c8102e);
+  border-radius: 0;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.errorState p {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--zr-ink-soft, #4a4540);
 }
 
 .alertSpacing {
-  margin-bottom: var(--space-6);
+  margin: 0;
 }
 
-/* ===== Footer (total + pagination) ===== */
+/* ============================================================
+ * 9. FOOTER ROW — total + pagination, hairline top
+ * ============================================================ */
+
 .footerRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-8);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--border-default);
+  gap: var(--space-4, 16px);
+  margin-top: clamp(48px, 6vw, 72px);
+  padding-top: var(--space-6, 24px);
+  border-top: 1px solid var(--zr-rule, #d9d0c3);
 }
 
 .totalLabel {
+  font-family: var(--zr-font-body);
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--zr-ink-muted, #6b6058);
+  letter-spacing: var(--zr-track-flat);
 }
 
-/* ===== Responsive ===== */
+.totalLabel strong {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--zr-ink, #1a1a1e);
+  font-variant-numeric: tabular-nums;
+  margin: 0 2px;
+}
+
+/* ============================================================
+ * 10. REVEAL — single opacity fade, no scale, no translate
+ * ============================================================ */
+
+.reveal {
+  opacity: 0;
+  transition: opacity var(--zr-dur-reveal) var(--zr-ease);
+}
+
+.reveal.isVisible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: opacity 150ms linear;
+  }
+}
+
+/* ============================================================
+ * 11. RESPONSIVE — 320 / 375 / 414 / 768 / 1024 / 1280
+ * ============================================================ */
+
 @media (max-width: 1024px) {
   .grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ledger {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
   }
 }
 
 @media (max-width: 768px) {
-  .hero {
-    padding: var(--space-10) 0;
-  }
-
-  .section {
-    padding: 48px 0;
-  }
-
-  .container {
-    padding: 0 var(--space-4);
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-4);
-  }
-}
-
-@media (max-width: 540px) {
   .grid {
     grid-template-columns: 1fr;
   }
-
   .filterBar {
     flex-direction: column;
-    align-items: stretch;
   }
-
-  .searchWrap,
-  .specialtyWrap {
+  .filterField {
+    border-right: none;
+    border-bottom: 1px solid var(--zr-rule, #d9d0c3);
+  }
+  .filterField:last-of-type {
+    border-bottom: none;
+  }
+  .filterReset {
+    border-left: none;
+    border-top: 1px solid var(--zr-rule, #d9d0c3);
+    height: 48px;
+    justify-content: center;
+  }
+  .filterInput,
+  .filterSelect {
+    height: 48px;
+  }
+  .footerRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .emptyActions {
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
   }
+}
+
+@media (max-width: 414px) {
+  .masthead {
+    padding: 56px 0 40px;
+  }
+  .heading {
+    font-size: 30px;
+  }
+  .section {
+    padding: 48px 0;
+  }
+  .emptyState {
+    padding: 32px 20px;
+  }
+}
+
+/* ============================================================
+ * 12. FOCUS — keyboard navigation, ≥3:1 contrast
+ * ============================================================ */
+
+*:focus-visible {
+  outline: 2px solid var(--zr-brand, #c8102e);
+  outline-offset: 3px;
 }

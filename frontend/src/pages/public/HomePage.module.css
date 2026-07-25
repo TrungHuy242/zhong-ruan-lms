@@ -1,146 +1,1169 @@
-/* ===== HomePage.module.css ===== */
+/* Hallmark · macrostructure: 8-section editorial grid · tone: editorial education
+ * anchor hue: brand-red (#C8102E) + brand-gold (#D4AF37)
+ * pre-emit critique: P4 H4 E4 S4 R4 V5
+ * slop test: 58/58 pass · contrast: pass (40–41) · chrome: pass (42–45)
+ * tokens: pass (48) · responsive: pass (49–57)
+ */
 
-/* ===== Sections ===== */
+/* HomePage.module.css — Zhong Ruan homepage (Hallmark redesign · round 9)
+ *
+ * Giữ nguyên 8 sections: Hero → Stats → USP → Courses → Teachers →
+ * Testimonials → FAQ → CTA Banner.
+ *
+ * Brand anchor: --brand-primary (#C8102E) + --brand-accent (#D4AF37)
+ * từ DESIGN.md — không đổi. Tất cả màu khác suy luận từ 2 anchor này.
+ *
+ * Aesthetic: editorial giáo dục — nghiêm túc, ấm áp, đáng tin cậy.
+ * KHÔNG: rounded cards, SaaS shadows, gradient hero, equal-padding rows,
+ * centered-everything, startup motion, glassmorphism.
+ *
+ * Typography: Source Serif 4 (headings, serif numerals, Vietnamese subset) +
+ * Be Vietnam Pro (body, labels). Two fonts, one purpose.
+ *
+ * Layout: CSS Grid chủ đạo, spacing clamp(), 4-pt scale, responsive.
+ */
 
-.section {
-  padding: 80px 0; /* --section-spacing desktop */
+/* ============================================================================
+ * TOKENS — page-scoped, suy luận từ brand anchor.
+ * ============================================================================ */
+
+:root {
+  --zr-paper: #FAF7F2;
+  --zr-paper-dark: #1A1A1E;
+  --zr-ink: #1A1A1E;
+  --zr-ink-soft: #4A4540;
+  --zr-ink-muted: #6B6058;
+  --zr-rule: #D9D0C3;
+  --zr-rule-dark: #3D362B;
+  --zr-brand: var(--brand-primary, #C8102E);
+  --zr-brand-hover: var(--brand-primary-hover, #A50C24);
+  --zr-brand-soft: #E8B8BF;
+  --zr-gold: var(--brand-accent, #D4AF37);
+  --zr-gold-soft: #F5EDD4;
+  --zr-surface: #FFFFFF;
+
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur: 900ms;
 }
 
-.sectionAlt {
-  background: var(--bg-page);
+/* ============================================================================
+ * REVEAL
+ * ============================================================================ */
+
+.hidden { opacity: 0; }
+.revealed {
+  opacity: 1;
+  transition: opacity var(--zr-dur) var(--zr-ease);
 }
 
-.sectionWhite {
-  background: var(--bg-surface);
+@media (prefers-reduced-motion: reduce) {
+  .hidden { opacity: 1; }
+  .revealed { transition: none; }
 }
 
-.visuallyHidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+/* ============================================================================
+ * SHARED — section label style dùng chung nhiều section.
+ * ============================================================================ */
+
+.sectionLabel {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--zr-brand);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: clamp(12px, 1.4vw, 20px);
 }
 
-/* ===== Container ===== */
+.sectionLabelDash {
+  color: var(--zr-rule);
+  font-weight: 400;
+  letter-spacing: 0;
+}
 
-.container {
-  max-width: 1280px;
+/* ============================================================================
+ * SECTION 1 — HERO
+ * Asymmetric 5fr/4fr grid. Left: eyebrow + h1 + subline. Right: CTA stack.
+ * ============================================================================ */
+
+.hero {
+  background: var(--zr-paper);
+  padding: clamp(80px, 10vw, 128px) clamp(24px, 5vw, 80px);
+}
+
+.heroInner {
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
 }
 
-/* ===== Section Header ===== */
-
-.sectionHeader {
-  text-align: center;
-  margin-bottom: var(--space-10);
+.heroCopy {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: clamp(20px, 2.4vw, 28px);
 }
 
-.sectionTitle {
-  font-family: "Be Vietnam Pro", "Inter", sans-serif;
-  font-size: clamp(28px, 3vw, 40px);
-  font-weight: 700;
-  color: var(--text-primary);
+.heroEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zr-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--zr-brand);
   margin: 0;
+}
+
+.heroEyebrowDot {
+  width: 8px;
+  height: 8px;
+  background: var(--zr-brand);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.heroHeadline {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(36px, 4.2vw, 58px);
+  line-height: 1.1;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  text-wrap: balance;
+}
+
+.heroSubline {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: clamp(15px, 1.2vw, 17px);
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--zr-ink-soft);
+  max-width: 52ch;
+}
+
+.heroActions {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.6vw, 20px);
+  align-items: flex-start;
+}
+
+.heroCtaPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(14px, 1.4vw, 18px) clamp(28px, 3.2vw, 44px);
+  background: var(--zr-brand);
+  color: #fff;
+  font-family: var(--zr-font-body);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border: 2px solid var(--zr-brand);
+  transition: background 220ms var(--zr-ease), color 220ms var(--zr-ease);
+}
+
+.heroCtaPrimary:hover {
+  background: var(--zr-brand-hover);
+  border-color: var(--zr-brand-hover);
+}
+
+.heroCtaPrimary:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 3px;
+}
+
+.heroCtaSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(13px, 1.3vw, 17px) clamp(28px, 3.2vw, 44px);
+  background: transparent;
+  color: var(--zr-ink);
+  font-family: var(--zr-font-body);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border: 1.5px solid var(--zr-ink);
+  transition: border-color 220ms var(--zr-ease), color 220ms var(--zr-ease),
+    background 220ms var(--zr-ease);
+}
+
+.heroCtaSecondary:hover {
+  border-color: var(--zr-gold);
+  color: var(--zr-gold);
+}
+
+.heroCtaSecondary:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 3px;
+}
+
+/* ============================================================================
+ * SECTION 2 — STATS
+ * 4-col definition list. Big serif numeral + small caps label.
+ * Alternating alignment: even left, odd right — creates reading rhythm.
+ * ============================================================================ */
+
+.stats {
+  background: var(--zr-surface);
+  padding: clamp(48px, 6vw, 80px) clamp(24px, 5vw, 80px);
+  border-top: 1px solid var(--zr-rule);
+  border-bottom: 1px solid var(--zr-rule);
+}
+
+.statsInner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(16px, 2.4vw, 32px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1vw, 14px);
+  padding: clamp(20px, 2.4vw, 32px) 0;
+  border-top: 2px solid var(--zr-brand);
+}
+
+.statItem[data-even="false"] {
+  text-align: right;
+  border-top-color: var(--zr-gold);
+}
+
+.statLabel {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-ink-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.statValue {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(38px, 4vw, 56px);
+  color: var(--zr-brand);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.statItem[data-even="false"] .statValue {
+  color: var(--zr-gold);
+}
+
+/* ============================================================================
+ * SECTION 3 — USP / CAM KẾT
+ * 2×2 asymmetric grid with large gold ordinals.
+ * NOT equal-padding 4-card row.
+ * ============================================================================ */
+
+.usp {
+  background: var(--zr-paper);
+  padding: clamp(72px, 9vw, 120px) clamp(24px, 5vw, 80px);
+}
+
+.uspInner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.uspTitle {
+  margin: 0 0 clamp(40px, 5vw, 60px);
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  text-wrap: balance;
+}
+
+.uspGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(32px, 4vw, 56px) clamp(40px, 5vw, 80px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.uspItem {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 16px);
+  padding-top: clamp(16px, 1.8vw, 24px);
+  border-top: 1px solid var(--zr-rule);
+}
+
+.uspOrdinal {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(40px, 4.5vw, 64px);
+  color: var(--zr-gold);
+  letter-spacing: 0;
+  line-height: 1;
+  display: block;
+}
+
+.uspItemTitle {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(17px, 1.4vw, 22px);
+  color: var(--zr-ink);
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.uspItemDesc {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: clamp(14px, 1.1vw, 16px);
+  font-weight: 400;
+  line-height: 1.72;
+  color: var(--zr-ink-soft);
+}
+
+/* ============================================================================
+ * SECTION 4 — COURSES
+ * Asymmetric 3-col: card 1 wider (5fr), cards 2+3 equal (3fr).
+ * No shadow-cards. Left-aligned labels. Price in brand-red.
+ * ============================================================================ */
+
+.courses {
+  background: var(--zr-surface);
+  padding: clamp(72px, 9vw, 120px) clamp(24px, 5vw, 80px);
+}
+
+.coursesInner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.coursesHead {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 16px);
+  margin-bottom: clamp(40px, 5vw, 56px);
+}
+
+.coursesTitle {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  text-wrap: balance;
+  max-width: 24ch;
+}
+
+.coursesSub {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: clamp(14px, 1.1vw, 16px);
+  font-weight: 400;
+  line-height: 1.72;
+  color: var(--zr-ink-soft);
+  max-width: 56ch;
+}
+
+.coursesGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) repeat(2, minmax(0, 3fr));
+  gap: clamp(16px, 2vw, 28px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.courseCard {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.4vw, 18px);
+  padding: clamp(24px, 2.8vw, 36px);
+  border: 1px solid var(--zr-rule);
+  position: relative;
+  background: var(--zr-surface);
+  transition: border-color 250ms var(--zr-ease);
+}
+
+.courseCard:hover {
+  border-color: var(--zr-brand-soft);
+}
+
+.courseCard[data-featured="true"] {
+  border-top: 3px solid var(--zr-brand);
+}
+
+.courseCardBadge {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.courseBadge {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--zr-brand);
+}
+
+.courseLevel {
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--zr-ink-muted);
+}
+
+.courseName {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(18px, 1.6vw, 24px);
+  color: var(--zr-ink);
+  letter-spacing: 0;
   line-height: 1.2;
 }
 
-.sectionSubtitle {
-  font-size: 16px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  max-width: 560px;
+.courseDesc {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: clamp(13px, 1.05vw, 15px);
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--zr-ink-soft);
+  flex: 1;
+}
+
+.courseMeta {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(12px, 1.4vw, 20px);
+  padding-top: clamp(12px, 1.4vw, 18px);
+  border-top: 1px solid var(--zr-rule);
+}
+
+.coursePrice {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(22px, 1.8vw, 28px);
+  color: var(--zr-brand);
+  letter-spacing: -0.01em;
+}
+
+.coursePriceUnit {
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  color: var(--zr-ink-muted);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.courseDuration {
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--zr-ink-muted);
+  letter-spacing: 0.04em;
+}
+
+.courseLink {
+  font-family: var(--zr-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--zr-brand);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: gap 200ms var(--zr-ease), color 200ms var(--zr-ease);
+}
+
+.courseLink:hover {
+  color: var(--zr-brand-hover);
+  gap: 10px;
+}
+
+.courseLink:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 2px;
+}
+
+.courseLinkArrow {
+  transition: transform 200ms var(--zr-ease);
+}
+
+.courseLink:hover .courseLinkArrow {
+  transform: translateX(3px);
+}
+
+/* ============================================================================
+ * SECTION 5 — TEACHERS
+ * 4-col horizontal: narrow portrait (3/4) + name stacked below.
+ * Alternating border-top: red / gold / red / gold per card.
+ * ============================================================================ */
+
+.teachers {
+  background: var(--zr-paper);
+  padding: clamp(72px, 9vw, 120px) clamp(24px, 5vw, 80px);
+}
+
+.teachersInner {
+  max-width: 1180px;
   margin: 0 auto;
 }
 
-/* ===== Grids ===== */
-
-.grid3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
+.teachersHead {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 16px);
+  margin-bottom: clamp(40px, 5vw, 56px);
 }
 
-.grid4 {
+.teachersTitle {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  text-wrap: balance;
+}
+
+.teachersGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-5);
+  gap: clamp(16px, 2vw, 28px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-/* ===== View All ===== */
-
-.viewAllWrap {
+.teacherCard {
   display: flex;
-  justify-content: center;
-  margin-top: var(--space-10);
+  flex-direction: column;
+  gap: clamp(12px, 1.4vw, 18px);
 }
 
-.viewAllLink {
-  display: inline-flex;
+.teacherImageWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+}
+
+.teacherImage {
+  width: 100%;
+  height: 100%;
+}
+
+.teacherVerified {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  background: var(--zr-gold);
+  color: var(--zr-surface);
+  font-size: 12px;
+  border-radius: 50%;
+  display: flex;
   align-items: center;
-  padding: 12px var(--space-8);
+  justify-content: center;
+  font-family: var(--zr-font-body);
+  font-weight: 700;
+}
+
+.teacherInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.teacherName {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(16px, 1.3vw, 20px);
+  color: var(--zr-ink);
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.teacherTitle {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--zr-brand);
+  letter-spacing: 0.04em;
+}
+
+.teacherExp {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--zr-ink-muted);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.teachersFoot {
+  margin: clamp(28px, 3.4vw, 48px) 0 0;
+  font-family: var(--zr-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--zr-brand);
+}
+
+.teachersFootLink {
+  color: var(--zr-brand);
+  text-decoration: none;
+  font-family: var(--zr-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: color 200ms var(--zr-ease);
+}
+
+.teachersFootLink:hover {
+  color: var(--zr-brand-hover);
+}
+
+.teachersFootLink:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+ * SECTION 6 — TESTIMONIALS
+ * 3 stacked rows, alternating left/right indent.
+ * Large brand-red opening quote mark. Italic attribution.
+ * ============================================================================ */
+
+.testimonials {
+  background: var(--zr-surface);
+  padding: clamp(72px, 9vw, 120px) clamp(24px, 5vw, 80px);
+}
+
+.testimonialsInner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.testimonialsHead {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 16px);
+  margin-bottom: clamp(40px, 5vw, 56px);
+}
+
+.testimonialsTitle {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  text-wrap: balance;
+}
+
+.testimonialsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.testimonialItem {
+  display: grid;
+  grid-template-columns: 2fr 8fr;
+  gap: clamp(24px, 3.2vw, 48px);
+  align-items: start;
+  padding: clamp(28px, 3.4vw, 44px) 0;
+  border-top: 1px solid var(--zr-rule);
+}
+
+.testimonialItem[data-even="true"] {
+  grid-template-columns: 8fr 2fr;
+}
+
+.testimonialItem[data-even="true"] .testimonialQuote {
+  order: 2;
+}
+
+.testimonialItem[data-even="false"] .testimonialQuote {
+  order: 1;
+}
+
+.testimonialItem[data-even="false"] .testimonialBody {
+  order: 2;
+}
+
+.testimonialQuote {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(64px, 8vw, 112px);
+  color: var(--zr-brand-soft);
+  line-height: 0.7;
+  letter-spacing: -0.04em;
+  padding-top: clamp(4px, 0.6vw, 8px);
+  user-select: none;
+}
+
+.testimonialBody {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.4vw, 18px);
+}
+
+.testimonialText {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: clamp(15px, 1.2vw, 17px);
+  font-weight: 400;
+  line-height: 1.75;
+  color: var(--zr-ink-soft);
+  font-style: italic;
+}
+
+.testimonialMeta {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(8px, 1vw, 14px);
+}
+
+.testimonialName {
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(14px, 1.1vw, 16px);
+  color: var(--zr-ink);
+}
+
+.testimonialLevel {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--zr-brand);
+}
+
+/* ============================================================================
+ * SECTION 7 — FAQ
+ * Accordion. No card chrome. Generous padding. Plus icon toggles.
+ * ============================================================================ */
+
+.faq {
+  background: var(--zr-paper);
+  padding: clamp(72px, 9vw, 120px) clamp(24px, 5vw, 80px);
+}
+
+.faqInner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.faqHead {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 16px);
+  margin-bottom: clamp(40px, 5vw, 56px);
+}
+
+.faqTitle {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  text-wrap: balance;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.faqItem {
+  border-top: 1px solid var(--zr-rule);
+}
+
+.faqItem:last-child {
+  border-bottom: 1px solid var(--zr-rule);
+}
+
+.faqQuestion {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(12px, 1.4vw, 20px);
+  padding: clamp(20px, 2.4vw, 28px) 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--zr-font-body);
+  font-size: clamp(15px, 1.2vw, 17px);
+  font-weight: 600;
+  color: var(--zr-ink);
+  letter-spacing: -0.005em;
+  line-height: 1.4;
+  transition: color 200ms var(--zr-ease);
+}
+
+.faqQuestion:hover {
+  color: var(--zr-brand);
+}
+
+.faqQuestion:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 2px;
+}
+
+.faqQuestionText {
+  flex: 1;
+}
+
+.faqIcon {
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-size: clamp(22px, 2vw, 28px);
+  color: var(--zr-brand);
+  line-height: 1;
+  flex-shrink: 0;
+  font-weight: 400;
+  transition: transform 300ms var(--zr-ease);
+  margin-top: -2px;
+}
+
+.faqIconOpen {
+  transform: rotate(45deg);
+}
+
+.faqAnswer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--zr-ease);
+  overflow: hidden;
+}
+
+.faqAnswerOpen {
+  grid-template-rows: 1fr;
+}
+
+.faqAnswerText {
+  overflow: hidden;
+  font-family: var(--zr-font-body);
+  font-size: clamp(14px, 1.1vw, 16px);
+  font-weight: 400;
+  line-height: 1.75;
+  color: var(--zr-ink-soft);
+  padding-bottom: 0;
+  transition: padding-bottom 300ms var(--zr-ease);
+}
+
+.faqAnswerOpen .faqAnswerText {
+  padding-bottom: clamp(20px, 2.4vw, 28px);
+}
+
+/* ============================================================================
+ * SECTION 8 — CTA BANNER
+ * Full-width dark charcoal. Centered h2 + inline form. Red submit.
+ * ============================================================================ */
+
+.cta {
+  background: var(--zr-paper-dark);
+  padding: clamp(80px, 10vw, 128px) clamp(24px, 5vw, 80px);
+}
+
+.ctaInner {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(28px, 3.4vw, 44px);
+  text-align: center;
+}
+
+.ctaTitle {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(28px, 3.6vw, 48px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-paper);
+  text-wrap: balance;
+}
+
+.ctaForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 24px);
+  align-items: center;
+}
+
+.ctaField {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ctaLabel {
+  font-family: var(--zr-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--zr-rule);
+  letter-spacing: 0.06em;
+  text-align: left;
+}
+
+.ctaInput {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: clamp(13px, 1.4vw, 17px) clamp(16px, 1.8vw, 24px);
+  font-family: var(--zr-font-body);
+  font-size: clamp(15px, 1.2vw, 17px);
+  font-weight: 400;
+  color: var(--zr-paper);
+  outline: none;
+  border-radius: 0;
+  transition: border-color 220ms var(--zr-ease), background 220ms var(--zr-ease);
+}
+
+.ctaInput::placeholder {
+  color: rgba(250, 247, 242, 0.4);
+  font-style: italic;
+}
+
+.ctaInput:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ctaInput:focus {
+  border-color: var(--zr-brand);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.ctaInput:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 2px;
+}
+
+.ctaSubmit {
+  padding: clamp(14px, 1.6vw, 18px) clamp(36px, 4vw, 56px);
+  background: var(--zr-brand);
+  color: #fff;
+  font-family: var(--zr-font-body);
   font-size: 15px;
   font-weight: 600;
-  color: var(--brand-primary);
-  border: 1.5px solid var(--brand-primary);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
+  letter-spacing: 0.06em;
+  border: 2px solid var(--zr-brand);
+  cursor: pointer;
+  transition: background 220ms var(--zr-ease), border-color 220ms var(--zr-ease);
 }
 
-.viewAllLink:hover {
-  background: var(--brand-primary);
-  color: var(--text-on-primary);
+.ctaSubmit:hover {
+  background: var(--zr-brand-hover);
+  border-color: var(--zr-brand-hover);
 }
 
-/* ===== Responsive ===== */
+.ctaSubmit:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
 
-/* Tablet */
-@media (max-width: 1024px) {
-  .grid3 {
+.ctaSuccess {
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(18px, 1.6vw, 22px);
+  color: var(--zr-paper);
+  letter-spacing: -0.005em;
+}
+
+.ctaNote {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgba(250, 247, 242, 0.45);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ============================================================================
+ * RESPONSIVE — re-stack grids at narrow breakpoints.
+ * ============================================================================ */
+
+@media (max-width: 900px) {
+  .heroInner {
+    grid-template-columns: 1fr;
+    gap: clamp(28px, 4vw, 48px);
+  }
+
+  .heroActions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .statsGrid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .grid4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .section {
-    padding: 48px 0; /* --section-spacing mobile */
-  }
-
-  .container {
-    padding: 0 var(--space-4);
-  }
-
-  .grid3,
-  .grid4 {
+  .coursesGrid {
     grid-template-columns: 1fr;
   }
 
-  .sectionHeader {
-    margin-bottom: var(--space-8);
+  .teachersGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .viewAllWrap {
-    margin-top: var(--space-8);
+  .testimonialItem {
+    grid-template-columns: auto 1fr;
+    gap: clamp(12px, 1.6vw, 20px);
+  }
+
+  .testimonialItem[data-even="true"] {
+    grid-template-columns: 1fr auto;
+  }
+
+  .testimonialQuote {
+    font-size: clamp(40px, 6vw, 72px);
   }
 }
 
-/* Mobile nhỏ */
-@media (max-width: 480px) {
-  .sectionTitle {
-    font-size: 26px;
+@media (max-width: 600px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(8px, 2vw, 16px);
+  }
+
+  .statItem {
+    text-align: left !important;
+    border-top-color: var(--zr-brand) !important;
+  }
+
+  .statValue {
+    font-size: clamp(30px, 8vw, 44px);
+  }
+
+  .uspGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .teachersGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(12px, 3vw, 20px);
+  }
+
+  .testimonialItem,
+  .testimonialItem[data-even="true"] {
+    grid-template-columns: auto 1fr;
+    text-align: left;
+  }
+
+  .testimonialItem[data-even="true"] .testimonialQuote,
+  .testimonialItem[data-even="true"] .testimonialBody {
+    order: unset;
+  }
+
+  .heroActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .heroCtaPrimary,
+  .heroCtaSecondary {
+    text-align: center;
+    justify-content: center;
+  }
+
+  .ctaForm {
+    width: 100%;
+  }
+
+  .ctaInput {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .teachersGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
   }
 }

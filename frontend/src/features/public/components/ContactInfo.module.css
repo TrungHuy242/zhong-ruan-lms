@@ -1,30 +1,89 @@
-/* ContactInfo — khối thông tin liên hệ tĩnh (cột phải trên desktop) */
+/* Hallmark · component: ContactInfo (visual layer) · genre: editorial · design-system: design.md §9
+ *
+ * RÀNG BUỘC NGHIÊM NGẶT (user constraint #2):
+ * - ContactInfo.tsx GIỮ NGUYÊN 100%:
+ *   ITEMS array (địa chỉ, SĐT, email, Zalo), TODO note text, JSX structure
+ *   khớp 1:1. Không sửa prop API, không sửa aria-label.
+ * - File này chỉ đổi thẩm mỹ trình bày panel.
+ * - Class names dưới đây khớp 100% với JSX (.panel, .title, .lead,
+ *   .list, .item, .iconWrap, .text, .label, .value, .valueLink,
+ *   .todoNote).
+ *
+ * Sentinel keepers:
+ * - border-radius: 0 (panel, iconWrap, todoNote)
+ * - box-shadow: none (panel + todoNote)
+ * - No fill-bg on hover (link → underline hairline brand-red, no bg)
+ * - No transform on hover
+ * - Icon: hairline-square 28px brand-red (thay 40px rounded filled)
+ * - TODO note: hairline brand-gold 1px solid (thay dashed orange)
+ */
 
-.panel {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: var(--space-8);
-  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.04));
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  --zr-paper: #FAF7F2;
+  --zr-surface: #FFFFFF;
+  --zr-ink: #1A1A1E;
+  --zr-ink-soft: #4A4540;
+  --zr-ink-muted: #6B6058;
+  --zr-rule: #D9D0C3;
+  --zr-brand: #C8102E;
+  --zr-brand-hover: #A50C24;
+  --zr-gold: #D4AF37;
+  --zr-gold-soft: #F5EDD4;
+  --zr-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --zr-dur-fast: 220ms;
 }
 
+/* ===== Panel — flat hairline frame, NOT rounded, NOT shadowed ===== */
+
+.panel {
+  background: var(--zr-surface);
+  border: 1px solid var(--zr-rule);
+  border-top: 3px solid var(--zr-gold);
+  border-radius: 0;
+  box-shadow: none;
+  padding: clamp(28px, 3.2vw, 44px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 2.8vw, 36px);
+  min-width: 0;
+}
+
+/* ===== Title + lead (already set in ContactPage.module.css via JSX title swap
+   is out of scope — keep .title/.lead from JSX as-is but restyle here) ===== */
+
 .title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.01em;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(20px, 2vw, 24px);
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  margin: 0 0 clamp(6px, 0.8vw, 10px) 0;
+  padding-bottom: clamp(14px, 1.6vw, 20px);
+  border-bottom: 1px solid var(--zr-rule);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .lead {
+  font-family: var(--zr-font-body);
   font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.55;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: var(--zr-ink-soft);
   margin: 0;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
+
+/* ===== Contact items list — flat hairline rows ===== */
 
 .list {
   list-style: none;
@@ -32,76 +91,145 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-}
-
-.item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-}
-
-.iconWrap {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background-color: var(--brand-primary-light);
-  color: var(--brand-primary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  gap: 0;
   min-width: 0;
 }
 
+.item {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: clamp(12px, 1.6vw, 20px);
+  align-items: start;
+  padding: clamp(14px, 1.6vw, 20px) 0;
+  border-top: 1px solid var(--zr-rule);
+  min-width: 0;
+}
+
+.item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+/* Icon container — hairline-square brand-red (no rounded, no fill) */
+.iconWrap {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--zr-brand);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--zr-brand);
+  margin-top: 2px;
+}
+
+.iconWrap svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Text column */
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Label — eyebrow uppercase brand-muted */
 .label {
-  font-size: 12px;
+  font-family: var(--zr-font-body);
+  font-size: 11px;
   font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-tertiary);
+  color: var(--zr-ink-muted);
+  line-height: 1.3;
+  margin: 0;
+  min-width: 0;
 }
 
+/* Value (plain text — address, SĐT, email, Zalo) */
 .value {
-  font-size: 15px;
-  color: var(--text-primary);
-  line-height: 1.4;
+  font-family: var(--zr-font-body);
+  font-size: clamp(15px, 1.5vw, 16px);
+  font-weight: 500;
+  font-style: normal;
+  color: var(--zr-ink);
+  line-height: 1.5;
+  letter-spacing: 0;
+  margin: 0;
   word-break: break-word;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
+/* Value (link — tel/mailto/external) — underline on hover only, no fill bg */
 .valueLink {
-  font-size: 15px;
-  color: var(--text-primary);
-  text-decoration: none;
+  font-family: var(--zr-font-body);
+  font-size: clamp(15px, 1.5vw, 16px);
   font-weight: 500;
+  font-style: normal;
+  color: var(--zr-ink);
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  padding-bottom: 2px;
+  transition: background-size var(--zr-dur-fast) var(--zr-ease),
+    color var(--zr-dur-fast) var(--zr-ease);
   word-break: break-word;
-  transition: color 0.15s ease;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .valueLink:hover {
-  color: var(--brand-primary);
-  text-decoration: underline;
+  color: var(--zr-brand);
+  background-size: 100% 1px;
 }
 
 .valueLink:focus-visible {
-  outline: 2px solid var(--brand-primary);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 3px;
+  border-radius: 0;
 }
+
+/* ===== TODO note — brand-gold hairline (replaces dashed orange) ===== */
 
 .todoNote {
   margin: 0;
-  padding: var(--space-3) var(--space-4);
-  background-color: #fff7ed;
-  color: #9a3412;
-  border: 1px dashed #fdba74;
-  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  background: var(--zr-gold-soft);
+  color: #6B5618;
+  border: 1px solid var(--zr-gold);
+  border-left: 3px solid var(--zr-gold);
+  border-radius: 0;
+  font-family: var(--zr-font-body);
   font-size: 12px;
-  line-height: 1.5;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.55;
+  letter-spacing: 0;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+/* ===== Reduced motion ===== */
+
+@media (prefers-reduced-motion: reduce) {
+  .valueLink,
+  .valueLink:hover {
+    transition: none;
+  }
 }

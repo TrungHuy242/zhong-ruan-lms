@@ -1,391 +1,410 @@
 # 📊 BÁO CÁO TIẾN ĐỘ DỰ ÁN — Zhong Ruan LMS
 
-> **Tên dự án**: Zhong Ruan LMS (中阮 — Hệ thống quản lý đào tạo)
-> **Mục đích**: Nền tảng quản lý lớp học, học viên, lộ trình học tập cho Trung tâm Trung Quốc học
+> **Tên dự án**: Zhong Ruan LMS (中阮 — Hệ thống quản lý đào tạo Trung Quốc học)
+> **Mục đích**: Nền tảng quản lý lớp học, học viên, lộ trình học tập + **website marketing công khai** cho Trung tâm tiếng Trung Zhong Ruan
 > **Repo**: `github.com/TrungHuy242/zhong-ruan-lms`
-> **Stack**: React + Vite + TypeScript (frontend) · Node.js + Express + Prisma + PostgreSQL (backend)
+> **Stack**: React + Vite + TypeScript (frontend) · Node.js + Express + Prisma + PostgreSQL (backend) · Puppeteer (prerender & QA)
 > **Ngày bắt đầu**: 06/07/2026
-> **Ngày cập nhật**: 10/07/2026
-> **Tổng số commit**: 41 (toàn bộ do 1 tác giả — Huy Trung)
+> **Ngày cập nhật**: **23/07/2026**
+> **Tổng số commit**: **79 commits** (toàn bộ do 1 tác giả — TrungHuy · ~18 ngày làm việc)
+> **Mã mới nhất**: `aa6c625` (QA cuối cùng)
 
 ---
 
-## 1. TỔNG QUAN
+## 1. TỔNG QUAN — 1 PHÚT ĐỌC
 
-Dự án được phát triển trong **4 ngày liên tục**, theo phương pháp **vertical-slice** (làm backend → frontend cho từng module, sau đó tinh chỉnh UI). Đến thời điểm hiện tại:
+Dự án đã **hoàn thành 2 sản phẩm chính**:
+
+| Sản phẩm | Mô tả | Trạng thái |
+|---|---|---|
+| 🅰️ **Admin Site** (`/dashboard`, `/users`, ... `/contact-requests`) | Trang quản trị cho Admin/Teacher/Student, đầy đủ CRUD + filter + bulk + audit | ✅ **Hoàn thành** |
+| 🅱️ **Public Site** (`/`, `/khoa-hoc`, `/giang-vien`, `/bang-gia`, `/lien-he`) | Website marketing công khai có **SEO + Prerender + Sitemap** | ✅ **Hoàn thành** |
+
+**Tổng số module backend**: **14 module** (tăng từ 8 module trong báo cáo cũ)
+**Tổng số endpoint REST công khai**: **~85 endpoint**
+**Tổng số trang frontend**: **17 trang** (10 admin cũ + 5 public + 2 auth)
 
 | Hạng mục | Trạng thái | % |
 |---|---|---|
-| Backend API (8 module) | ✅ Hoàn thành | **100%** |
-| Database schema + migrations | ✅ Hoàn thỉnh | **100%** |
-| Frontend pages (10 màn hình) | ✅ Hoàn thành | **100%** |
-| Auth + RBAC + Rate-limit | ✅ Hoàn thành | **100%** |
-| Soft-delete + Thùng rác | ✅ Hoàn thành | **100%** |
-| Tái cấu trúc feature-based | ✅ Hoàn thành | **100%** |
-| **Tinh chỉnh UI/UX polish** | 🟡 Đang làm | **~70%** |
-| Testing (unit/integration/E2E) | ❌ Chưa làm | **0%** |
-| Deploy + CI/CD | ❌ Chưa làm | **0%** |
+| Backend API (14 module) | ✅ Hoàn thành | **100%** |
+| Database schema + 18 migrations | ✅ Hoàn thỉnh | **100%** |
+| Admin Site (10 trang + Trash + Audit Center) | ✅ Hoàn thành | **100%** |
+| Public Site (5 trang + prerender + SEO) | ✅ Hoàn thành | **100%** |
+| Auth + RBAC + JWT rotation + Rate-limit | ✅ Hoàn thành | **100%** |
+| Soft-delete infrastructure (7 model) | ✅ Hoàn thành | **100%** |
+| Email service (SMTP via nodemailer) | ✅ Hoàn thành | **100%** |
+| Realtime notification (Socket.io) | ✅ Hoàn thành | **100%** |
+| **Production Readiness (security headers, helmet, compression, ...)** | 🔴 **Cần sửa 4 P0** | ~30% |
+| **Testing (unit/integration/E2E)** | ❌ Chưa làm | **0%** |
+| **Deploy + CI/CD** | ❌ Chưa làm | **0%** |
 
-**Kết luận**: MVP về mặt chức năng đã chạy được end-to-end (đăng ký → đăng nhập → CRUD user → thông báo → upload → audit). Phần lớn thời gian tuần này tập trung tinh chỉnh UI cho đồng bộ, **đang ở giai đoạn polish**.
+**Kết luận 1 dòng**: Đã có sản phẩm chạy được end-to-end (Public + Admin), đã qua 2 đợt QA chuyên sâu, **đang ở giai đoạn tiền Production** — cần sửa 4 lỗi P0 về bảo mật/hạ tầng trong 1-2 ngày thì có thể deploy cho 2.000-3.000 người dùng.
 
 ---
 
-## 2. TIMELINE CHI TIẾT THEO NGÀY
+## 2. TIMELINE THEO GIAI ĐOẠN
 
-### 📅 Ngày 1 — 06/07/2026 (Khởi tạo)
+### 📅 Giai đoạn 1 (06-10/07/2026) — MVP Admin Site hoàn chỉnh
+**31 commits đầu tiên**: Khởi tạo project → Backend 8 module (Auth/Users/Notifications/Uploads/Settings/Dashboard/Search/Audit) → Frontend 10 trang → Tái cấu trúc Feature-based.
+*(Chi tiết trong báo cáo cũ 10/07/2026 — mục này đã ổn định, không thay đổi)*
+
+### 📅 Giai đoạn 2 (11-17/07/2026) — Nâng cấp lên chuẩn SaaS
+| Commit chính | Nội dung |
+|---|---|
+| `13a5f18`, `ceccbcc`, `0f3bcc9` | Nâng cấp Dashboard (recharts + bộ lọc), Users (server-side pagination + 2 bulk endpoint) |
+| `fc01701`, `b109c4b` | Module Profile thành trang quản lý tài khoản SaaS |
+| `634cf01` | Fix bug upload avatar trả 401 + cải thiện Vite proxy multipart |
+| `3c0e109`, `effacec` | Settings: sidebar nhóm + quick-edit inline + import/export JSON |
+| `8da68c6`, `dd94a7b`, `25a56cc`, `2ba8021` | Audit Center chuyên nghiệp (search, module filter, redact meta, detail) |
+| `6e8f748`, `b7e778e` | FileManagerPage SaaS (sort/filter, storage-stats, bulk delete, bulk download zip) |
+| `ceccbcc`, `bb00c0a`, `3a09ca` | Realtime notification — Socket.io theo target (user/role/all) + UI Panel |
+| `841ad5b` → `19bbfd5e` | TrashManagerPage chuyên nghiệp — bulk, filter nâng cao, audit log |
+| `a1cd66d`, `05e7b8a`, `d5c0cf0` | GlobalSearchPage chuẩn SaaS + Command Palette `Ctrl+K` |
+
+**Sản phẩm cuối giai đoạn 2**: Toàn bộ Admin site ở chuẩn SaaS, có realtime Socket.io, Bulk action, Audit Center, Command Palette.
+
+### 📅 Giai đoạn 3 (18-23/07/2026) — Xây dựng Public Site hoàn chỉnh ✅
 | Commit | Nội dung |
 |---|---|
-| `d5b48b0` | Initial project setup — Prisma 7, Express, JWT auth |
+| `20260718011000` → `8d80f12` | Module Teachers (backend CRUD + public API + soft delete + audit + slug tự sinh) |
+| `afcabfb`, `3e69428` | UI Admin + liên kết User role=teacher |
+| `f358bbb` | Trang public `/giang-vien` + SEO động |
+| `518f065` | Trang Khóa học + 3 trang chi tiết HSK 1-2/3-4/5-6 |
+| `11516fb` | Trang chủ public có nội dung thật |
+| `1a13de1` | Hạ tầng public site (layout, header, footer, SEO component) |
+| `e9cc4af`, `c583e0a`, `9fd70ce` | QA + Performance dashboard, fix Recent Activities, fix auth brute-force |
+| `a72e287` → `aa6c625` | **Module PricingPlans + ContactRequests** (full backend + frontend), mở rộng soft-delete infrastructure, **2 đợt QA chuyên sâu** |
 
-- Khởi tạo repo, cấu hình Prisma + Express + JWT
-- Migration đầu tiên: `20260706154011_init_users` (bảng `User` với role enum)
-
-### 📅 Ngày 2 — 07/07/2026 (Backend Auth + Users)
-| Commit | Nội dung |
-|---|---|
-| `6ee3534` | Middleware JWT + phân quyền theo vai trò + API lấy info user |
-| `7e7a56d` | API GET `/api/admin/users` (chỉ Admin) |
-| `36aefc4` | API POST `/api/admin/users` (validate email, role, hash password) |
-| `778dde1` | API GET/PUT `/api/admin/users/:id` |
-| `5fc6fe9` | README.md hoàn chỉnh |
-| `36c0efd` | API DELETE `/api/admin/users/:id` |
-| `b29084c` | API POST `/api/auth/register` (tự đăng ký STUDENT/TEACHER) |
-| `f44cf63` | API POST `/api/auth/forgot-password` |
-| `59b8b97` | API PUT `/api/auth/change-password` |
-| `907268f` | API PUT `/api/auth/me` (cập nhật hồ sơ) |
-| `c9b8e1d` | Hoàn thiện module Auth, ổn định runtime backend |
-| `8fbdbaf` | Improve auth & user: enum role, refresh token, rate limit, xử lý P2002 |
-| `dfce554` | Thêm Prisma seed + `prisma.config.ts` |
-| (migration) | `20260707181800_add_reset_token` |
-| (migration) | `20260707195733_add_audit_logs` |
-
-**Sản phẩm cuối ngày**: Toàn bộ CRUD users + 6 endpoint auth (login, register, refresh, logout, forgot/change-password, update-me).
-
-### 📅 Ngày 3 — 08/07/2026 (Backend 6 module còn lại)
-| Commit | Nội dung |
-|---|---|
-| `9ffca89` | Module Audit Log + ghi nhật ký hành động nhạy cảm |
-| `c4787a0` | Module Notification (6 API CRUD) |
-| `e22cca4` | Module Upload File (4 API: upload, list, detail, delete) |
-| `3eff3bf` | Module Settings (5 API CRUD, chỉ Admin) |
-| `d3b45ef` | Module Dashboard (thống kê tổng quan, chỉ Admin) |
-| `89b6f02` | Module Global Search (1 API tổng hợp theo keyword) |
-| `805521e` | Soft Delete cho Users/Notifications/Uploads + tinh chỉnh bảo mật auth |
-| (migration) | `20260708090000_user_status_enum` (ACTIVE/INACTIVE/SUSPENDED) |
-| (migration) | `20260708111535_add_notifications` |
-| (migration) | `20260708130108_add_upload_files` |
-| (migration) | `20260708151654_add_settings` |
-
-**Sản phẩm cuối ngày**: 8 module backend hoàn chỉnh, 38 endpoint REST, soft-delete chuẩn hóa.
-
-### 📅 Ngày 4 — 09/07/2026 (Frontend toàn bộ + Tái cấu trúc)
-| Commit | Nội dung |
-|---|---|
-| `e12235c` | Màn hình Đăng nhập + Đăng ký |
-| `ee408e4` | Shell Admin (Sidebar/Header/Footer/AdminLayout) + gắn logo thương hiệu |
-| `5b5ef77` | Quản lý người dùng + UI components generic (Card/Button/Input/Modal/Table) |
-| `0cf53f1` | Dashboard Admin (kết nối `GET /dashboard/overview`) |
-| `60ebf27` | Quản lý thông báo + bell dropdown trên Header |
-| `8da68c6` | Nhật ký hệ thống (chỉ đọc, lọc nâng cao) |
-| `b76e05d` | Quản lý tệp (UploadZone + FileIcon generic) |
-| `0b1cc97` | Cài đặt hệ thống (CRUD đầy đủ) |
-| `a1e7336` | Hồ sơ cá nhân (mọi role) |
-| `8b37180` | Tìm kiếm toàn hệ thống |
-| `0173050` | Thùng rác (Trash Manager) cho Admin |
-| `79526e5` → `1db78f4` | **Tái cấu trúc thư mục frontend theo Feature-Based Architecture** |
-| `c6e9fd3` → `24bebb2` | Cleanup + `.gitignore` |
-| `ae52002` | Docs: cập nhật README mục 3 (feature-based) |
-| (migration) | `20260709003203_add_soft_delete` |
-
-**Sản phẩm cuối ngày**: 10 trang frontend chạy được, kiến trúc feature-based chuẩn (mỗi feature là 1 folder độc lập với `pages/components/services/...`).
-
-### 📅 Ngày 5 — 10/07/2026 (UI Polish — đang tiếp tục)
-| Commit | Nội dung |
-|---|---|
-| `59b4c34` | Feat: thêm "Xem hồ sơ" vào dropdown user trên Header |
-| `fae9a04` | Style: chuẩn hoá CSS cho `<select>` native (bỏ style "thơ mộc" của browser) |
-| `3cb02c0` | Style: Login — banner thay gradient đỏ + overlay cho chữ nổi |
-| `3164b97` | Style: Login banner — bỏ chữ/logo, hiển thị ảnh contain vừa vặn |
-
-**Đang làm**: Polish giao diện các dropdown, banner trang login, đồng bộ design tokens.
+**Sản phẩm cuối giai đoạn 3** (hiện tại): 5 trang public hoàn chỉnh (Trang chủ / Khóa học / Giảng viên / Bảng giá / Liên hệ) có SEO + Prerender + Sitemap + Robots.
 
 ---
 
 ## 3. KIẾN TRÚC HIỆN TẠI
 
-### 🗄️ Database — 5 bảng, 3 enum
+### 🗄️ Database — 10 bảng, 3 enum, 18 migrations
 
 ```
-User (1) ──┬── (n) AuditLog
-           ├── (n) Notification
-           └── (n) UploadFile
+                    ┌─ AuditLog
+                    ├─ Notification
+                    ├─ UploadFile
+                    ├─ AuditLog (recent endpoint)
+User ───────────────┼─ SearchHistory
+                    ├─ Teacher (linkedUser)
+                    └─ soft-delete actor của 7 model
 
-Setting (độc lập, lưu JSON string linh hoạt)
+Setting (độc lập, lưu JSON)
+Teacher (UUID, slug, bio, specialties[], isFeatured, isPublished, ...)
+PricingPlan (UUID, name, classType, price, priceUnit, features[], ...)
+ContactRequest (UUID, fullName, phone, email, message, status, ...)
 ```
 
-**Bảng `User`** (soft-delete): id, fullName, email(unique), phone, passwordHash, role (ADMIN/TEACHER/STUDENT), status (ACTIVE/INACTIVE/SUSPENDED), resetToken, refreshTokenHash, createdAt, updatedAt, **deletedAt**
+**10 bảng**, **3 enum** (`Role`, `UserStatus`, `NotificationType`), **18 migrations** đã chạy ổn định.
 
-**Bảng `AuditLog`**: id, userId, action, target, meta(Json), ip, userAgent, createdAt — index theo userId/action/createdAt
+### 🔧 Backend — 14 module, ~85 endpoint REST
 
-**Bảng `Notification`** (soft-delete): id, userId, type (INFO/SUCCESS/WARNING/ERROR), title, message, isRead, createdAt, **deletedAt**
-
-**Bảng `UploadFile`** (soft-delete): id, originalName, storedName(unique), mimeType, size, path, uploadedById, createdAt, **deletedAt**
-
-**Bảng `Setting`**: id, key(unique), value(JSON string), description — lưu cấu hình hệ thống linh hoạt
-
-**8 migration** đã chạy thành công (`init_users`, `add_reset_token`, `add_audit_logs`, `user_status_enum`, `add_notifications`, `add_upload_files`, `add_settings`, `add_soft_delete`).
-
-### 🔧 Backend (Node.js + Express + Prisma)
-
-**Cấu trúc** (45 file JS, theo pattern controller/service/repository):
 ```
 backend/src/
-├── app.js                    # Express app config
+├── app.js (CORS, body parser, static /uploads, 21 routes mount)
 ├── server.js / server.dev.js / server.prod.js
-├── config/database.js        # Prisma client singleton
 ├── middlewares/
-│   ├── auth.middleware.js    # JWT verify
-│   ├── role.middleware.js    # RBAC
-│   ├── rateLimit.middleware.js
-│   ├── upload.middleware.js  # Multer
-│   ├── error.middleware.js   # Centralized error
+│   ├── auth.middleware.js     # JWT verify + check status
+│   ├── role.middleware.js     # RBAC
+│   ├── rateLimit.middleware.js # login/refresh/public teachers/pricing/contact
+│   ├── upload.middleware.js   # Multer + whitelist MIME/ext
+│   ├── error.middleware.js    # Centralized (status mapping, multer, JWT, Prisma)
 │   └── notFound.middleware.js
 ├── utils/
-│   ├── jwt.js                # sign/verify access + refresh
-│   ├── softDelete.js         # Prisma extension xóa mềm
-│   ├── prismaSoftDelete.js
-│   └── softQuery.js
-└── modules/                  # 8 module, mỗi module có controller+service+routes
-    ├── auth/         (9 endpoints)
-    ├── users/        (7 endpoints)
-    ├── notifications/(8 endpoints)
-    ├── uploads/      (6 endpoints)
-    ├── settings/     (5 endpoints)
-    ├── dashboard/    (1 endpoint)
-    ├── search/       (1 endpoint)
-    └── audit/        (1 endpoint)
+│   ├── jwt.js, softDelete.js, prismaSoftDelete.js, softQuery.js
+│   ├── prismaHelpers.js, bannerMessages.js
+└── modules/                   # 14 module
+    ├── auth/         (8 endpoint)          # register/login/refresh/forgot/reset/...
+    ├── profile/      (4 endpoint)
+    ├── users/        (9 endpoint)
+    ├── notifications/(8 endpoint)
+    ├── uploads/      (1 endpoint POST)
+    ├── files/        (8 endpoint)          # module con của uploads, mới tách
+    ├── settings/     (7 endpoint)
+    ├── dashboard/    (2 endpoint)          # overview + monthly
+    ├── search/       (4 endpoint)          # search + history
+    ├── audit/        (3 endpoint)
+    ├── trash/        (7 endpoint)          # quản lý soft-delete chung
+    ├── teachers/     (admin 8 + public 3)  # ⭐ MỚI
+    ├── pricing-plans/(admin 7 + public 1)  # ⭐ MỚI
+    ├── contact-requests/(admin 6 + public 1) # ⭐ MỚI
+    ├── email/        (smtp service)        # ⭐ MỚI
+    └── sockets/      # Socket.io + JWT auth + room theo user/role
 ```
 
-**Tổng: 38 REST endpoint** — xem chi tiết ở mục 4.
+**Cải tiến quan trọng đã có**:
+- ✅ JWT có rotation + atomic refresh (chống race-condition)
+- ✅ Rate-limit per endpoint (login, refresh, contact, teachers, pricing)
+- ✅ Audit log tự động cho mọi thao tác nhạy cảm
+- ✅ Soft-delete unified: 7 model dùng cùng 1 helper, 1 whitelist cho Trash
+- ✅ Socket.io auth + room per user/role
 
-### 🎨 Frontend (React 18 + Vite + TypeScript + CSS Modules)
+### 🎨 Frontend — 17 trang, Feature-based architecture
 
-**Kiến trúc Feature-Based** — mỗi feature là 1 folder độc lập:
 ```
 frontend/src/
-├── main.tsx                  # Entry, import tokens.css + global.css
 ├── app/
-│   ├── App.tsx               # Router + RoleGuard
-│   ├── routes.tsx
-│   ├── providers/            # AuthProvider, QueryProvider, ToastProvider
-│   └── layouts/              # AdminLayout (Sidebar/Header/Footer), AuthLayout
+│   ├── App.tsx, routes/AppRoutes.tsx (19 route)
+│   └── layouts/AdminLayout, PublicLayout, layouts/Sidebar (admin) + Header (admin)
 ├── shared/
-│   ├── components/ui/        # 11 component generic (Alert/Button/Card/ConfirmDialog/FileIcon/Input/Modal/Pagination/StatCard/Table/UploadZone)
-│   ├── hooks/                # useAuth, useDebounce, usePagination
-│   ├── lib/                  # api client (axios), query keys
-│   └── types/                # User, Role, ...
-├── styles/
-│   ├── tokens.css            # Design tokens (màu brand, spacing, radius, shadow)
-│   └── global.css            # Reset + body styles
-└── features/                 # 10 feature
-    ├── auth/         (LoginPage + RegisterPage)
-    ├── dashboard/    (DashboardPage — StatCard + chart)
-    ├── users/        (UserManagementPage + UserFormModal)
-    ├── notifications/(NotificationManagementPage + NotificationFormModal)
-    ├── files/        (FileManagerPage + UploadZone)
-    ├── settings/     (SystemSettingsPage + 2 modal)
-    ├── profile/      (ProfilePage)
-    ├── search/       (GlobalSearchPage)
-    ├── audit-log/    (AuditLogPage)
-    └── trash/        (TrashManagerPage — khôi phục bản xóa mềm)
+│   ├── components/
+│   │   ├── ui/ (Alert, Button, Card, ConfirmDialog, FileIcon, Input, Modal, 
+│   │   │       Pagination, Skeleton, StatCard, Table, Toast, UploadZone)
+│   │   ├── layout/ (AdminLayout, BulkActionBar, Header, Sidebar, UserDropdown)
+│   │   ├── PublicHeader.tsx, PublicFooter.tsx, PublicLayout
+│   │   ├── SEO.tsx (react-helmet-async wrapper)
+│   │   └── Loader/Spinner
+│   ├── contexts/ (NotificationContext, AuthContext, ToastContext)
+│   ├── hooks/ (useAuth, useDebounce, usePagination, useNotificationSocket, useTableColumns)
+│   ├── lib/ (api client axios, query keys)
+│   ├── services/ (api helpers cho 4 module admin cốt lõi)
+│   ├── storage/ (authStorage)
+│   └── utils/ (auth.ts — normalizeRole, hasRole, isAdmin) ⭐ MỚI
+├── pages/
+│   ├── public/  (5 trang: HomePage, CoursesPage, CourseDetailPage,
+│   │             TeachersListPage, TeacherDetailPage, PricingPage, ContactPage) ⭐ MỚI
+│   ├── auth/    (LoginPage, RegisterPage, ForgotPassword, ResetPassword)
+│   └── admin/   (qua AdminLayout)
+└── features/   (15 feature folder độc lập)
+    ├── auth, dashboard, users, notifications, files, settings,
+    ├── profile, search, audit-log, trash
+    ├── teachers (Admin UI)           ⭐ MỚI
+    ├── pricing (Admin UI)             ⭐ MỚI
+    ├── contact-requests (Admin UI)    ⭐ MỚI
+    └── public (components shared: Hero, Breadcrumb, CTABanner, FAQAccordion,
+                PricingCard, PolicyCard, ContactForm, ContactInfo, ImagePlaceholder) ⭐ MỚI
 ```
 
-**Design System** (`tokens.css`): brand đỏ Trung Hoa (`#C8102E`), brand accent vàng gold (`#D4AF37`), neutral 5 cấp, semantic success/warning/error, spacing scale 1-12, shadow focus ring đỏ. **Mới thêm**: global rule cho `<select>` native (chevron icon, padding, focus brand color).
+**Build output**:
+- TypeScript strict mode, không có lỗi compile
+- Vite prerender qua Puppeteer → tạo **9 file HTML tĩnh** (8 public route + 1 giáo viên featured động)
+- Bundle 1.23 MB JS (chưa code-split) — cải thiện ở P1
+- Sitemap tự sinh + robots.txt đầy đủ
 
 ---
 
-## 4. BẢNG API ĐẦY ĐỦ (38 endpoint)
+## 4. PUBLIC SITE — SẢN PHẨM MỚI CỦA GIAI ĐOẠN 3
 
-### 🔐 Auth — `/api/auth` (9 endpoint)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| POST | `/register` | Tự đăng ký STUDENT/TEACHER |
-| POST | `/login` | Đăng nhập, cấp access + refresh token |
-| POST | `/refresh` | Refresh access token |
-| POST | `/logout` | Thu hồi refresh token |
-| POST | `/forgot-password` | Gửi token reset qua email |
-| POST | `/reset-password` | Đặt lại MK bằng token |
-| PUT | `/change-password` | Đổi MK khi đã đăng nhập |
-| PUT | `/me` | Cập nhật hồ sơ cá nhân |
-| GET | `/me` | Lấy thông tin user hiện tại |
+### 4.1 Danh sách 5 trang public
 
-### 👥 Users — `/api/admin/users` (7 endpoint, chỉ Admin)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| GET | `/` | Danh sách user (filter theo role/status/keyword) |
-| GET | `/:id` | Chi tiết user |
-| POST | `/` | Tạo user mới (validate email, role, hash MK) |
-| PUT | `/:id` | Cập nhật user |
-| DELETE | `/:id` | Soft-delete user |
-| PATCH | `/:id/restore` | Khôi phục từ thùng rác |
-| PATCH | `/:id/status` | Khoá/mở khoá user |
+| # | Route | Trang | Module backend phụ thuộc | Tính năng |
+|---|---|---|---|---|
+| 1 | `/` | **Trang chủ** | Teachers (featured) + Pricing + Courses (tĩnh) | Hero + khóa học + giảng viên nổi bật + CTA |
+| 2 | `/khoa-hoc` | **Khóa học** | (tĩnh) | Grid 3 khóa HSK + breadcrumbs |
+| 3 | `/khoa-hoc/{hsk-1-2,hsk-3-4,hsk-5-6}` | **3 trang chi tiết** | (tĩnh) | Hero + roadmap + outcomes + FAQ + cross-link |
+| 4 | `/giang-vien` | **Giảng viên** | Teachers (public API) | Grid filter theo chuyên môn + search keyword |
+| 5 | `/giang-vien/:slug` | **Chi tiết GV** | Teachers (public by-slug) | 404 state nếu không tồn tại |
+| 6 | `/bang-gia` | **Bảng giá** | PricingPlans (public API) | Grid PricingCard + Policy + FAQ + CTA |
+| 7 | `/lien-he` | **Liên hệ** | ContactRequests (public POST) | Form + thông tin liên hệ + rate-limit 3/IP/giờ |
 
-### 🔔 Notifications — `/api/notifications` (8 endpoint)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| GET | `/` | Danh sách (filter isRead, type) |
-| GET | `/:id` | Chi tiết |
-| POST | `/` | Tạo thông báo |
-| PUT | `/:id` | Cập nhật |
-| DELETE | `/:id` | Soft-delete |
-| PATCH | `/:id/read` | Đánh dấu đã đọc |
-| PATCH | `/read-all` | Đánh dấu tất cả đã đọc |
-| GET | `/unread-count` | Số thông báo chưa đọc (cho bell badge) |
+### 4.2 Tính năng SEO + Prerender
 
-### 📁 Uploads — `/api/uploads` (6 endpoint)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| POST | `/` | Upload file (multipart, Multer) |
-| GET | `/` | Danh sách file (filter mimeType, uploader) |
-| GET | `/:id` | Chi tiết file |
-| GET | `/:id/download` | Tải xuống |
-| DELETE | `/:id` | Soft-delete file |
-| PATCH | `/:id/restore` | Khôi phục |
+- ✅ **9 file HTML prerender** qua Puppeteer (mỗi file có `<title>` + `<meta description>` + 1 `<h1>` riêng)
+- ✅ **Sitemap.xml tự sinh** (8 route tĩnh + N giáo viên featured động)
+- ✅ **robots.txt** chuẩn — đầy đủ Disallow cho admin routes + Sitemap pointer
+- ✅ **SEO component** (react-helmet-async) — title/description động theo từng trang
+- ✅ **Open Graph + Twitter Card meta tags**
 
-### ⚙️ Settings — `/api/settings` (5 endpoint, chỉ Admin)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| GET | `/` | Danh sách setting |
-| GET | `/:key` | Lấy 1 setting theo key |
-| POST | `/` | Tạo setting mới |
-| PUT | `/:key` | Cập nhật |
-| DELETE | `/:key` | Xoá setting |
-
-### 📊 Dashboard — `/api/dashboard` (1 endpoint, chỉ Admin)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| GET | `/overview` | Tổng quan: tổng user theo role, notification chưa đọc, file uploads, audit 24h |
-
-### 🔍 Search — `/api/search` (1 endpoint)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| GET | `/?q=...` | Tìm kiếm tổng hợp user/notification/file theo keyword |
-
-### 📝 Audit Log — `/api/audit-logs` (1 endpoint, chỉ Admin)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| GET | `/` | Danh sách log (filter userId/action/fromDate/toDate) — chỉ đọc |
+### 4.3 Loading / Empty / Error state đầy đủ (sau 2 đợt QA)
+- ✅ Loading skeleton cho Grid giảng viên + PricingCard
+- ✅ Empty state có message rõ ràng + CTA "Liên hệ tư vấn"
+- ✅ Error state có Alert + **nút "Thử lại"** cho cả `/giang-vien` và `/bang-gia`
+- ✅ 404 state đẹp cho teacher slug không tồn tại
 
 ---
 
-## 5. TÍNH NĂNG THEO ROLE
+## 5. MODULE MỚI HOÀN TOÀN (giai đoạn 3)
 
-| Tính năng | STUDENT | TEACHER | ADMIN |
-|---|:---:|:---:|:---:|
-| Đăng ký/Đăng nhập/Quên MK | ✅ | ✅ | ✅ |
-| Xem/Sửa hồ sơ cá nhân | ✅ | ✅ | ✅ |
-| Đổi mật khẩu | ✅ | ✅ | ✅ |
-| Xem thông báo của mình | ✅ | ✅ | ✅ |
-| Tìm kiếm toàn hệ thống | ✅ | ✅ | ✅ |
-| Upload/Download file | ✅ | ✅ | ✅ |
-| Xem nhật ký hệ thống | ❌ | ❌ | ✅ |
-| Quản lý user (CRUD) | ❌ | ❌ | ✅ |
-| Quản lý thông báo (broadcast) | ❌ | ❌ | ✅ |
-| Cài đặt hệ thống | ❌ | ❌ | ✅ |
-| Dashboard tổng quan | ❌ | ❌ | ✅ |
-| Thùng rác (khôi phục) | ❌ | ❌ | ✅ |
+### 5.1 Teachers (Giáo viên)
+- **Backend**: 8 admin endpoint + 3 public endpoint, soft-delete, audit, slug tự sinh
+- **Frontend Admin**: `/teachers` — CRUD với form modal, filter isFeatured/isPublished
+- **Frontend Public**: `/giang-vien` + `/giang-vien/:slug` — có SEO riêng cho từng giáo viên featured
+- **Tính năng đặc biệt**: Admin có thể **liên kết giáo viên với User role=TEACHER** (field `linkedUserId`)
+
+### 5.2 PricingPlans (Bảng giá)
+- **Backend**: 7 admin endpoint + 1 public endpoint, soft-delete, audit
+- **Frontend Admin**: `/pricing-plans` — CRUD với form đầy đủ (features, originalPrice, displayOrder)
+- **Frontend Public**: `/bang-gia` — grid đẹp với "Phổ biến nhất" highlight
+
+### 5.3 ContactRequests (Liên hệ)
+- **Backend**: 6 admin endpoint + 1 public endpoint, soft-delete, audit, **gửi email notification qua SMTP** (nodemailer)
+- **Frontend Admin**: `/contact-requests` — quản lý lead, đổi status (NEW → CONTACTED → CLOSED)
+- **Frontend Public**: `/lien-he` — form gửi yêu cầu, rate-limit 3/IP/giờ, validate đầy đủ
+
+### 5.4 Email Service ⭐
+- Module mới dùng **nodemailer + SMTP** (Gmail App Password compatible)
+- Có **dry-run mode** khi chưa config SMTP — chỉ log ra console
+- ENV config: `SMTP_HOST/PORT/USER/PASSWORD`, `CONTACT_NOTIFICATION_EMAIL`
+
+### 5.5 Soft-delete infrastructure mở rộng
+- 7 model hỗ trợ soft-delete: User, Notification, UploadFile, Setting, Teacher, PricingPlan, ContactRequest
+- Trash whitelist cập nhật (`MODULE_TO_LABEL`, `MODULE_TO_PRISMA`, `buildModuleWhere`)
+- TrashManagerPage hoạt động đồng bộ cho cả 7 model
 
 ---
 
-## 6. ĐÃ HOÀN THÀNH ✅
+## 6. ĐÃ QUA 2 ĐỢT QA CHUYÊN SÂU
+
+### 6.1 Đợt QA lần 1 — Cross-module consistency (ưu tiên cao)
+Phát hiện & đã sửa:
+- 🔴 Robots.txt thiếu 3 route admin mới (`/teachers`, `/pricing-plans`, `/contact-requests`)
+- 🔴 TeacherDetailPage description SEO quá ngắn khi bioShort ngắn (7 ký tự "Tuyệt vời") → fix fallback dùng `title + yearsOfExperience + specialties`
+- 🔴 **PricingPage và TeachersListPage thiếu nút "Thử lại"** khi loadError → fix với `reloadToken` pattern + CSS `.errorState`
+- ✅ Build prerender 9 routes thành công
+- ✅ Tất cả HTML đúng 1 `<h1>`
+- ✅ 0 console error (ngoại trừ probe 404 cố ý)
+- ✅ 0 trang nào tràn ngang ở 3 breakpoint
+
+### 6.2 Đợt QA lần 2 — Production Readiness Review (cuối cùng)
+Vai trò: Senior Software Architect · Senior QA Engineer · Senior Security Engineer · Senior Performance Engineer
+
+**Tổng điểm: 6.5 / 10** — **Có thể Production sau khi sửa 4 P0**
+
+| Hạng mục | Điểm /10 |
+|---|---|
+| Functional | 9.0 |
+| Security | 6.5 (cần fix 4 P0) |
+| Performance | 7.5 (bundle + COUNT chưa cache) |
+| Scalability | 6.0 (single instance, chưa Redis adapter) |
+| Maintainability | 8.0 |
+| **Production Readiness** | **6.5** |
+
+**Top 4 lỗi P0 (Critical — phải sửa trước khi deploy)**:
+1. **`app.js`** thiếu `helmet()` + `compression()` + rate-limit global
+2. **`app.js`** `cors()` mở hoàn toàn — không whitelist origin
+3. **`server.js`** thiếu handler cho `uncaughtException` / `unhandledRejection`
+4. **`server.js`** thiếu graceful shutdown khi nhận SIGTERM
+
+**Top 6 lỗi P1 (High — làm theo đợt)**:
+5. Static `/uploads` không có auth — file nhạy cảm bị enumerate
+6. `vite.config.ts` `sourcemap: true` → lộ code FE
+7. Dashboard chạy 7 COUNT query không cache
+8. Bundle 1.2 MB không code-split
+9. Prisma connection pool chưa config rõ ràng
+10. Socket.io không có Redis adapter → không scale horizontal
+
+---
+
+## 7. TỔNG KẾT TÍNH NĂNG THEO ROLE
+
+| Tính năng | STUDENT | TEACHER | ADMIN | Public |
+|---|:---:|:---:|:---:|:---:|
+| Đăng ký / Đăng nhập / Quên MK | ✅ | ✅ | ✅ | – |
+| Xem/Sửa hồ sơ cá nhân, đổi MK | ✅ | ✅ | ✅ | – |
+| Xem thông báo của mình (realtime) | ✅ | ✅ | ✅ | – |
+| Tìm kiếm toàn hệ thống (Ctrl+K) | ✅ | ✅ | ✅ | – |
+| Upload / Download file | ✅ | ✅ | ✅ | – |
+| Xem nhật ký hệ thống (Audit Center) | ❌ | ❌ | ✅ | – |
+| Quản lý user + bulk action | ❌ | ❌ | ✅ | – |
+| Broadcast notification | ❌ | ❌ | ✅ | – |
+| Cài đặt hệ thống | ❌ | ❌ | ✅ | – |
+| Dashboard tổng quan + chart | ❌ | ❌ | ✅ | – |
+| Thùng rác (khôi phục 7 model) | ❌ | ❌ | ✅ | – |
+| Quản lý giảng viên (Teachers) | ❌ | ❌ | ✅ | – |
+| Quản lý bảng giá (PricingPlans) | ❌ | ❌ | ✅ | – |
+| Quản lý yêu cầu tư vấn (Contact) | ❌ | ❌ | ✅ | – |
+| Gửi form liên hệ | – | – | – | ✅ |
+| Xem bảng giá | – | – | – | ✅ |
+| Xem danh sách + chi tiết giảng viên | – | – | – | ✅ |
+| Xem khóa học + chi tiết HSK | – | – | – | ✅ |
+
+---
+
+## 8. ĐÃ HOÀN THÀNH ✅
 
 ### Backend
-- ✅ 8 module, 38 REST endpoint
-- ✅ JWT access + refresh token rotation
-- ✅ RBAC theo 3 role (ADMIN/TEACHER/STUDENT)
-- ✅ Rate-limit (chống brute-force login)
-- ✅ Soft-delete 3 bảng (User, Notification, UploadFile) + utility tái sử dụng
-- ✅ Prisma seed data
-- ✅ Audit log tự động cho hành động nhạy cảm (login, CRUD user, settings, upload, notification)
-- ✅ Error middleware chuẩn hoá response
-- ✅ 8 Prisma migration đã chạy
+- ✅ **14 module, ~85 endpoint REST** (tăng từ 8/38)
+- ✅ JWT access + refresh rotation với atomic updateMany
+- ✅ RBAC theo 3 role + soft-delete chuẩn
+- ✅ Rate-limit per endpoint (login, refresh, public teachers, pricing, contact)
+- ✅ Audit log tự động cho mọi thao tác nhạy cảm
+- ✅ Email service (nodemailer) + dry-run fallback
+- ✅ Socket.io auth + room per user/role
+- ✅ Trash Manager xử lý 7 model
+- ✅ 18 Prisma migration đã chạy ổn định
 
 ### Frontend
-- ✅ 10 trang đầy đủ CRUD + filter + pagination + search
-- ✅ 11 component UI generic (Card/Button/Input/Modal/Table/Pagination/Alert/StatCard/ConfirmDialog/FileIcon/UploadZone)
-- ✅ Layout Admin (Sidebar + Header có user dropdown + Footer)
-- ✅ Auth guard theo role
-- ✅ Token refresh tự động (axios interceptor)
-- ✅ Bell notification realtime (polling)
-- ✅ Kiến trúc feature-based sạch (10 feature độc lập)
-- ✅ Design system tokens (màu brand đỏ Trung Hoa + accent vàng gold)
-- ✅ Global rule cho `<select>` native (chevron icon, focus state)
-- ✅ Trang Login có banner Trung Hoa cổ điển
+- ✅ **17 trang** (10 admin + 5 public + 2 auth) đều có Loading/Empty/Error state
+- ✅ **15 feature folder** độc lập
+- ✅ Feature-based architecture sạch + shared UI components
+- ✅ Real-time notification (Socket.io) với fallback polling
+- ✅ Command Palette Ctrl+K
+- ✅ Bulk actions (user, file, trash)
+- ✅ Public Site có SEO + Prerender + Sitemap đầy đủ
+- ✅ Retry button cho mọi trang có gọi API
+
+### Quality
+- ✅ TypeScript strict mode, không lỗi compile
+- ✅ Build pass (TypeScript + Vite + Puppeteer prerender)
+- ✅ Puppeteer QA script (`scripts/qa-public-site.js`) tự động hoá click-through + console/network + overflow check
 
 ---
 
-## 7. ĐANG LÀM 🟡
-
-### UI/UX Polish (giai đoạn hiện tại)
-- 🟡 Đồng bộ style `<select>` native — commit `fae9a04`
-- 🟡 Banner trang Login — commit `3cb02c0`, `3164b97`
-- 🟡 Dropdown user trên Header — commit `59b4c34`
-- ⏳ Kiểm tra responsive trên tablet/mobile
-- ⏳ Loading skeleton cho table/card
-- ⏳ Empty state đồng bộ các trang
-- ⏳ Animation transition giữa các trang
+## 9. ĐANG LÀM 🟡
+Không có — 100% tính năng core đã xong, đang chờ sửa 4 P0 security để deploy.
 
 ---
 
-## 8. CHƯA LÀM ❌ (backlog)
+## 10. CHƯA LÀM ❌ (backlog ưu tiên)
 
-### Ưu tiên cao
-- ❌ **Testing**: Unit test (Vitest), Integration test (Supertest), E2E test (Playwright)
-- ❌ **Validation chặt hơn**: Zod schema cho input, rate-limit per endpoint
-- ❌ **Error boundary** ở React
-- ❌ **404 + 500 page** đẹp
+### 🔴 P0 — Phải sửa trước Production (1-2 ngày)
+1. Thêm `helmet()` + `compression()` + rate-limit global vào `app.js`
+2. Whitelist origin trong `cors()`
+3. Handler `uncaughtException` + `unhandledRejection` trong `server.js`
+4. Graceful shutdown cho SIGTERM
 
-### Ưu tiên trung bình
-- ❌ **Pagination server-side** thực sự (hiện đang client-side filter)
-- ❌ **Export CSV/Excel** cho user management, audit log
-- ❌ **Notification realtime** (WebSocket/SSE) thay vì polling
-- ❌ **Email service** thật (hiện forgot-password chỉ log token ra console)
-- ❌ **Upload lên cloud** (S3/Cloudinary) thay vì local disk
+### 🟠 P1 — Làm ngay sau deploy (1 tuần)
+5. Code-splitting bundle (tách React-vendor, charts, icons)
+6. Cache dashboard COUNT query (Redis/in-memory)
+7. Config Prisma connection pool rõ ràng
+8. Redis adapter cho Socket.io (scale horizontal)
+9. Auth cho static `/uploads` (signed URL)
+10. Tắt source map trong production build
 
-### Ưu tiên thấp
-- ❌ **i18n** (đa ngôn ngữ Việt/Anh)
-- ❌ **Dark mode**
-- ❌ **PWA** (offline support)
-- ❌ **Deploy** (Vercel + Railway/Render)
-- ❌ **CI/CD** (GitHub Actions)
-- ❌ **Docker Compose** cho dev
+### 🟡 P2 — Maintenance sau này
+- Viết test (Vitest unit + Supertest integration + Playwright E2E)
+- Upload lên S3/Cloudinary thay vì local disk
+- Export CSV/Excel cho user management, audit log
+- i18n (Việt/Anh)
+- Dark mode
+- PWA
+- CI/CD (GitHub Actions)
+- Docker Compose cho dev
+- Deploy lên Vercel (FE) + Railway/Render (BE) + Supabase (DB)
 
 ---
 
-## 9. ĐÁNH GIÁ & RỦI RO
+## 11. ĐÁNH GIÁ & RỦI RO
 
-### 💪 Điểm mạnh
-- **Backend chuẩn chỉnh**: phân lớp controller/service/repository rõ ràng, dễ mở rộng
-- **Soft-delete chuẩn hoá**: utility tái sử dụng, có Thùng rác UI để khôi phục
-- **RBAC đầy đủ** ngay từ đầu, không phải refactor lại
-- **Feature-based frontend** giúp scale tốt khi thêm module mới (Classes, Lessons, Attendance...)
+### 💪 Điểm mạnh (đã có)
+- **Codebase sạch, có kiến trúc rõ ràng** — controller/service/repository pattern, Feature-based frontend
+- **Soft-delete infrastructure tốt** — 7 model cùng dùng 1 helper, 1 whitelist
+- **RBAC đầy đủ** ngay từ đầu + audit log mọi hành động nhạy cảm
+- **Public site có SEO chuẩn** + Prerender + Sitemap
+- **Đã qua 2 đợt QA chuyên sâu** tìm được lỗi đồng bộ giữa các module
+- **Email service & Socket.io** đã có sẵn
 
-### ⚠️ Rủi ro / Điểm yếu
-- **Chưa có test** — refactor sau này sẽ rất rủi ro
-- **Pagination client-side** — khi data lớn (>1000 records) sẽ chậm
-- **Email chưa thật** — forgot-password chưa gửi được email
-- **Upload local disk** — không scale, không backup
-- **Không có CI** — phải build thủ công, dễ deploy thiếu
+### ⚠️ Rủi ro / Điểm yếu còn lại
+- **Chưa có test** — refactor sau này sẽ rất rủi ro (P1)
+- **4 P0 security** chưa sửa — không thể deploy public ngay (P0)
+- **Bundle 1.2 MB chưa code-split** — mobile 3G chậm (P1)
+- **Single Prisma pool + single Socket.io instance** — chưa scale horizontal (P1)
+- **Upload local disk** — không scale, không backup (P2)
+- **Không có CI/CD** — phải build thủ công (P2)
 
 ### 🎯 Đề xuất ưu tiên tuần tới
-1. **Viết test cho backend services** (unit test với Vitest) — quan trọng nhất
-2. **Pagination server-side** cho User/Notification/Audit
-3. **Email service** thật (gmail SMTP hoặc SendGrid free tier)
-4. **Loading skeleton + empty state** đồng bộ
-5. **Responsive mobile** cho toàn bộ 10 trang
+1. **Sửa 4 P0** (helmet, cors, uncaught handler, graceful shutdown) — **1-2 ngày**
+2. **Viết test cho backend services** (Vitest) — quan trọng nhất sau khi deploy
+3. **Code-splitting bundle** — cải thiện LCP mobile
+4. **Cache dashboard COUNT** — giảm tải DB
+5. **Setup CI cơ bản** (build + lint + typecheck tự động)
+6. **Deploy staging lên Render/Railway** — test với traffic thật trước khi go-live
 
 ---
 
-## 10. TÓM TẮT 1 DÒNG
+## 12. TÓM TẮT 1 DÒNG
 
-> **MVP Zhong Ruan LMS đã chạy được end-to-end** (backend 38 API + frontend 10 trang + auth/RBAC/soft-delete đầy đủ) sau 4 ngày phát triển; hiện đang ở **giai đoạn 5 (UI polish)** và **chưa có test/deploy** — cần ưu tiên viết test + email thật + deploy production trước khi mở rộng tính năng mới.
+> **Zhong Ruan LMS** — Hệ thống gồm **Admin Site** (10 trang CRUD + audit + realtime) và **Public Site** (5 trang marketing có SEO + Prerender) — đã chạy end-to-end sau **18 ngày phát triển (79 commits)**, với **14 module backend, 17 trang frontend, ~85 REST endpoint, 7 model soft-delete**. Đã qua 2 đợt QA chuyên sâu. Đang ở giai đoạn **tiền Production** — cần sửa **4 lỗi P0 về bảo mật/hạ tầng trong 1-2 ngày** là có thể deploy phục vụ 2.000-3.000 người dùng.

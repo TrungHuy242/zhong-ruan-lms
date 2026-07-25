@@ -1,0 +1,337 @@
+﻿LOGIN RESULT: {
+  "status": 200,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwiZW1haWwiOiJhZG1pbkB6aG9uZ3J1YW4uY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzg0OTg1Mzc3LCJleHAiOjE3ODU1OTAxNzd9.PtVtdTq73kYVwhNAFtLsfIIJxbpCFWJHSFHHOoHDieU",
+  "body": {
+    "message": "─É─âng nhß║¡p th├ánh c├┤ng",
+    "data": {
+      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwiZW1haWwiOiJhZG1pbkB6aG9uZ3J1YW4uY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzg0OTg1Mzc3LCJleHAiOjE3ODU1OTAxNzd9.PtVtdTq73kYVwhNAFtLsfIIJxbpCFWJHSFHHOoHDieU",
+      "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwianRpIjoiNjhkZGEzYWEtNzJjMi00MTExLWI1NTEtMTBlYzkyY2U1ODNmIiwiaWF0IjoxNzg0OTg1Mzc3LCJleHAiOjE3ODU1OTAxNzd9.uayUYGM1B8kCeX9nxZImSL_CFVYO1Uir7VAuszdIMfM",
+      "user": {
+        "id": 8,
+        "fullName": "Trung Huy",
+        "email": "admin@zhongruan.com",
+        "phone": "0987654321",
+        "role": "ADMIN",
+        "status": "ACTIVE"
+      }
+    }
+  }
+}
+ADMIN LIST RESULT:
+{
+  "status": 200,
+  "body": {
+    "message": "Lß║Ñy danh s├ích li├¬n hß╗ç th├ánh c├┤ng",
+    "data": {
+      "contacts": [
+        {
+          "id": "3efc21c1-5911-4c99-b85a-7c07bf454940",
+          "fullName": "DB Verify 1784985240756",
+          "phone": "0901234567",
+          "email": "db_verify_1784985240756@example.com",
+          "message": "Verify record persists in DB after Puppeteer E2E submit.",
+          "status": "NEW",
+          "createdAt": "2026-07-25T13:14:00.834Z",
+          "updatedAt": "2026-07-25T13:14:00.834Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "d3c5e42f-1601-4cea-84aa-197c37179cea",
+          "fullName": "DB Verify 1784985194377",
+          "phone": "0901234567",
+          "email": "db_verify_1784985194377@example.com",
+          "message": "Verify record persists in DB after Puppeteer E2E submit.",
+          "status": "NEW",
+          "createdAt": "2026-07-25T13:13:14.475Z",
+          "updatedAt": "2026-07-25T13:13:14.475Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "1d7e7adb-08bc-4548-a0c6-3a9def92ab83",
+          "fullName": "E2E Verify 1784984996800",
+          "phone": "0987654321",
+          "email": "verify_1784984996800@example.com",
+          "message": "Verify record via direct API call after Puppeteer submit.",
+          "status": "NEW",
+          "createdAt": "2026-07-25T13:09:56.821Z",
+          "updatedAt": "2026-07-25T13:09:56.821Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "23d70b1f-f269-47f6-843d-6cc221053101",
+          "fullName": "Nguyß╗àn V─ân A (E2E Test)",
+          "phone": "0912345678",
+          "email": "e2e_1784984989451@example.com",
+          "message": "─É├óy l├á test E2E tß╗▒ ─æß╗Öng tß╗½ Puppeteer ΓÇö kiß╗âm tra form li├¬n hß╗ç hoß║ít ─æß╗Öng ─æ├║ng sau redesign editorial.",
+          "status": "NEW",
+          "createdAt": "2026-07-25T13:09:52.202Z",
+          "updatedAt": "2026-07-25T13:09:52.202Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "ef0f70f5-904a-4ea9-956b-3ee7b972982e",
+          "fullName": "Tr╞░╞íng Minh Trung Huy",
+          "phone": "0795508242",
+          "email": "huytrung0102@gmail.com",
+          "message": "T├┤i muß╗æn hß╗ìc HSK4 trong 1 thß╗¥i gian",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:45:46.962Z",
+          "updatedAt": "2026-07-22T16:45:46.962Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "7d0e6b64-d417-4076-bb55-836aa2814f93",
+          "fullName": "Verify",
+          "phone": "0912345678",
+          "email": "v@t.com",
+          "message": "test message 1234567890",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:34:55.732Z",
+          "updatedAt": "2026-07-22T16:34:55.732Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "613eefd0-2d32-40a1-91a3-12d972afa262",
+          "fullName": "Verify",
+          "phone": "0912345678",
+          "email": "v@t.com",
+          "message": "test message 1234567890",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:34:52.459Z",
+          "updatedAt": "2026-07-22T16:34:52.459Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "2c6dbd90-b720-4907-bbf0-ed2d00e5c8d8",
+          "fullName": "Verify",
+          "phone": "0912345678",
+          "email": "v@t.com",
+          "message": "test message 1234567890",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:34:49.940Z",
+          "updatedAt": "2026-07-22T16:34:49.940Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "2b45c371-452d-4c7f-99a3-c111773aac58",
+          "fullName": "Verify",
+          "phone": "0912345678",
+          "email": "v@t.com",
+          "message": "test message 1234567890",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:34:46.729Z",
+          "updatedAt": "2026-07-22T16:34:46.729Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "214c519e-07b2-4601-896a-3a899112ef7b",
+          "fullName": "Verify",
+          "phone": "0912345678",
+          "email": "v@t.com",
+          "message": "test message 1234567890",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:34:43.407Z",
+          "updatedAt": "2026-07-22T16:34:43.407Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "031f7cfe-3403-4ba1-84bb-4b999759eec2",
+          "fullName": "Test After Fix",
+          "phone": "0912345678",
+          "email": "after@t.com",
+          "message": "test message after restart - kiem tra rate-limit reset",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:28:30.517Z",
+          "updatedAt": "2026-07-22T16:28:30.517Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "9e828332-cf5e-40e9-8aac-9db9d6572a26",
+          "fullName": "Test After Fix",
+          "phone": "0912345678",
+          "email": "after@t.com",
+          "message": "test message after restart - kiem tra rate-limit reset",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:28:28.098Z",
+          "updatedAt": "2026-07-22T16:28:28.098Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "81cf7448-06ea-4f29-9abb-bab76f44910b",
+          "fullName": "Test After Fix",
+          "phone": "0912345678",
+          "email": "after@t.com",
+          "message": "test message after restart - kiem tra rate-limit reset",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:28:24.780Z",
+          "updatedAt": "2026-07-22T16:28:24.780Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "eb063a69-97b5-4bf4-b5e1-9653662e0ff3",
+          "fullName": "Test Rate",
+          "phone": "0912345678",
+          "email": "r1@t.com",
+          "message": "test message 1234567890",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:05:51.669Z",
+          "updatedAt": "2026-07-22T16:05:51.669Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "f4db72f3-507a-4088-9bbb-ce7884f6fda0",
+          "fullName": "FE Self Review",
+          "phone": "0795508242",
+          "email": "selfreview@test.com",
+          "message": "Test end-to-end lu?ng FE public ? admin list sau khi build.",
+          "status": "NEW",
+          "createdAt": "2026-07-22T16:04:53.417Z",
+          "updatedAt": "2026-07-22T16:05:29.674Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "1026b05d-3f9a-47fb-96a8-2a2c939ee2d5",
+          "fullName": "ENV Test User",
+          "phone": "0987654321",
+          "email": "envtest@example.com",
+          "message": "Test end-to-end tu script kiem tra .env luc 22:48:03",
+          "status": "NEW",
+          "createdAt": "2026-07-22T15:48:03.916Z",
+          "updatedAt": "2026-07-22T15:48:03.916Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "10c8c824-ec94-4326-8b4d-41040f43e282",
+          "fullName": "Final Test",
+          "phone": "0912345678",
+          "email": "final@test.com",
+          "message": "Test cuoi cung - kiem tra email notification flow.",
+          "status": "NEW",
+          "createdAt": "2026-07-19T08:30:19.116Z",
+          "updatedAt": "2026-07-19T08:30:19.116Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "d068bfb8-e3ee-48f5-b2ba-5b65bee048f2",
+          "fullName": "Email Test",
+          "phone": "0987654321",
+          "email": "e@e.com",
+          "message": "Test email notification dry-run mode.",
+          "status": "NEW",
+          "createdAt": "2026-07-19T08:28:50.495Z",
+          "updatedAt": "2026-07-19T08:28:50.495Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "6bb085cc-b849-4002-9676-13848a2a5ebd",
+          "fullName": "Email Test",
+          "phone": "0987654321",
+          "email": "e@e.com",
+          "message": "Test email notification dry-run mode.",
+          "status": "NEW",
+          "createdAt": "2026-07-19T08:28:29.752Z",
+          "updatedAt": "2026-07-19T08:28:29.752Z",
+          "deletedAt": null,
+          "deletedById": null
+        },
+        {
+          "id": "52c49226-2fd2-4279-8b9b-97ab65344ceb",
+          "fullName": "Test 1",
+          "phone": "0912345678",
+          "email": "t1@e.com",
+          "message": "Test rate limit 1 - tin nhan can it nhat 10 ky tu.",
+          "status": "NEW",
+          "createdAt": "2026-07-19T08:23:25.805Z",
+          "updatedAt": "2026-07-19T08:23:25.805Z",
+          "deletedAt": null,
+          "deletedById": null
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 21,
+        "totalPages": 2
+      },
+      "stats": {
+        "byStatus": {
+          "NEW": 21,
+          "CONTACTED": 0,
+          "CLOSED": 0
+        }
+      }
+    }
+  }
+}
+
+Total contacts in DB: 21
+
+E2E RECORDS FOUND (4):
+[
+  {
+    "id": "3efc21c1-5911-4c99-b85a-7c07bf454940",
+    "fullName": "DB Verify 1784985240756",
+    "phone": "0901234567",
+    "email": "db_verify_1784985240756@example.com",
+    "message": "Verify record persists in DB after Puppeteer E2E submit.",
+    "status": "NEW",
+    "createdAt": "2026-07-25T13:14:00.834Z",
+    "updatedAt": "2026-07-25T13:14:00.834Z",
+    "deletedAt": null,
+    "deletedById": null
+  },
+  {
+    "id": "d3c5e42f-1601-4cea-84aa-197c37179cea",
+    "fullName": "DB Verify 1784985194377",
+    "phone": "0901234567",
+    "email": "db_verify_1784985194377@example.com",
+    "message": "Verify record persists in DB after Puppeteer E2E submit.",
+    "status": "NEW",
+    "createdAt": "2026-07-25T13:13:14.475Z",
+    "updatedAt": "2026-07-25T13:13:14.475Z",
+    "deletedAt": null,
+    "deletedById": null
+  },
+  {
+    "id": "1d7e7adb-08bc-4548-a0c6-3a9def92ab83",
+    "fullName": "E2E Verify 1784984996800",
+    "phone": "0987654321",
+    "email": "verify_1784984996800@example.com",
+    "message": "Verify record via direct API call after Puppeteer submit.",
+    "status": "NEW",
+    "createdAt": "2026-07-25T13:09:56.821Z",
+    "updatedAt": "2026-07-25T13:09:56.821Z",
+    "deletedAt": null,
+    "deletedById": null
+  },
+  {
+    "id": "23d70b1f-f269-47f6-843d-6cc221053101",
+    "fullName": "Nguyß╗àn V─ân A (E2E Test)",
+    "phone": "0912345678",
+    "email": "e2e_1784984989451@example.com",
+    "message": "─É├óy l├á test E2E tß╗▒ ─æß╗Öng tß╗½ Puppeteer ΓÇö kiß╗âm tra form li├¬n hß╗ç hoß║ít ─æß╗Öng ─æ├║ng sau redesign editorial.",
+    "status": "NEW",
+    "createdAt": "2026-07-25T13:09:52.202Z",
+    "updatedAt": "2026-07-25T13:09:52.202Z",
+    "deletedAt": null,
+    "deletedById": null
+  }
+]

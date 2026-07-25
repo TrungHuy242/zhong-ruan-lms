@@ -44,6 +44,7 @@ export function CourseDetailPage() {
         <Breadcrumb items={[{ label: "Khóa học", to: "/khoa-hoc" }, { label: "Không tìm thấy" }]} />
         <section className={styles.notFound}>
           <div className={styles.notFoundInner}>
+            <p className={styles.notFoundNumeral}>404</p>
             <h1 className={styles.notFoundTitle}>Không tìm thấy khóa học</h1>
             <p className={styles.notFoundText}>
               Khóa học bạn đang tìm không tồn tại hoặc đã bị xoá. Vui lòng xem
@@ -62,6 +63,20 @@ export function CourseDetailPage() {
   const allSummaries = getCourseSummaries();
   const otherCourses = allSummaries.filter((c) => c.slug !== course.slug);
 
+  // Stage number cho narrative workflow (1.0 / 2.0 / 3.0)
+  const stageNumber: Record<string, string> = {
+    "hsk-1-2": "1.0",
+    "hsk-3-4": "2.0",
+    "hsk-5-6": "3.0",
+  };
+  const stageNum = stageNumber[course.slug] ?? "—";
+  const stageFullLabel: Record<string, string> = {
+    "hsk-1-2": "Sơ cấp — Người mới bắt đầu",
+    "hsk-3-4": "Trung cấp — Học viên có nền tảng",
+    "hsk-5-6": "Cao cấp — Du học & Chuyên môn",
+  };
+  const stageFull = stageFullLabel[course.slug] ?? course.level;
+
   return (
     <>
       <SEO title={course.seo.title} description={course.seo.description} />
@@ -73,16 +88,22 @@ export function CourseDetailPage() {
         ]}
       />
 
-      {/* HERO riêng khóa */}
-      <section className={styles.hero} aria-labelledby="course-hero-heading">
-        <div className={styles.container}>
+      {/* MASTHEAD — Ivory, không gradient đỏ. "Stage N.0" + heading */}
+      <section
+        className={styles.masthead}
+        aria-labelledby="course-hero-heading"
+      >
+        <div className={styles.mastheadInner}>
+          <span className={styles.stageLabel}>
+            Chặng {stageNum} · {stageFull}
+          </span>
           <span className={styles.levelBadge}>{course.level}</span>
           <h1 id="course-hero-heading" className={styles.heading}>
             {course.name}
           </h1>
           <p className={styles.subheading}>{course.fullDescription}</p>
 
-          <div className={styles.heroMeta}>
+          <div className={styles.meta}>
             <div className={styles.metaItem}>
               <BookOpen size={18} aria-hidden="true" />
               <span>{course.lessons} buổi</span>
@@ -97,7 +118,7 @@ export function CourseDetailPage() {
             </div>
           </div>
 
-          <div className={styles.heroCta}>
+          <div className={styles.cta}>
             <div className={styles.priceBox}>
               <span className={styles.priceLabel}>Học phí</span>
               <strong className={styles.price}>{course.price}</strong>
@@ -112,15 +133,18 @@ export function CourseDetailPage() {
         </div>
       </section>
 
-      {/* LỘ TRÌNH HỌC */}
+      {/* LỘ TRÌNH HỌC — 4 giai đoạn trong narrative workflow */}
       <section
         className={`${styles.section} ${styles.sectionAlt}`}
         aria-labelledby="roadmap-heading"
       >
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>
+              Bốn giai đoạn · {course.roadmap.length} chặng nhỏ
+            </span>
             <h2 id="roadmap-heading" className={styles.sectionTitle}>
-              Lộ Trình Học Chi Tiết
+              Lộ Trình Học <span className={styles.sectionTitleAccent}>Chi Tiết</span>
             </h2>
             <p className={styles.sectionSubtitle}>
               {course.lessons} buổi học chia thành {course.roadmap.length} giai
@@ -133,13 +157,14 @@ export function CourseDetailPage() {
 
       {/* BẠN SẼ ĐẠT ĐƯỢC GÌ */}
       <section
-        className={`${styles.section} ${styles.sectionWhite}`}
+        className={`${styles.section} ${styles.sectionIvory}`}
         aria-labelledby="outcomes-heading"
       >
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Đầu ra rõ ràng</span>
             <h2 id="outcomes-heading" className={styles.sectionTitle}>
-              Bạn Sẽ Đạt Được Gì
+              Bạn Sẽ <span className={styles.sectionTitleAccent}>Đạt Được Gì</span>
             </h2>
             <p className={styles.sectionSubtitle}>
               Mục tiêu đầu ra rõ ràng cho khóa {course.name}
@@ -158,12 +183,15 @@ export function CourseDetailPage() {
         </div>
       </section>
 
-      {/* PHÙ HỢP VỚI AI */}
+      {/* PHÙ HỢP VỚI AI — ivory card với brand-red rule */}
       <section
         className={`${styles.section} ${styles.sectionAlt}`}
         aria-labelledby="audience-heading"
       >
         <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Dành cho ai</span>
+          </div>
           <div className={styles.audienceCard}>
             <h2 id="audience-heading" className={styles.audienceTitle}>
               Phù Hợp Với Ai
@@ -176,13 +204,14 @@ export function CourseDetailPage() {
       {/* FAQ RIÊNG (nếu có) */}
       {course.faq && course.faq.length > 0 && (
         <section
-          className={`${styles.section} ${styles.sectionWhite}`}
+          className={`${styles.section} ${styles.sectionIvory}`}
           aria-labelledby="course-faq-heading"
         >
           <div className={styles.container}>
             <div className={styles.sectionHeader}>
+              <span className={styles.sectionEyebrow}>Hỏi — đáp</span>
               <h2 id="course-faq-heading" className={styles.sectionTitle}>
-                Câu Hỏi Thường Gặp Về Khóa Này
+                Câu Hỏi <span className={styles.sectionTitleAccent}>Thường Gặp</span>
               </h2>
             </div>
             <FAQAccordion items={course.faq} />
@@ -197,8 +226,9 @@ export function CourseDetailPage() {
       >
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Tiếp tục hành trình</span>
             <h2 id="other-courses-heading" className={styles.sectionTitle}>
-              Khóa Học Khác Bạn Có Thể Quan Tâm
+              Khóa Học Khác <span className={styles.sectionTitleAccent}>Bạn Có Thể Quan Tâm</span>
             </h2>
           </div>
           <div className={styles.grid2}>

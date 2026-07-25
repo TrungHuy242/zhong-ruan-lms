@@ -37,6 +37,7 @@ model User {
   deletedSettings       Setting[]      @relation("SettingDeletedBy")
   deletedTeachers       Teacher[]      @relation("TeacherDeletedBy")
   deletedPricingPlans   PricingPlan[]  @relation("PricingPlanDeletedBy")
+  deletedBanners       Banner[]       @relation("BannerDeletedBy")
   linkedTeachers        Teacher[]      @relation("TeacherLinkedUser")
 
   @@index([avatarFileId])
@@ -276,4 +277,31 @@ model PricingPlan {
   @@index([deletedById])
   @@index([courseSlug])
   @@map("pricing_plans")
+}
+
+model Banner {
+  id           String    @id @default(uuid())
+  title        String
+  subtitle     String?
+  imageUrl     String
+  ctaText     String?
+  ctaLink     String?
+  badgeText    String?
+  startDate    DateTime?
+  endDate      DateTime?
+  isPublished  Boolean   @default(true)
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  deletedById  Int?
+  deletedBy    User?    @relation("BannerDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([isPublished])
+  @@index([displayOrder])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([deletedAt])
+  @@index([deletedById])
+  @@map("banners")
 }

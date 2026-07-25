@@ -1,5 +1,14 @@
 /**
  * FAQAccordion — accordion câu hỏi thường gặp.
+ *
+ * Editorial voice (round 26-07, locked system §9):
+ *   - Item là flat hairline row, không rounded, không shadow
+ *   - Trigger có 3-col grid: number (id-derived 01/02) | question | indicator (+/−)
+ *   - Open state: brand-red top border + indicator − thay vì +
+ *   - Answer: grid-template-rows 0fr → 1fr (smooth height auto)
+ *
+ * Logic React giữ nguyên 100% — chỉ thêm 2 phần tử visual (triggerNumber, indicator)
+ * phục vụ cho editorial system. State, a11y, prop API không đổi.
  */
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
@@ -10,6 +19,8 @@ interface FAQAccordionProps {
   items: FaqItem[];
 }
 
+const pad = (n: number): string => (n < 10 ? `0${n}` : `${n}`);
+
 export function FAQAccordion({ items }: FAQAccordionProps) {
   const [openId, setOpenId] = useState<number | null>(null);
 
@@ -19,7 +30,7 @@ export function FAQAccordion({ items }: FAQAccordionProps) {
 
   return (
     <div className={styles.list} role="list">
-      {items.map((item) => {
+      {items.map((item, idx) => {
         const isOpen = openId === item.id;
         return (
           <div
@@ -35,11 +46,17 @@ export function FAQAccordion({ items }: FAQAccordionProps) {
               aria-controls={`faq-answer-${item.id}`}
               id={`faq-question-${item.id}`}
             >
+              <span className={styles.triggerNumber} aria-hidden="true">
+                {pad(idx + 1)}
+              </span>
               <span className={styles.question}>{item.question}</span>
+              <span className={styles.indicator} aria-hidden="true" />
+              {/* Legacy lucide chevron — render giữ để không đổi JSX signature,
+                  bị ẩn hoàn toàn qua CSS .chevron { display: none } */}
               <ChevronDown
                 size={20}
                 strokeWidth={2}
-                className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}
+                className={styles.chevron}
                 aria-hidden="true"
               />
             </button>
@@ -49,7 +66,9 @@ export function FAQAccordion({ items }: FAQAccordionProps) {
               aria-labelledby={`faq-question-${item.id}`}
               className={`${styles.answer} ${isOpen ? styles.answerOpen : ""}`}
             >
-              <p className={styles.answerText}>{item.answer}</p>
+              <div className={styles.answerInner}>
+                <p className={styles.answerText}>{item.answer}</p>
+              </div>
             </div>
           </div>
         );
