@@ -6,6 +6,9 @@
   mục 2/4/5/6 được chạy nốt trong phiên Claude Code (script
   `frontend/scripts/qa-muc-2-4-5-6-combined.mjs` đã viết sẵn nhưng chưa có bằng chứng
   đã chạy). Mục 1 được re-verify lại trước khi chốt.
+- **Bằng chứng vật lý chạy lại** (sau khi mở lại phiên lúc 19:13 ICT 26/07): toàn bộ
+  6 mục chạy lại với backend + vite preview còn nguyên (port 5000 / 4173 vẫn UP từ
+  phiên trước, `dist/` nguyên vẹn). Tất cả đều PASS.
 - **Kết quả tổng**: ✅ **PASS toàn bộ 6 mục — 0 lỗi.**
 
 ## Môi trường chạy
@@ -40,6 +43,9 @@ Các fix phát sinh từ mục này (12 file CSS, +409/−224 dòng, commit kèm
 "Tiế ng" (regex quét combining mark U+0300–U+036F + whitespace trên `innerText`
 toàn trang).
 
+**Re-run lúc 19:14 ICT 26/07 (phiên Claude Code) — PASS 27/27**: log trong
+`terminals/<id>.txt` ghi `PASS: 27 / FAIL: 0`.
+
 ### Mục 3 — Build + prerender với Backend online
 
 ✅ **PASS** (chạy trong phiên Cursor 02:40–02:41 ngày 26/07, verify lại bằng chứng
@@ -55,11 +61,15 @@ vật lý trong phiên này):
 Register) × 3 breakpoint (mobile 375 / tablet 768 / desktop 1440): không trang nào
 có `scrollWidth > clientWidth` (tràn ngang).
 
+**Re-run lúc 19:14 ICT 26/07 — PASS 27/27**.
+
 ### Mục 5 — Console errors + Network 4xx/5xx
 
 ✅ **PASS 27/27 + 27/27** — 0 console error, 0 network 5xx trên toàn bộ 27 lượt tải
 trang. (Rule loại trừ: 429 rate-limit do vòng lặp test gây ra — artifact của test,
 không phải lỗi site.)
+
+**Re-run lúc 19:14 ICT 26/07 — Console 27/27 PASS, Network 5xx 27/27 PASS.**
 
 ### Mục 6 — Click-through toàn luồng chính
 
@@ -79,6 +89,9 @@ Contact: http://localhost:4173/lien-he OK
 
 Login dùng đúng tài khoản seed admin, điều hướng thành công vào `/dashboard`;
 mỗi trang public đều verify có nội dung render thật (`main.innerText > 50 ký tự`).
+
+**Re-run lúc 19:14 ICT 26/07 — toàn bộ 9 bước OK**, log nguyên văn trong phiên này
+trùng khớp với log trên.
 
 ## Ghi chú còn lại trước production (ngoài phạm vi QA này)
 
