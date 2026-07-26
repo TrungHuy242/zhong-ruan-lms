@@ -125,11 +125,14 @@
   outline-offset: 3px;
 }
 
-/* Title — Source Serif 4 italic */
+/* Title — Source Serif 4 (gate 38a: NO italic on display).
+   Trước đây là font-style: italic → vi phạm gate 38a (AI tell).
+   Đồng bộ pattern đã lock ở TeacherDetailPage .title vừa sửa + CourseDetailPage
+   levelBadge/priceBox round trước: giữ brand-red color + weight đậm thay italic. */
 .title {
   font-family: "Source Serif 4", "Georgia", serif;
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 600;
   font-size: clamp(14px, 1.1vw, 16px);
   color: var(--zr-brand, #c8102e);
   margin: 0;
@@ -194,8 +197,8 @@
   display: inline-flex;
   align-items: center;
   font-family: "Source Serif 4", "Georgia", serif;
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 500;
   font-size: 13px;
   color: var(--zr-ink-muted, #6b6058);
   background: transparent;

@@ -650,9 +650,9 @@
   margin: 0;
   font-family: var(--zr-font-body);
   font-size: 12px;
-  font-style: italic;
+  font-style: normal;
   color: var(--zr-ink-muted);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.5;
 }
 
@@ -778,7 +778,7 @@
   font-weight: 400;
   line-height: 1.75;
   color: var(--zr-ink-soft);
-  font-style: italic;
+  font-style: normal;
 }
 
 .testimonialMeta {

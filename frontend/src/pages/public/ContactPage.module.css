@@ -43,7 +43,11 @@
 
 .page {
   background: var(--zr-paper);
-  padding-top: clamp(72px, 9vw, 128px);
+  /* KHÔNG padding-top ở page root — PublicLayout đã có padding-top: 72px (mobile 64px)
+   * để chừa chỗ sticky header. Trước đây có padding-top clamp(72px, 9vw, 128px) ở đây
+   * khiến tổng = ~144px trên mobile, dày bất thường so với 4 trang public khác.
+   * Đồng bộ với HomePage / CoursesPage / TeachersListPage / PricingPage — section
+   * masthead phía dưới tự lo padding-top nội bộ. */
   padding-bottom: clamp(80px, 10vw, 144px);
   min-width: 0;
 }
@@ -63,7 +67,7 @@
 .masthead {
   max-width: 760px;
   margin: 0 0 clamp(48px, 6vw, 80px) 0;
-  padding: 0;
+  padding: clamp(72px, 9vw, 128px) 0 0 0;
   text-align: left;
   min-width: 0;
 }

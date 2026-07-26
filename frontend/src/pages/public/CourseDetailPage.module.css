@@ -181,7 +181,7 @@
   font-family: var(--zr-font-body);
   font-size: 11px;
   color: var(--text-secondary, #6b7280);
-  font-style: italic;
+  font-style: normal;
   line-height: 1.5;
   text-align: center;
 }

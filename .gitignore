@@ -20,6 +20,11 @@ backend/uploads/*
 backend/tmp_test_uploads/
 backend/scripts/tmp_test_uploads/
 
+# Log runtime ở root (backend chạy nền + log các lượt chạy QA)
+backend.log
+backend.err
+qa-*.log
+
 # QA tự động (artifacts, không commit lên repo)
 frontend/public-site-qa-report.json
 frontend/public-site-qa-report.md

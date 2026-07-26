@@ -1,70 +1,94 @@
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
+/* Hallmark · editorial rewrite · design-system: design.md §9 (locked)
+ * Anti-SaaS applied:
+ * - border-radius: 0 (cancel --radius-lg)
+ * - box-shadow: none (cancel --shadow-card on hover)
+ * - no transform translateY(-3px) on hover → border-color shift to brand-red
+ * - hover value color: brand-red italic numerals (gate 38a carve-out for numerals)
+ */
+:root {
+  --zr-font-serif: "Source Serif 4", "Georgia", serif;
+  --zr-font-body: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4, 16px);
+  min-width: 0;
+}
+
+/* Card: ivory + hairline border, brand-red top-3px hairline, hover đổi border sang brand-red */
 .item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-2);
-  padding: var(--space-8) var(--space-4);
-  background: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-default);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  align-items: flex-start;
+  text-align: left;
+  gap: var(--space-2, 8px);
+  padding: clamp(24px, 3vw, 36px) clamp(20px, 2.4vw, 32px);
+  background: var(--zr-paper, #faf7f2);
+  border: 1px solid var(--zr-rule, #d9d0c3);
+  border-top: 3px solid var(--zr-rule, #d9d0c3);
+  border-radius: 0;
+  box-shadow: none;
+  transition: border-color 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .item:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-card);
+  border-color: var(--zr-brand, #c8102e);
+  border-top-color: var(--zr-brand, #c8102e);
 }
 
+/* Value: Source Serif 4 italic numerals (design.md §9.3 carve-out) */
 .value {
-  font-family: "Be Vietnam Pro", "Inter", sans-serif;
-  font-size: clamp(32px, 3.5vw, 44px);
-  font-weight: 800;
-  color: var(--brand-primary);
+  font-family: var(--zr-font-serif);
+  font-style: italic;
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 400;
+  color: var(--zr-brand, #c8102e);
   line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   display: flex;
   align-items: baseline;
   gap: 2px;
+  margin: 0;
 }
 
 .suffix {
-  font-size: 0.6em;
+  font-size: 0.5em;
+  color: var(--zr-ink, #1a1a1e);
+  font-style: normal;
+  font-family: var(--zr-font-body);
 }
 
 .label {
-  font-size: 14px;
-  color: var(--text-secondary);
+  font-family: var(--zr-font-body);
+  font-size: 13px;
   font-weight: 500;
-  line-height: 1.4;
-  max-width: 140px;
+  font-style: normal;
+  color: var(--zr-ink-soft, #4a4540);
+  line-height: 1.45;
+  max-width: 100%;
+  margin: 0;
 }
 
 @media (max-width: 1024px) {
   .grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 480px) {
   .grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-3);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3, 12px);
   }
-
   .item {
-    padding: var(--space-5) var(--space-3);
+    padding: var(--space-5, 20px) var(--space-3, 12px);
   }
-
   .value {
     font-size: 28px;
   }
-
   .label {
     font-size: 12px;
   }

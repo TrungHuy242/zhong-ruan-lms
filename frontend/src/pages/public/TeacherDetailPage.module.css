@@ -76,7 +76,7 @@
   border-top: 1px solid var(--zr-rule, #d9d0c3);
   font-family: var(--zr-font-body);
   font-size: 12px;
-  font-style: italic;
+  font-style: normal;
   line-height: 1.5;
   color: var(--zr-ink-muted, #6b6058);
   text-align: center;
@@ -147,14 +147,16 @@
   vertical-align: middle;
 }
 
-/* Title — italic body, soft ink */
+/* Title — Source Serif 4, roman (gate 38a) — italic banned trên heading/display.
+   Trước đây là font-style: italic → vi phạm gate 38a. Đồng bộ với CourseDetailPage
+   round trước: dùng brand-red color hoặc weight 600 để nhấn thay vì italic. */
 .title {
   font-family: var(--zr-font-serif);
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 500;
   font-size: clamp(18px, 1.6vw, 22px);
   line-height: 1.4;
-  color: var(--zr-ink-soft, #4a4540);
+  color: var(--zr-brand, #c8102e);
   margin: 0;
   text-wrap: balance;
 }
@@ -211,11 +213,14 @@
   color: var(--zr-ink-muted, #6b6058);
 }
 
+/* expValue — số liệu, dùng brand-red color + weight đậm hơn thay cho italic.
+   Trước đây là font-style: italic → vi phạm gate 38a.
+   Đồng bộ với CourseDetailPage (heading roman, dùng accent color + weight). */
 .expValue {
   font-family: var(--zr-font-serif);
-  font-style: italic;
+  font-style: normal;
   font-size: clamp(20px, 1.8vw, 24px);
-  font-weight: 400;
+  font-weight: 600;
   color: var(--zr-ink, #1a1a1e);
   font-variant-numeric: tabular-nums;
   margin: 0;
@@ -372,8 +377,8 @@
 
 .bioTitleAccent {
   font-family: var(--zr-font-serif);
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 600;
   color: var(--zr-brand, #c8102e);
 }
 
@@ -465,7 +470,7 @@
 .notFoundText {
   font-family: var(--zr-font-body);
   font-size: 16px;
-  font-style: italic;
+  font-style: normal;
   line-height: 1.7;
   color: var(--zr-ink-soft, #4a4540);
   margin: 0;
