@@ -38,6 +38,7 @@ model User {
   deletedTeachers       Teacher[]      @relation("TeacherDeletedBy")
   deletedPricingPlans   PricingPlan[]  @relation("PricingPlanDeletedBy")
   deletedBanners       Banner[]       @relation("BannerDeletedBy")
+  deletedEnrollmentSchedules EnrollmentSchedule[] @relation("EnrollmentScheduleDeletedBy")
   linkedTeachers        Teacher[]      @relation("TeacherLinkedUser")
 
   @@index([avatarFileId])
@@ -304,4 +305,55 @@ model Banner {
   @@index([deletedAt])
   @@index([deletedById])
   @@map("banners")
+}
+
+/// Lịch khai giảng hiển thị ở block "Enrollment Schedule" trên trang public — module
+/// "singleton-style": Admin có thể tạo nhiều bản (để dự phòng đổi theo từng đợt/
+/// tuần), nhưng Public chỉ lấy đúng 1 bản published có displayOrder thấp nhất.
+///
+/// Lưu ý ngữ nghĩa: các trường String ở đây LÀ schema cho biểu thức hiển thị đã
+/// formatter sẵn (VD "8h30 - 10h00 · 10h15 - 11h45"), không phải 2 cột DateTime
+/// start/end từng buổi. Admin CRUD thẳng raw string là đủ — không có giờ/TZ để
+/// chuyển đổi. Soft-delete theo pattern chung (deletedAt + deletedById).
+model EnrollmentSchedule {
+  id                String   @id @default(uuid())
+  /// Tiêu đề block, VD "Lịch khai giảng mỗi tuần".
+  title             String
+  /// Danh sách khóa đang tuyển sinh, VD ["Sơ cấp (0-HSK2)", ...].
+  coursesEnrolling  String[]
+  /// Biểu thức khung giờ sáng, VD "8h30 - 10h00 · 10h15 - 11h45".
+  morningTimes      String
+  /// Biểu thức khung giờ chiều, VD "14h00 - 15h30 · 15h45 - 17h15".
+  afternoonTimes    String
+  /// Biểu thức khung giờ tối, VD "19h00 - 20h30 · 20h45 - 22h15".
+  eveningTimes      String
+  /// Tên nhóm lịch A, VD "Thứ 2 - 4 - 6".
+  scheduleGroupA    String
+  /// Tên nhóm lịch B, VD "Thứ 3 - 5 - 7".
+  scheduleGroupB    String
+  /// Ghi chú phụ (nullable), VD về lớp kèm 1-1.
+  note              String?
+  /// Tagline ngắn (nullable), VD "Tuyển sinh liên tục trong tuần".
+  tagline           String?
+  /// Text nút CTA, VD "Đăng ký ngay".
+  ctaText           String
+  /// Đường dẫn/URL CTA — validate path tuyệt đối hoặc URL https.
+  ctaLink           String
+  /// Danh sách SĐT hotline, VD ["0979949145", "0788577720", "0564707979"].
+  phoneNumbers      String[]
+  /// Ẩn tạm mà không cần xoá.
+  isPublished       Boolean  @default(true)
+  /// Thứ tự ưu tiên hiển thị public — sort ASC, lấy bản đầu tiên.
+  displayOrder      Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+  deletedById       Int?
+  deletedBy         User?    @relation("EnrollmentScheduleDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([isPublished])
+  @@index([displayOrder])
+  @@index([deletedAt])
+  @@index([deletedById])
+  @@map("enrollment_schedules")
 }

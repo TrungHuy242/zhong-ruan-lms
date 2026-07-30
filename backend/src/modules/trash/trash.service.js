@@ -40,7 +40,7 @@ const {
 } = require("../../utils/softDelete");
 
 // ===== Module whitelist =====
-const MODULES = ["users", "notifications", "files", "settings", "teachers", "pricingplans", "contactrequests", "banners"];
+const MODULES = ["users", "notifications", "files", "settings", "teachers", "pricingplans", "contactrequests", "banners", "enrollmentschedules"];
 const MODULE_TO_LABEL = {
   users: "User",
   notifications: "Notification",
@@ -50,6 +50,7 @@ const MODULE_TO_LABEL = {
   pricingplans: "PricingPlan",
   contactrequests: "ContactRequest",
   banners: "Banner",
+  enrollmentschedules: "EnrollmentSchedule",
 };
 const MODULE_TO_PRISMA = {
   users: "user",
@@ -60,6 +61,7 @@ const MODULE_TO_PRISMA = {
   pricingplans: "pricingPlan",
   contactrequests: "contactRequest",
   banners: "banner",
+  enrollmentschedules: "enrollmentSchedule",
 };
 
 // ===== Error helpers =====
@@ -247,6 +249,14 @@ function buildModuleWhere(mod, keyword) {
           { subtitle: { contains: q, mode: "insensitive" } },
         ],
       };
+    case "enrollmentschedules":
+      return {
+        OR: [
+          { title: { contains: q, mode: "insensitive" } },
+          { note: { contains: q, mode: "insensitive" } },
+          { tagline: { contains: q, mode: "insensitive" } },
+        ],
+      };
     default:
       return {};
   }
@@ -324,6 +334,8 @@ function pickLabel(mod, row) {
       return row.fullName || row.email || `#${row.id}`;
     case "banners":
       return row.title || `#${row.id}`;
+    case "enrollmentschedules":
+      return row.title || `#${row.id}`;
     default:
       return `#${row.id}`;
   }
@@ -358,8 +370,8 @@ async function restoreOne(mod, idOrKey, currentUserId, req = null) {
     };
   }
 
-  // pricingplans, teachers, contactrequests, banners dùng String (UUID)
-  const isStringIdModule = ["pricingplans", "teachers", "contactrequests", "banners"].includes(mod);
+  // pricingplans, teachers, contactrequests, banners, enrollmentschedules dùng String (UUID)
+  const isStringIdModule = ["pricingplans", "teachers", "contactrequests", "banners", "enrollmentschedules"].includes(mod);
   const numericId = Number(idOrKey);
 
   if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {
@@ -407,8 +419,8 @@ async function forceDeleteOne(mod, idOrKey, currentUserId, req = null) {
     };
   }
 
-  // pricingplans, teachers, contactrequests, banners dùng String (UUID)
-  const isStringIdModule = ["pricingplans", "teachers", "contactrequests", "banners"].includes(mod);
+  // pricingplans, teachers, contactrequests, banners, enrollmentschedules dùng String (UUID)
+  const isStringIdModule = ["pricingplans", "teachers", "contactrequests", "banners", "enrollmentschedules"].includes(mod);
   const numericId = Number(idOrKey);
 
   if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {
@@ -656,7 +668,7 @@ async function getTrashDetail(mod, idOrKey) {
     row = await delegate.findUnique({ where: { key: String(idOrKey) } });
   } else {
     // pricingplans, teachers, contactrequests dùng String (UUID), còn lại dùng Number (Int)
-    const isStringIdModule = mod === "pricingplans" || mod === "teachers" || mod === "contactrequests";
+    const isStringIdModule = mod === "pricingplans" || mod === "teachers" || mod === "contactrequests" || mod === "enrollmentschedules";
     const numericId = Number(idOrKey);
 
     if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {

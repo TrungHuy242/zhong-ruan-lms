@@ -52,6 +52,7 @@ async function main() {
 
   await seedPricingPlans();
   await seedBanners();
+  await seedEnrollmentSchedules();
 }
 
 /**
@@ -197,6 +198,60 @@ async function seedBanners() {
   console.log(`Seeded ${banners.length} banners`);
 
   console.log("Database seeding complete.");
+}
+
+/**
+ * Seed cho EnrollmentSchedule — block "Lịch khai giảng" hiển thị trên trang public.
+ *
+ * Singleton-style: Admin có thể tạo nhiều bản (để dự phòng đổi theo từng đợt/tuần),
+ * nhưng Public chỉ lấy đúng 1 bản published có displayOrder thấp nhất.
+ * Seed 1 bản mẫu theo nội dung banner cũ của trung tâm.
+ *
+ * ⚠️  Data thật từ banner cũ của trung tâm — xác nhận lại số hotline còn đúng không
+ *     trước khi lên production (đã ghi trong CLAUDE.md mục 4).
+ */
+async function seedEnrollmentSchedules() {
+  const enrollmentSchedule = {
+    title: "Lịch khai giảng mỗi tuần",
+    coursesEnrolling: [
+      "Sơ cấp (0-HSK2)",
+      "Trung cấp 1 (HSK2-HSK3)",
+      "Trung cấp 2 (HSK3-HSK4)",
+      "Cao cấp (HSK4-HSK6)",
+      "Lớp trẻ em (YCT)",
+      "Lớp chuyên giao tiếp",
+      "Lớp kèm 1-1 (lộ trình theo nhu cầu)",
+    ],
+    morningTimes: "8h30 - 10h00 · 10h15 - 11h45",
+    afternoonTimes: "14h00 - 15h30 · 15h45 - 17h15",
+    eveningTimes: "19h00 - 20h30 · 20h45 - 22h15",
+    scheduleGroupA: "Thứ 2 - 4 - 6",
+    scheduleGroupB: "Thứ 3 - 5 - 7",
+    note: "Riêng các lớp kèm 1-1 có thể học linh hoạt theo nhu cầu",
+    tagline: "Tuyển sinh liên tục trong tuần",
+    ctaText: "Đăng ký ngay",
+    ctaLink: "/register",
+    // Hotline trung tâm — xác nhận lại trước khi lên production.
+    phoneNumbers: ["0979949145", "0788577720", "0564707979"],
+    isPublished: true,
+    displayOrder: 0,
+  };
+
+  // Upsert theo title+isPublished (giữ demo idempotent: mỗi lần re-seed không tạo trùng).
+  const existing = await prisma.enrollmentSchedule.findFirst({
+    where: { title: enrollmentSchedule.title, deletedAt: null },
+    select: { id: true },
+  });
+  if (existing) {
+    await prisma.enrollmentSchedule.update({
+      where: { id: existing.id },
+      data: enrollmentSchedule,
+    });
+  } else {
+    await prisma.enrollmentSchedule.create({ data: enrollmentSchedule });
+  }
+
+  console.log(`Seeded 1 enrollment schedule`);
 }
 
 main()
