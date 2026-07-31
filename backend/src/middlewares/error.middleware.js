@@ -104,6 +104,31 @@ function errorHandler(err, req, res, next) {
     });
   }
 
+  // 3.5) Custom error code from service layer (banner/teacher/...):
+  //   - VALIDATION_ERROR → 400
+  //   - NOT_FOUND        → 404
+  //   - BAD_REQUEST      → 400
+  if (err && typeof err.code === "string" && typeof err.message === "string") {
+    if (err.code === "VALIDATION_ERROR") {
+      return res.status(400).json({
+        error: "VALIDATION_ERROR",
+        message: err.message,
+      });
+    }
+    if (err.code === "NOT_FOUND") {
+      return res.status(404).json({
+        error: "NOT_FOUND",
+        message: err.message,
+      });
+    }
+    if (err.code === "BAD_REQUEST") {
+      return res.status(400).json({
+        error: "BAD_REQUEST",
+        message: err.message,
+      });
+    }
+  }
+
   // 4) JWT errors
   if (isJwtError(err)) {
     const status = err.name === "TokenExpiredError" ? 401 : 401;

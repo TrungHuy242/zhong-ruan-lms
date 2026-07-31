@@ -256,14 +256,8 @@ async function deleteSchedule(id, currentUserId, req = null) {
   const existing = await repo.findById(id);
   if (!existing) throw notFound(id);
 
+  // Helper softDelete() tự ghi ENROLLMENT_SCHEDULE_SOFT_DELETE (nếu truyền req).
   await softDelete("EnrollmentSchedule", { id: String(id) }, { req, userId: currentUserId });
-
-  await audit.logFromRequest(req, {
-    userId: currentUserId,
-    action: "ENROLLMENT_SCHEDULE_DELETED",
-    target: `EnrollmentSchedule:${id}`,
-    meta: { title: existing.title },
-  });
 
   return { id, deleted: true };
 }
@@ -272,14 +266,8 @@ async function restoreSchedule(id, currentUserId, req = null) {
   const existing = await repo.findById(id);
   if (!existing) throw notFound(id);
 
+  // Helper restore() tự ghi ENROLLMENT_SCHEDULE_RESTORE (nếu truyền req).
   const restored = await restore("EnrollmentSchedule", { id: String(id) }, { req, userId: currentUserId });
-
-  await audit.logFromRequest(req, {
-    userId: currentUserId,
-    action: "ENROLLMENT_SCHEDULE_RESTORED",
-    target: `EnrollmentSchedule:${id}`,
-    meta: { title: restored.title },
-  });
 
   return { id, restored: true };
 }
@@ -288,14 +276,8 @@ async function forceDeleteSchedule(id, currentUserId, req = null) {
   const existing = await repo.findById(id);
   if (!existing) throw notFound(id);
 
+  // Helper forceDelete() tự ghi ENROLLMENT_SCHEDULE_FORCE_DELETE (nếu truyền req).
   await forceDelete("EnrollmentSchedule", { id: String(id) }, { req, userId: currentUserId });
-
-  await audit.logFromRequest(req, {
-    userId: currentUserId,
-    action: "ENROLLMENT_SCHEDULE_FORCE_DELETED",
-    target: `EnrollmentSchedule:${id}`,
-    meta: { title: existing.title },
-  });
 
   return { id, forceDeleted: true };
 }

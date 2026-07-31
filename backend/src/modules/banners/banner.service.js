@@ -147,14 +147,8 @@ async function deleteBanner(id, currentUserId, req = null) {
   const existing = await bannerRepository.findById(id);
   if (!existing) throw notFound(id);
 
+  // Helper softDelete() tự ghi BANNER_SOFT_DELETE (nếu truyền req).
   await softDelete("Banner", { id: String(id) }, { req, userId: currentUserId });
-
-  await audit.logFromRequest(req, {
-    userId: currentUserId,
-    action: "BANNER_DELETED",
-    target: `Banner:${id}`,
-    meta: { title: existing.title },
-  });
 
   return { id, deleted: true };
 }
@@ -163,14 +157,8 @@ async function restoreBanner(id, currentUserId, req = null) {
   const existing = await bannerRepository.findById(id);
   if (!existing) throw notFound(id);
 
+  // Helper restore() tự ghi BANNER_RESTORE (nếu truyền req).
   const restored = await restore("Banner", { id: String(id) }, { req, userId: currentUserId });
-
-  await audit.logFromRequest(req, {
-    userId: currentUserId,
-    action: "BANNER_RESTORED",
-    target: `Banner:${id}`,
-    meta: { title: restored.title },
-  });
 
   return { id, restored: true };
 }
@@ -179,14 +167,8 @@ async function forceDeleteBanner(id, currentUserId, req = null) {
   const existing = await bannerRepository.findById(id);
   if (!existing) throw notFound(id);
 
+  // Helper forceDelete() tự ghi BANNER_FORCE_DELETE (nếu truyền req).
   await forceDelete("Banner", { id: String(id) }, { req, userId: currentUserId });
-
-  await audit.logFromRequest(req, {
-    userId: currentUserId,
-    action: "BANNER_FORCE_DELETED",
-    target: `Banner:${id}`,
-    meta: { title: existing.title },
-  });
 
   return { id, forceDeleted: true };
 }
