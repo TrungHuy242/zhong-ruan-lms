@@ -1,11 +1,11 @@
 /**
  * HomePage — Zhong Ruan public homepage.
  *
- * Hallmark redesign · round 9 (bảo toàn 8 sections · editorial education).
+ * Hallmark redesign · round 9 (bảo toàn sections gốc · editorial education).
  *
  * Ràng buộc BẮT BUỘC — tuân thủ đầy đủ:
- * 1. GIỮ NGUYÊN 8 sections: Hero → Stats → USP → Courses → Teachers →
- *    Testimonials → FAQ → CTA Banner.
+ * 1. Sections theo thứ tự: Hero → Stats → USP → EnrollmentSchedule → Courses
+ *    → Teachers → Testimonials → FAQ → CTA Banner.
  * 2. GIỮ NGUYÊN homeContent.ts — dùng trực tiếp, không viết lại data.
  * 3. Brand anchor: --brand-primary (#C8102E) và --brand-accent (#D4AF37)
  *    từ DESIGN.md là màu chủ đạo, không đổi.
@@ -19,7 +19,7 @@
  * Palette: đỏ (#C8102E) + vàng gold (#D4AF37) anchor, nền sáng,
  * dark charcoal text. Editorial typography.
  *
- * 8 sections — aesthetic bên trong mỗi section:
+ * 9 sections — aesthetic bên trong mỗi section:
  *  1. Hero       — N6 masthead + asymmetric 5fr/4fr grid: headline left,
  *                    2-CTA stack right. Brand-red accent on CTA.
  *  2. Stats      — 4-col definition list: big serif numerals + small caps
@@ -34,6 +34,9 @@
  *  7. FAQ        — Accordion, full-width, generous padding, editorial.
  *  8. CTA Banner — Full-width dark charcoal, single centered h2 + inline
  *                    form below. Red submit.
+ *  9. Enrollment Schedule (singleton) — Banner lịch khai giảng render
+ *                    giữa USP và Courses; tự ẩn nếu BE trả null (không
+ *                    để khoảng trắng).
  *
  * Files: HomePage.tsx + HomePage.module.css. Nothing else.
  */
@@ -42,6 +45,7 @@ import { useEffect, useRef, useState } from "react";
 import { SEO } from "../../shared/components/SEO";
 import { ImagePlaceholder } from "../../features/public/components/ImagePlaceholder";
 import { BannerCarousel } from "../../features/public/components/BannerCarousel";
+import { EnrollmentScheduleBanner } from "../../features/public/components/EnrollmentScheduleBanner";
 import {
   heroContent,
   statsContent,
@@ -528,7 +532,7 @@ function CtaBanner() {
 }
 
 // ============================================================================
-// HOME PAGE — 8 sections, in order, untouched.
+// HOME PAGE — 9 sections, in order, untouched.
 // ============================================================================
 
 export function HomePage() {
@@ -543,6 +547,7 @@ export function HomePage() {
       <Hero />
       <StatsSection />
       <UspSection />
+      <EnrollmentScheduleBanner />
       <CoursesSection />
       <TeachersSection />
       <TestimonialsSection />

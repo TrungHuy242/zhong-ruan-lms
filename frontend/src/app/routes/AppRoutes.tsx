@@ -30,6 +30,7 @@ import { GlobalSearchPage } from "../../features/search/pages/GlobalSearchPage";
 import { TrashManagerPage } from "../../features/trash/pages/TrashManagerPage";
 import { ContactRequestManagementPage } from "../../features/contact-requests/pages/ContactRequestManagementPage";
 import { BannerManagementPage } from "../../features/banners/pages/BannerManagementPage";
+import { EnrollmentScheduleManagementPage } from "../../features/enrollment-schedule/pages/EnrollmentScheduleManagementPage";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { ProtectedRoute } from "../guards/ProtectedRoute";
 import { PublicLayout } from "../../layouts/PublicLayout";
@@ -80,6 +81,10 @@ export function AppRoutes() {
         <Route path="/trash" element={<TrashManagerPage />} />
         <Route path="/contact-requests" element={<ContactRequestManagementPage />} />
         <Route path="/banners" element={<BannerManagementPage />} />
+        <Route
+          path="/enrollment-schedule"
+          element={<EnrollmentScheduleManagementPage />}
+        />
       </Route>
 
       {/* Catch-all: về trang chủ public thay vì /login */}

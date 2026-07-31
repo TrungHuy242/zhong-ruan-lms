@@ -1,0 +1,359 @@
+/* Hallmark · component: EnrollmentScheduleBanner · genre: editorial
+ * Theme: editorial education · design-system: design.md §9
+ * Macrostructure: 2-col asymmetric "bảng lịch" (khóa đang tuyển sinh trái,
+ *                 lịch học theo khung giờ phải). Hairline rule ngăn cách,
+ *                 đồng bộ với CourseRoadmap.
+ * Heading: Source Serif 4 cho title (no italic).
+ * Body / labels: Be Vietnam Pro (tracking 0.18em uppercase cho eyebrow,
+ *                tracking 0.08em cho CTA button).
+ * Shape: 0 radius · 0 shadow · hairline borders only.
+ * Motion: opacity 0→1 + border-color shift, KHÔNG transform translateY/scale.
+ */
+
+.section {
+  background: var(--zr-paper, #FAF7F2);
+  padding: clamp(72px, 9vw, 128px) clamp(16px, 4vw, 24px);
+  position: relative;
+  border-top: 3px solid var(--zr-brand, #C8102E);
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2.4vw, 32px);
+}
+
+/* Eyebrow + heading theo §9.4.1 + §9.4.2 */
+.eyebrow {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand, #C8102E);
+  font-style: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 16px;
+  height: 1px;
+  background: var(--zr-brand, #C8102E);
+  flex-shrink: 0;
+}
+
+.heading {
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-size: clamp(28px, 3.2vw, 44px);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.15;
+  letter-spacing: 0;
+  color: var(--zr-ink, #1A1A1E);
+  margin: 0;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  max-width: 720px;
+}
+
+.tagline {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: var(--zr-ink-soft, #4A4540);
+  margin: 0;
+  max-width: 560px;
+}
+
+/* 2-col asymmetric grid — KHÔNG equal-padding */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(24px, 3vw, 48px);
+  margin-top: clamp(20px, 2vw, 32px);
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: 5fr 7fr;
+    column-gap: clamp(32px, 4vw, 64px);
+    row-gap: clamp(24px, 3vw, 40px);
+  }
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.4vw, 20px);
+  min-width: 0;
+}
+
+/* Section label — uppercase eyebrow in column header */
+.colLabel {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-ink-muted, #6B6058);
+  font-style: normal;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
+  margin-bottom: 4px;
+}
+
+.colEmpty {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--zr-ink-muted, #6B6058);
+  font-style: normal;
+  margin: 0;
+}
+
+/* ----- LEFT: course list (vertical stack with hairline dividers, no pill) ----- */
+.courseList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.courseItem {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  column-gap: clamp(12px, 1.4vw, 18px);
+  align-items: baseline;
+  padding: clamp(10px, 1.2vw, 14px) 0;
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+}
+
+.courseItem:last-child {
+  border-bottom: none;
+}
+
+.courseOrdinal {
+  font-family: "Source Serif 4", "Georgia", serif;
+  font-size: 13px;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0;
+  color: var(--zr-brand, #C8102E);
+  font-variant-numeric: tabular-nums;
+}
+
+.courseName {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0;
+  line-height: 1.45;
+  color: var(--zr-ink, #1A1A1E);
+}
+
+/* ----- RIGHT: schedule dl (5 rows) ----- */
+.scheduleList {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.scheduleRow {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  column-gap: clamp(12px, 1.4vw, 20px);
+  align-items: baseline;
+  padding: clamp(10px, 1.2vw, 14px) 0;
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
+}
+
+.scheduleRow:last-child {
+  border-bottom: none;
+}
+
+.scheduleKey {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--zr-ink-muted, #6B6058);
+  font-style: normal;
+  margin: 0;
+}
+
+.scheduleValue {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--zr-ink, #1A1A1E);
+  font-style: normal;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ----- Note (italic editorial voice — body emphasis OK per §9.3) ----- */
+.note {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--zr-ink-soft, #4A4540);
+  background: transparent;
+  border-top: 1px solid var(--zr-rule, #D9D0C3);
+  padding-top: clamp(10px, 1.2vw, 14px);
+  margin: 0;
+}
+
+/* ----- Phone list ngang, icon Phone, tel: link ----- */
+.phoneBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: clamp(10px, 1.2vw, 14px);
+  border-top: 1px solid var(--zr-rule, #D9D0C3);
+}
+
+.phoneLabel {
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-ink-muted, #6B6058);
+  font-style: normal;
+}
+
+.phoneList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(12px, 1.6vw, 24px);
+}
+
+.phoneItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--zr-ink, #1A1A1E);
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+.phoneItem svg {
+  color: var(--zr-brand, #C8102E);
+  flex-shrink: 0;
+}
+
+.phoneLink {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--zr-ink, #1A1A1E);
+  text-decoration: none;
+  border-bottom: 1px solid var(--zr-rule, #D9D0C3);
+  padding-bottom: 1px;
+  transition: border-color 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    color 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.phoneLink:hover {
+  color: var(--zr-brand, #C8102E);
+  border-bottom-color: var(--zr-brand, #C8102E);
+}
+
+.phoneLink:focus-visible {
+  outline: 2px solid var(--zr-brand, #C8102E);
+  outline-offset: 2px;
+}
+
+/* ----- CTA button — same DNA as CTABanner §9.4.5 ----- */
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  align-self: flex-start;
+  margin-top: clamp(8px, 1vw, 16px);
+  padding: clamp(14px, 1.6vw, 18px) clamp(36px, 4vw, 56px);
+  background: var(--zr-brand, #C8102E);
+  color: var(--zr-paper, #FAF7F2);
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 2px solid var(--zr-brand, #C8102E);
+  border-radius: 0;
+  box-shadow: none;
+  transition: background 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color 220ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    gap 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.ctaBtn::after {
+  content: "→";
+  display: inline-block;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  font-weight: 500;
+  transition: transform 200ms var(--zr-ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.ctaBtn:hover {
+  background: var(--zr-brand-hover, #A50C24);
+  border-color: var(--zr-brand-hover, #A50C24);
+  gap: 14px;
+}
+
+.ctaBtn:hover::after {
+  transform: translateX(3px);
+}
+
+.ctaBtn:focus-visible {
+  outline: 2px solid var(--zr-paper, #FAF7F2);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .ctaBtn {
+    width: 100%;
+    padding: clamp(13px, 2vw, 16px) clamp(24px, 4vw, 32px);
+  }
+  .scheduleRow {
+    grid-template-columns: 64px 1fr;
+  }
+  .phoneList {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaBtn,
+  .ctaBtn::after,
+  .phoneLink {
+    transition-duration: 150ms;
+  }
+}

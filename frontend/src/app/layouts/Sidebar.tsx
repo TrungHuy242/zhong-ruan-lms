@@ -14,6 +14,7 @@ import {
   Tag,
   MessageSquare,
   Image,
+  CalendarClock,
 } from "lucide-react";
 import { authStorage } from "../../shared/storage/authStorage";
 import { hasRole } from "../../shared/utils/auth";
@@ -35,6 +36,12 @@ const MENU_ITEMS: MenuItem[] = [
   { label: "Quản lý giảng viên", to: "/teachers", Icon: Users, allowedRoles: ["ADMIN"] },
   { label: "Quản lý bảng giá", to: "/pricing-plans", Icon: Tag, allowedRoles: ["ADMIN"] },
   { label: "Quản lý banner", to: "/banners", Icon: Image, allowedRoles: ["ADMIN"] },
+  {
+    label: "Lịch khai giảng",
+    to: "/enrollment-schedule",
+    Icon: CalendarClock,
+    allowedRoles: ["ADMIN"],
+  },
   {
     label: "Yêu cầu tư vấn",
     to: "/contact-requests",

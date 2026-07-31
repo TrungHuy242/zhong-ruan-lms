@@ -1,0 +1,202 @@
+/* Admin table cho EnrollmentScheduleManagementPage — đồng bộ với BannerManagementPage.module.css.
+ * UI Admin nên dùng đúng theo Design.md §1 token (khác Public editorial §9).
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.title {
+  font-family: var(--font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.tableWrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--border-default);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.table th {
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.table tbody tr:hover {
+  background: var(--brand-primary-lighter, #FFF5F6);
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.thActions {
+  text-align: right;
+  width: 220px;
+}
+
+.titleCell {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.dateCell {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.orderCell {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.statusActive {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.statusActiveGold {
+  background: var(--brand-accent-light, #FBF3D9);
+  color: var(--brand-accent-hover, #B6942C);
+  border: 1px solid var(--brand-accent, #D4AF37);
+}
+
+.statusHidden {
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: inline-flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.actionBtn {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.actionBtn:hover {
+  background: var(--bg-surface-alt);
+  border-color: var(--border-strong);
+}
+
+.actionBtn:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+.previewBtn {
+  background: transparent;
+  border: 1px solid var(--brand-accent, #D4AF37);
+  color: var(--brand-accent-hover, #B6942C);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.previewBtn:hover {
+  background: var(--brand-accent-light, #FBF3D9);
+}
+
+.deleteBtn {
+  border-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.deleteBtn:hover {
+  background: var(--color-error-bg);
+}
+
+.skeletonRow td {
+  padding: 0;
+}
+
+.skeleton {
+  height: 48px;
+  background: var(--bg-surface-alt);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.empty {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--text-secondary);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-2);
+}
