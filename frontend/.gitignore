@@ -11,3 +11,6 @@ Thumbs.db
 
 # Banner images dùng cho trang Login/Register — file nặng, không cần thiết trong git
 public/Banner/
+
+# Runtime log của vite preview — không cần track, có thể tạo lại bất cứ lúc nào
+preview.err

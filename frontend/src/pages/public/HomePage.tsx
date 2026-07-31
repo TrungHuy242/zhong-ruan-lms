@@ -140,7 +140,7 @@ function Hero() {
           <p className={styles.heroSubline}>{heroContent.subheadline}</p>
         </div>
 
-        {/* Right column: CTA stack */}
+        {/* Right column: CTA stack + ảnh minh hoạ tạm */}
         <div className={styles.heroActions}>
           <a
             href={heroContent.ctaPrimary.to}
@@ -154,6 +154,15 @@ function Hero() {
           >
             {heroContent.ctaSecondary.label}
           </a>
+          {/* TODO: ảnh tạm từ banner cũ (đã crop bỏ chữ, desaturate 20%) —
+              thay bằng ảnh chụp mới chuyên nghiệp khi có, tỷ lệ khung hiện tại: 4:3 (1024×768).
+              File ở public/ để Vite serve thẳng /hero-temp.jpg. */}
+          <img
+            src="/hero-temp.jpg"
+            alt="Giảng viên Zhong Ruan"
+            className={styles.heroImage}
+            loading="eager"
+          />
         </div>
       </div>
     </section>
