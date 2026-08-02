@@ -1,0 +1,26 @@
+-- DROP TABLE banners — Banner module đã bị xoá hoàn toàn sau audit 2026-08-02.
+-- Frontend đã sạch từ trước (đã gỡ route /banners, sidebar entry, imports).
+-- Backend cleanup (audit 2026-08-02):
+--   - Xoá 6 file backend/src/modules/banners/*
+--   - Gỡ 2 dòng mount route (/api/admin/banners, /api/public/banners) khỏi app.js
+--   - Gỡ "banners" khỏi trash.service.js (MODULES, MODULE_TO_LABEL, MODULE_TO_PRISMA,
+--     buildModuleWhere, pickLabel, isStringIdModule whitelist)
+--   - Gỡ Banner action keys khỏi softDelete.js (SOFT_DELETE_ACTIONS, RESTORE_ACTIONS,
+--     FORCE_DELETE_ACTIONS, resolveActionKey)
+--   - Gỡ model Banner + relation deletedBanners trên User khỏi schema.prisma
+--   - Gỡ seedBanners() function + call khỏi seed.js
+--
+-- An toàn:
+--   - KHÔNG có model nào khác FK reference đến banners (verified schema.prisma).
+--   - Chỉ có 1 FK deletedById → "User"("id") ON DELETE SET NULL, bị drop theo table.
+--   - Toàn bộ 4 record hiện có đều soft-deleted (deletedAt != NULL), data test
+--     (3 seed + 1 E2E test "TEST_BANNER_*"), không có data quan trọng cần giữ.
+--   - Đã xác nhận qua `SELECT * FROM banners` trước khi xoá (xem scripts/check-banners.cjs).
+--
+-- Theo CLAUDE.md #6: migration này chỉ drop 1 bảng duy nhất, KHÔNG động đến
+-- bảng khác. Cấu trúc DB đã được Prisma detect drift TRƯỚC (User/contact_requests
+-- FK và Teacher index — drift cũ từ trước audit này, không do migration này gây ra).
+
+-- Drop bảng banners.
+-- DROP TABLE tự động xoá tất cả indexes + FK constraints thuộc bảng đó.
+DROP TABLE IF EXISTS "banners" CASCADE;
