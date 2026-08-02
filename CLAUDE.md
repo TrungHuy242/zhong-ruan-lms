@@ -42,8 +42,9 @@ model + Admin CRUD frontend + tích hợp Audit Log/Trash):
   xem mục 6).
 - **PricingPlan** — gói học phí hiển thị ở trang Bảng giá.
 - **ContactRequest** — lưu form Liên hệ từ Public site + gửi email thông báo.
-- **Banner** — banner khuyến mãi/khai giảng hiển thị dạng carousel ở Trang
-  chủ, có lịch hiệu lực (startDate/endDate).
+- **EnrollmentSchedule** — block "Lịch khai giảng" trên Trang chủ (singleton
+  style: nhiều bản dự phòng, public chỉ lấy 1 bản published có displayOrder
+  thấp nhất).
 
 Tài khoản test (seed): `admin@zhongruan.com` / `teacher@zhongruan.com` /
 `student@zhongruan.com`, password `123456`.
@@ -81,8 +82,8 @@ thật.
   2 bảng tách biệt có chủ đích — không phải ai có tài khoản cũng cần/muốn
   hồ sơ công khai. Có field `linkedUserId` optional để đối chiếu, không
   đồng bộ 2 chiều.
-- Mọi module CRUD mới (Teacher/PricingPlan/ContactRequest/Banner) đều PHẢI
-  đăng ký vào: (a) Audit Log, (b) Trash/soft-delete resource types
+- Mọi module CRUD mới (Teacher/PricingPlan/ContactRequest/EnrollmentSchedule)
+  đều PHẢI đăng ký vào: (a) Audit Log, (b) Trash/soft-delete resource types
   (`TRASH_RESOURCE_TYPES` — mảng cấu hình chung), (c) Sidebar menu với
   role-check đã chuẩn hóa. Đây là checklist bắt buộc mỗi khi thêm resource
   type mới, xem lỗi #1 và #2 ở mục 7 — đã bị bỏ sót nhiều lần.
@@ -156,8 +157,8 @@ Báo cáo đầy đủ: `qa-final-report.md` ở root repo.
 
 5. **Express route mount order**: `app.use("/api", uploadRoutes)` có
    `router.use(authenticate)` ở đầu + path tổng quát `/api` sẽ match VÀ
-   CHẶN (401) bất kỳ route public nào mount SAU nó dù path cụ thể hơn (VD
-   `/api/public/banners`). Route public MỚI luôn phải mount TRƯỚC dòng
+   CHẶN (401) bất kỳ route public nào mount SAU nó dù path cụ thể hơn.
+   Route public MỚI luôn phải mount TRƯỚC dòng
    `app.use("/api", uploadRoutes)` trong `app.js` — có comment cảnh báo
    ngay phía trên dòng đó, ĐỌC COMMENT trước khi thêm route mới.
 
