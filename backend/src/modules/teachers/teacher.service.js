@@ -129,8 +129,8 @@ async function createTeacher(payload, req) {
     fullName: String(payload.fullName).trim(),
     slug,
     title: String(payload.title).trim(),
-    bio: payload.bio != null ? String(payload.bio).trim() : "",
-    bioShort: payload.bioShort != null ? String(payload.bioShort).trim() : "",
+    bio: payload.bio != null ? String(payload.bio).trim() : null,
+    bioShort: payload.bioShort != null ? String(payload.bioShort).trim() : null,
     avatarUrl: payload.avatarUrl ? String(payload.avatarUrl).trim() : null,
     yearsOfExperience: payload.yearsOfExperience ?? null,
     specialties: Array.isArray(payload.specialties)
@@ -179,10 +179,10 @@ async function updateTeacher(id, payload, req) {
 
   const updateData = {};
 
-  if (payload.fullName !== undefined) updateData.fullName = String(payload.fullName).trim();
+if (payload.fullName !== undefined) updateData.fullName = String(payload.fullName).trim();
   if (payload.title !== undefined) updateData.title = String(payload.title).trim();
-  if (payload.bio !== undefined) updateData.bio = String(payload.bio).trim();
-  if (payload.bioShort !== undefined) updateData.bioShort = String(payload.bioShort).trim();
+  if (payload.bio !== undefined) updateData.bio = payload.bio != null ? String(payload.bio).trim() : null;
+  if (payload.bioShort !== undefined) updateData.bioShort = payload.bioShort != null ? String(payload.bioShort).trim() : null;
   if (payload.avatarUrl !== undefined) {
     updateData.avatarUrl = payload.avatarUrl ? String(payload.avatarUrl).trim() : null;
   }

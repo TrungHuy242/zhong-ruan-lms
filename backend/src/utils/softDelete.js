@@ -24,7 +24,6 @@ const SOFT_DELETE_ACTIONS = {
   teacher: "TEACHER_SOFT_DELETE",
   pricingPlan: "PRICING_PLAN_SOFT_DELETE",
   contactRequest: "CONTACT_REQUEST_SOFT_DELETE",
-  banner: "BANNER_SOFT_DELETE",
   enrollmentSchedule: "ENROLLMENT_SCHEDULE_SOFT_DELETE",
 };
 
@@ -36,7 +35,6 @@ const RESTORE_ACTIONS = {
   teacher: "TEACHER_RESTORE",
   pricingPlan: "PRICING_PLAN_RESTORE",
   contactRequest: "CONTACT_REQUEST_RESTORE",
-  banner: "BANNER_RESTORE",
   enrollmentSchedule: "ENROLLMENT_SCHEDULE_RESTORE",
 };
 
@@ -48,7 +46,6 @@ const FORCE_DELETE_ACTIONS = {
   teacher: "TEACHER_FORCE_DELETE",
   pricingPlan: "PRICING_PLAN_FORCE_DELETE",
   contactRequest: "CONTACT_REQUEST_FORCE_DELETE",
-  banner: "BANNER_FORCE_DELETE",
   enrollmentSchedule: "ENROLLMENT_SCHEDULE_FORCE_DELETE",
 };
 
@@ -77,7 +74,6 @@ function resolveActionKey(label) {
   if (lower === "teacher" || lower === "teachers") return "teacher";
   if (lower === "pricingplan" || lower === "pricingplans") return "pricingPlan";
   if (lower === "contactrequest" || lower === "contactrequests") return "contactRequest";
-  if (lower === "banner" || lower === "banners") return "banner";
   if (lower === "enrollmentschedule" || lower === "enrollmentschedules") return "enrollmentSchedule";
   return null;
 }

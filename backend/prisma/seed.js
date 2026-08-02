@@ -51,7 +51,6 @@ async function main() {
   });
 
   await seedPricingPlans();
-  await seedBanners();
   await seedEnrollmentSchedules();
 }
 
@@ -138,66 +137,6 @@ async function seedPricingPlans() {
     }
   }
   console.log(`Seeded ${plans.length} pricing plans`);
-}
-
-async function seedBanners() {
-  const now = new Date();
-  const banners = [
-    {
-      title: "Ưu đãi mùa khai giảng — Giảm 20% học phí",
-      subtitle: "Đăng ký sớm trong tháng 7 để nhận ưu đãi giảm 20% cho tất cả các khóa học nhóm.",
-      imageUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1400&q=80",
-      ctaText: "Đăng ký ngay",
-      ctaLink: "/register",
-      badgeText: "Ưu đãi",
-      startDate: null,
-      endDate: new Date(now.getFullYear(), now.getMonth() + 1, 1),
-      isPublished: true,
-      displayOrder: 1,
-    },
-    {
-      title: "Học thử miễn phí 2 buổi đầu tiên",
-      subtitle: "Trải nghiệm phương pháp giảng dạy của giảng viên Thạc sĩ — không cam kết, không ràng buộc.",
-      imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1400&q=80",
-      ctaText: "Đặt lịch học thử",
-      ctaLink: "/khoa-hoc",
-      badgeText: "Học thử",
-      startDate: null,
-      endDate: null,
-      isPublished: true,
-      displayOrder: 2,
-    },
-    {
-      title: "Lớp luyện thi HSK — Khai giảng tháng 8",
-      subtitle: "Lộ trình 3 tháng chuyên sâu, giảng viên có chứng chỉ HSK 6, tỷ lệ đỗ 94%.",
-      imageUrl: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1400&q=80",
-      ctaText: "Xem lộ trình",
-      ctaLink: "/khoa-hoc/hsk-5-6",
-      badgeText: "Khai giảng",
-      startDate: new Date(now.getFullYear(), now.getMonth() + 1, 1),
-      endDate: new Date(now.getFullYear(), now.getMonth() + 2, 0),
-      isPublished: true,
-      displayOrder: 3,
-    },
-  ];
-
-  for (const bannerData of banners) {
-    const existing = await prisma.banner.findFirst({
-      where: { title: bannerData.title },
-      select: { id: true },
-    });
-    if (existing) {
-      await prisma.banner.update({
-        where: { id: existing.id },
-        data: bannerData,
-      });
-    } else {
-      await prisma.banner.create({ data: bannerData });
-    }
-  }
-  console.log(`Seeded ${banners.length} banners`);
-
-  console.log("Database seeding complete.");
 }
 
 /**

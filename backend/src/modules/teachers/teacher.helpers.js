@@ -104,22 +104,16 @@ function validateTeacherPayload(payload, { isUpdate = false } = {}) {
 
   if (!isUpdate || payload.bio !== undefined) {
     const bio = trimOrNull(payload.bio);
-    if (!bio) {
-      if (isUpdate) throw badRequest("bio khong duoc de trong");
-      throw badRequest("Mo ta chi tiet (bio) la bat buoc");
-    }
-    if (bio.length > MAX_BIO) {
+    // bio optional — không bắt buộc, chỉ check maxLength khi có giá trị.
+    if (bio && bio.length > MAX_BIO) {
       throw badRequest(`Mo ta chi tiet khong duoc dai qua ${MAX_BIO} ky tu`);
     }
   }
 
   if (!isUpdate || payload.bioShort !== undefined) {
     const bioShort = trimOrNull(payload.bioShort);
-    if (!bioShort) {
-      if (isUpdate) throw badRequest("bioShort khong duoc de trong");
-      throw badRequest("Mo ta ngan (bioShort) la bat buoc");
-    }
-    if (bioShort.length > MAX_BIO_SHORT) {
+    // bioShort optional — không bắt buộc, chỉ check maxLength khi có giá trị.
+    if (bioShort && bioShort.length > MAX_BIO_SHORT) {
       throw badRequest(`Mo ta ngan khong duoc dai qua ${MAX_BIO_SHORT} ky tu`);
     }
   }
