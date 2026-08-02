@@ -37,7 +37,6 @@ model User {
   deletedSettings       Setting[]      @relation("SettingDeletedBy")
   deletedTeachers       Teacher[]      @relation("TeacherDeletedBy")
   deletedPricingPlans   PricingPlan[]  @relation("PricingPlanDeletedBy")
-  deletedBanners       Banner[]       @relation("BannerDeletedBy")
   deletedEnrollmentSchedules EnrollmentSchedule[] @relation("EnrollmentScheduleDeletedBy")
   linkedTeachers        Teacher[]      @relation("TeacherLinkedUser")
 
@@ -176,9 +175,10 @@ model Teacher {
   /// Học vị / chức danh, vd "Thạc sĩ Ngôn ngữ Trung Quốc".
   title             String
   /// Mô tả dài cho trang chi tiết. Dùng String (không @db.Text) theo pattern chung của project.
-  bio               String
-  /// Mô tả ngắn 1–2 câu cho card danh sách.
-  bioShort          String
+  /// Optional — Admin không bắt buộc nhập bio ngay lúc tạo, có thể bổ sung sau.
+  bio               String?
+  /// Mô tả ngắn 1–2 câu cho card danh sách. Optional — tương tự bio.
+  bioShort          String?
   /// Link ảnh đại diện (CDN hoặc /uploads/...). Nullable — FE dùng ImagePlaceholder.
   avatarUrl         String?
   /// Số năm kinh nghiệm giảng dạy. Nullable cho giảng viên mới.
@@ -278,33 +278,6 @@ model PricingPlan {
   @@index([deletedById])
   @@index([courseSlug])
   @@map("pricing_plans")
-}
-
-model Banner {
-  id           String    @id @default(uuid())
-  title        String
-  subtitle     String?
-  imageUrl     String
-  ctaText     String?
-  ctaLink     String?
-  badgeText    String?
-  startDate    DateTime?
-  endDate      DateTime?
-  isPublished  Boolean   @default(true)
-  displayOrder Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
-  deletedById  Int?
-  deletedBy    User?    @relation("BannerDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
-
-  @@index([isPublished])
-  @@index([displayOrder])
-  @@index([startDate])
-  @@index([endDate])
-  @@index([deletedAt])
-  @@index([deletedById])
-  @@map("banners")
 }
 
 /// Lịch khai giảng hiển thị ở block "Enrollment Schedule" trên trang public — module
