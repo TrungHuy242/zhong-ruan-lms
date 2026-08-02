@@ -44,7 +44,6 @@
 import { useEffect, useRef, useState } from "react";
 import { SEO } from "../../shared/components/SEO";
 import { ImagePlaceholder } from "../../features/public/components/ImagePlaceholder";
-import { BannerCarousel } from "../../features/public/components/BannerCarousel";
 import { EnrollmentScheduleBanner } from "../../features/public/components/EnrollmentScheduleBanner";
 import {
   heroContent,
@@ -154,15 +153,6 @@ function Hero() {
           >
             {heroContent.ctaSecondary.label}
           </a>
-          {/* TODO: ảnh tạm từ banner cũ (đã crop bỏ chữ, desaturate 20%) —
-              thay bằng ảnh chụp mới chuyên nghiệp khi có, tỷ lệ khung hiện tại: 4:3 (1024×768).
-              File ở public/ để Vite serve thẳng /hero-temp.jpg. */}
-          <img
-            src="/hero-temp.jpg"
-            alt="Giảng viên Zhong Ruan"
-            className={styles.heroImage}
-            loading="eager"
-          />
         </div>
       </div>
     </section>
@@ -552,7 +542,6 @@ export function HomePage() {
         description="Đào tạo tiếng Trung HSK online, giảng viên Thạc sĩ/Tiến sĩ, học thử miễn phí. Lộ trình cá nhân hoá từ HSK 1 đến HSK 6."
       />
 
-      <BannerCarousel />
       <Hero />
       <StatsSection />
       <UspSection />

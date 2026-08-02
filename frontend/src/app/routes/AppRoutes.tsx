@@ -29,7 +29,6 @@ import { ProfilePage } from "../../features/profile/pages/ProfilePage";
 import { GlobalSearchPage } from "../../features/search/pages/GlobalSearchPage";
 import { TrashManagerPage } from "../../features/trash/pages/TrashManagerPage";
 import { ContactRequestManagementPage } from "../../features/contact-requests/pages/ContactRequestManagementPage";
-import { BannerManagementPage } from "../../features/banners/pages/BannerManagementPage";
 import { EnrollmentScheduleManagementPage } from "../../features/enrollment-schedule/pages/EnrollmentScheduleManagementPage";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { ProtectedRoute } from "../guards/ProtectedRoute";
@@ -80,7 +79,6 @@ export function AppRoutes() {
         <Route path="/search" element={<GlobalSearchPage />} />
         <Route path="/trash" element={<TrashManagerPage />} />
         <Route path="/contact-requests" element={<ContactRequestManagementPage />} />
-        <Route path="/banners" element={<BannerManagementPage />} />
         <Route
           path="/enrollment-schedule"
           element={<EnrollmentScheduleManagementPage />}

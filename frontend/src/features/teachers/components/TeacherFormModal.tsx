@@ -84,7 +84,7 @@ function validateTitle(value: string): string | undefined {
 }
 function validateBioShort(value: string): string | undefined {
   const trimmed = value.trim();
-  if (trimmed.length > 250) return "Mô tả ngắn không quá 250 ký tự";
+  if (trimmed.length > 300) return "Mô tả ngắn không quá 300 ký tự";
   return undefined;
 }
 function validateBio(value: string): string | undefined {
@@ -447,7 +447,7 @@ export function TeacherFormModal({
             </span>
           ) : (
             <span className={styles.hint}>
-              Tùy chọn. Tối đa 250 ký tự. Hiển thị ở card giảng viên trên trang chủ.
+              Tùy chọn. Tối đa 300 ký tự. Hiển thị ở card giảng viên trên trang chủ.
             </span>
           )}
         </div>

@@ -13,7 +13,6 @@ import {
   X,
   Tag,
   MessageSquare,
-  Image,
   CalendarClock,
 } from "lucide-react";
 import { authStorage } from "../../shared/storage/authStorage";
@@ -35,7 +34,6 @@ const MENU_ITEMS: MenuItem[] = [
   { label: "Quản lý người dùng", to: "/users", Icon: Users, allowedRoles: ["ADMIN"] },
   { label: "Quản lý giảng viên", to: "/teachers", Icon: Users, allowedRoles: ["ADMIN"] },
   { label: "Quản lý bảng giá", to: "/pricing-plans", Icon: Tag, allowedRoles: ["ADMIN"] },
-  { label: "Quản lý banner", to: "/banners", Icon: Image, allowedRoles: ["ADMIN"] },
   {
     label: "Lịch khai giảng",
     to: "/enrollment-schedule",

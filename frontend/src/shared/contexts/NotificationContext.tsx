@@ -49,6 +49,9 @@ const POLL_INTERVAL_MS = 25_000;
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const currentUser = authStorage.getUser();
+  // Dùng id (string ổn định) thay vì currentUser object để tránh effect re-run
+  // mỗi lần authStorage trả về object mới → gây infinite polling loop.
+  const currentUserId = currentUser?.id ?? null;
   const [unreadCount, setUnreadCount] = useState(0);
   const [recent, setRecent] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +59,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const inFlight = useRef(false);
 
   const refresh = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUserId) return;
     if (inFlight.current) return;
     inFlight.current = true;
     try {
@@ -72,17 +75,17 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       inFlight.current = false;
     }
-  }, [currentUser]);
+  }, [currentUserId]);
 
   useEffect(() => {
-    if (!currentUser) {
+    if (!currentUserId) {
       setLoading(false);
       return;
     }
     refresh();
     const id = window.setInterval(refresh, POLL_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [currentUser, refresh]);
+  }, [currentUserId, refresh]);
 
   const markOneRead = useCallback(
     async (notifId: number | string) => {
