@@ -87,7 +87,7 @@
   padding: var(--space-4) var(--space-2);
 }
 
-/* ===== Nav ===== */
+/* ===== Nav container ===== */
 .nav {
   display: flex;
   flex-direction: column;
@@ -98,6 +98,90 @@
   overflow-x: hidden;
 }
 
+/* ===== Accordion group ===== */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.group:first-child {
+  margin-top: 0;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.groupHeader:hover {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-primary);
+}
+
+.groupHeaderActive {
+  color: var(--brand-primary);
+}
+
+.groupHeaderActive:hover {
+  color: var(--brand-primary);
+}
+
+.groupLabel {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.groupChevron {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: transform 200ms ease;
+}
+
+.groupHeaderActive .groupChevron {
+  color: var(--brand-primary);
+}
+
+.groupChevronOpen {
+  transform: rotate(180deg);
+}
+
+.groupPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  max-height: 1000px;
+  transition: max-height 220ms ease, opacity 200ms ease;
+  opacity: 1;
+}
+
+.groupPanelClosed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ===== Nav item (dùng cho cả Dashboard lẫn item trong group) ===== */
 .navItem {
   display: flex;
   align-items: center;
@@ -137,7 +221,22 @@
   text-overflow: ellipsis;
 }
 
-/* Collapsed state: center icon, hide label */
+/* ===== Collapsed state: ẩn accordion header + label, chỉ hiện icon ===== */
+.collapsed .group {
+  margin-top: var(--space-1);
+}
+
+.collapsed .groupHeader {
+  display: none;
+}
+
+.collapsed .groupPanel {
+  max-height: none;
+  opacity: 1;
+  pointer-events: auto;
+  gap: var(--space-1);
+}
+
 .collapsed .navItem {
   justify-content: center;
   padding: var(--space-2);
