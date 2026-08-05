@@ -1,0 +1,147 @@
+/* Toast — region fixed góc dưới phải, stack không reposition toast cũ.
+ *
+ * Theo .claude/skills/hallmark/references/microinteractions.md:
+ *   - Slide-in 400ms, dwell tự do, slide-out 300ms.
+ *   - Reduced motion: chỉ opacity fade (150ms).
+ *   - Toasts KHÔNG thay đổi vị trí toast cũ khi có toast mới.
+ */
+
+.region {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column-reverse; /* toast mới nằm dưới, đẩy cũ lên */
+  gap: 12px;
+  pointer-events: none; /* wrapper không chặn click */
+  max-width: calc(100vw - 48px); /* không tràn viewport trên mobile nhỏ */
+}
+
+.toast {
+  pointer-events: auto; /* mỗi toast nhận click */
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 420px;
+  min-width: 280px;
+  padding: 14px 16px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-left-width: 4px;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 10px 24px -4px rgba(0, 0, 0, 0.12);
+  font-size: 14px;
+  line-height: 1.5;
+
+  /* Slide-in từ dưới lên + fade-in */
+  animation: slideIn 400ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.toast:hover {
+  box-shadow:
+    0 6px 10px -1px rgba(0, 0, 0, 0.10),
+    0 14px 28px -4px rgba(0, 0, 0, 0.16);
+}
+
+/* ===== Variants (màu sắc theo design tokens) ===== */
+.variant_success {
+  border-left-color: var(--color-success, #16A34A);
+}
+.variant_success .icon {
+  color: var(--color-success, #16A34A);
+}
+
+.variant_error {
+  border-left-color: var(--color-error, #DC2626);
+}
+.variant_error .icon {
+  color: var(--color-error, #DC2626);
+}
+
+.variant_warning {
+  border-left-color: var(--color-warning, #D97706);
+}
+.variant_warning .icon {
+  color: var(--color-warning, #D97706);
+}
+
+.variant_info {
+  border-left-color: var(--color-info, #2563EB);
+}
+.variant_info .icon {
+  color: var(--color-info, #2563EB);
+}
+
+/* ===== Icon / Message / Close ===== */
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  margin-top: 1px; /* align baseline với text */
+}
+
+.message {
+  flex: 1;
+  word-break: break-word;
+  /* User không cần thấy leading whitespace từ message. */
+  white-space: pre-wrap;
+}
+
+.close {
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  padding: 2px;
+  margin: -2px -2px -2px 0;
+  cursor: pointer;
+  color: var(--text-secondary, #6B7280);
+  border-radius: 4px;
+  line-height: 0;
+}
+
+.close:hover {
+  background: var(--bg-surface-alt, #FAFAFB);
+  color: var(--text-primary, #1A1A1E);
+}
+
+.close:focus-visible {
+  outline: 2px solid var(--brand-primary, #C8102E);
+  outline-offset: 2px;
+}
+
+/* ===== Animations ===== */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Khi toast rời DOM do dismiss — fade-out trước khi xóa khỏi state.
+ * React vẫn giữ node một chút khi animation chạy nhờ animation-fill-mode.
+ * Nếu cần exit animation phức tạp hơn, dùng thư viện (framer-motion, etc.).
+ * Ở đây giữ đơn giản: animation-end state đã fade-in rồi tự xóa khỏi DOM.
+ */
+
+/* Reduced motion: chỉ fade, không slide. */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: fadeIn 150ms ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

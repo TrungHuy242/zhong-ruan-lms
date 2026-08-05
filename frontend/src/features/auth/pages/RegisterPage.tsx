@@ -1,10 +1,11 @@
 ﻿import { FormEvent, useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Alert, Button, Input } from "../../../shared/components/ui";
+import { Button, Input } from "../../../shared/components/ui";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { register } from "../services/authApi";
 import { ApiError } from "../../../shared/api";
 import { AuthMinimalHeader } from "../components/AuthMinimalHeader";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./RegisterPage.module.css";
 
 interface FieldErrors {
@@ -85,6 +86,7 @@ function EyeOffIcon() {
 export function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -94,7 +96,6 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [apiError, setApiError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Nếu đã có token hợp lệ (F5 / truy cập trực tiếp /register khi đã login) → đẩy về /dashboard.
@@ -157,7 +158,6 @@ export function RegisterPage() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isLoading) return;
-    setApiError(null);
     // Xoá lỗi inline email cũ (nếu có) trước khi validate lại.
     setErrors((prev) => ({ ...prev, email: undefined }));
     if (!validateAll()) return;
@@ -190,7 +190,7 @@ export function RegisterPage() {
             : err instanceof Error
             ? err.message
             : "Đã có lỗi xảy ra. Vui lòng thử lại.";
-        setApiError(message);
+        toast.error(message);
       }
     } finally {
       setIsLoading(false);
@@ -237,14 +237,6 @@ export function RegisterPage() {
               <span className={styles.eyebrow}>Đăng ký</span>
               <h2 className={styles.formTitle}>Mở tài khoản học viên mới</h2>
             </header>
-
-            {apiError ? (
-              <div className={styles.alertWrap}>
-                <Alert variant="error" onClose={() => setApiError(null)}>
-                  {apiError}
-                </Alert>
-              </div>
-            ) : null}
 
             <form
               onSubmit={handleSubmit}

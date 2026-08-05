@@ -38,6 +38,7 @@ import {
   Bell as BellIcon,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./NotificationManagementPage.module.css";
 
 type ReadFilter = "ALL" | "READ" | "UNREAD";
@@ -75,6 +76,9 @@ export function NotificationManagementPage() {
   const canCreate = isAdmin(currentUser?.role);
   const { unreadCount, refresh, markAll, markOneRead } = useNotifications();
 
+  // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
+  const toast = useToast();
+
   // ===== URL sync =====
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState(() => ({
@@ -102,7 +106,6 @@ export function NotificationManagementPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const loadList = useCallback(async () => {
     setLoading(true);
@@ -225,7 +228,7 @@ export function NotificationManagementPage() {
     setItems((prev) =>
       prev.map((it) => (it.id === n.id ? { ...it, isRead: true } : it))
     );
-    setBanner({ type: "success", text: "Đã đánh dấu thông báo là đã đọc" });
+    toast.success("Đã đánh dấu thông báo là đã đọc");
   }
 
   async function handleMarkAll() {
@@ -233,7 +236,7 @@ export function NotificationManagementPage() {
     try {
       await markAll();
       setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setBanner({ type: "success", text: "Đã đánh dấu tất cả thông báo là đã đọc" });
+      toast.success("Đã đánh dấu tất cả thông báo là đã đọc");
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -241,7 +244,7 @@ export function NotificationManagementPage() {
           : err instanceof Error
           ? err.message
           : "Không thể đánh dấu tất cả";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
     } finally {
       setMarkAllLoading(false);
     }
@@ -249,10 +252,7 @@ export function NotificationManagementPage() {
 
   async function handleCreateSuccess(created: Notification[]) {
     setFormModalOpen(false);
-    setBanner({
-      type: "success",
-      text: `Đã gửi thông báo tới ${created.length} người dùng`,
-    });
+    toast.success(`Đã gửi thông báo tới ${created.length} người dùng`);
     await refresh();
     await loadList();
   }
@@ -262,7 +262,7 @@ export function NotificationManagementPage() {
     setConfirm((p) => ({ ...p, loading: true }));
     try {
       await deleteNotification(confirm.notification.id);
-      setBanner({ type: "success", text: "Đã chuyển thông báo vào thùng rác" });
+      toast.success("Đã chuyển thông báo vào thùng rác");
       setConfirm({ open: false, loading: false, notification: null });
       await loadList();
       await refresh();
@@ -273,7 +273,7 @@ export function NotificationManagementPage() {
           : err instanceof Error
           ? err.message
           : "Thao tác thất bại";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
       setConfirm((p) => ({ ...p, loading: false }));
     }
   }
@@ -480,15 +480,6 @@ export function NotificationManagementPage() {
           ) : null}
         </div>
       </header>
-
-      {banner ? (
-        <Alert
-          variant={banner.type === "success" ? "success" : "error"}
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       <div className={styles.tableCard}>
         {/* Toolbar */}

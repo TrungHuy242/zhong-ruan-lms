@@ -10,7 +10,6 @@
 
 import { ChangeEvent, FormEvent, KeyboardEvent, useState } from "react";
 import {
-  Alert,
   Button,
   Input,
   Modal,
@@ -22,6 +21,7 @@ import {
   type EnrollmentSchedulePayload,
 } from "../services/enrollmentScheduleApi";
 import { ApiError } from "../../../shared/api";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./EnrollmentScheduleFormModal.module.css";
 
 interface FieldErrors {
@@ -117,7 +117,7 @@ export function EnrollmentScheduleFormModal({
   );
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const toast = useToast();
 
   const setField = <K extends keyof FormState>(field: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -179,7 +179,6 @@ export function EnrollmentScheduleFormModal({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (submitting) return;
-    setApiError(null);
 
     // Nếu user gõ vào ô newCourse/newPhone mà chưa bấm Enter, vẫn commit vào list.
     const pendingCourse = form.newCourse.trim();
@@ -252,7 +251,9 @@ export function EnrollmentScheduleFormModal({
       }
       onSuccess();
     } catch (err) {
-      setApiError(err instanceof ApiError ? err.message : "Lỗi không xác định");
+      toast.error(
+        err instanceof ApiError ? err.message : "Lỗi không xác định"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -266,11 +267,6 @@ export function EnrollmentScheduleFormModal({
       size="lg"
     >
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        {apiError && (
-          <Alert variant="error" className={styles.apiAlert}>
-            {apiError}
-          </Alert>
-        )}
 
         {/* Tiêu đề + Tagline */}
         <div className={styles.field}>

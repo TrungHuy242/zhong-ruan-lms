@@ -21,6 +21,7 @@ import { ApiError } from "../../../shared/api";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { useAutoRefresh } from "../../../shared/hooks/useAutoRefresh";
 import { useDashboardWidgets } from "../hooks/useDashboardWidgets";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import { KpiCard } from "../components/KpiCard";
 import { MonthlyChart, type MonthlyDataPoint } from "../components/MonthlyChart";
 import { RecentActivities } from "../components/RecentActivities";
@@ -157,6 +158,9 @@ export function DashboardPage() {
   const currentUser = authStorage.getUser();
   const widgets = useDashboardWidgets();
 
+  // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
+  const toast = useToast();
+
   // Ref tới vùng content để export ảnh.
   const exportRef = useRef<HTMLDivElement | null>(null);
 
@@ -171,14 +175,10 @@ export function DashboardPage() {
   const [monthlyLoading, setMonthlyLoading] = useState(true);
   const [monthlyError, setMonthlyError] = useState<string | null>(null);
 
-  // Manual refresh state + banner + last updated + exporting
+  // Manual refresh state + last updated + exporting
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [exporting, setExporting] = useState(false);
-  const [banner, setBanner] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
 
   // Loại chart đang chọn (chỉ vẽ 1 series tại 1 thời điểm cho gọn).
   const [chartSeries, setChartSeries] = useState<
@@ -292,7 +292,7 @@ export function DashboardPage() {
   // ===== Handlers =====
   const handleManualRefresh = useCallback(async () => {
     await loadAll({ silent: false, manual: true });
-    setBanner({ type: "success", text: "Đã làm mới dữ liệu Dashboard" });
+    toast.success("Đã làm mới dữ liệu Dashboard");
   }, [loadAll]);
 
   const handleChanged = useCallback(
@@ -338,7 +338,7 @@ export function DashboardPage() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        setBanner({ type: "success", text: "Đã xuất ảnh Dashboard" });
+        toast.success("Đã xuất ảnh Dashboard");
       } finally {
         // Khôi phục hiển thị các nút.
         hiddenButtons.forEach((el, idx) => {
@@ -348,7 +348,7 @@ export function DashboardPage() {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Xuất ảnh thất bại";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
     } finally {
       setExporting(false);
     }
@@ -420,15 +420,6 @@ export function DashboardPage() {
           </Button>
         </div>
       </header>
-
-      {banner ? (
-        <Alert
-          variant={banner.type === "success" ? "success" : "error"}
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       {/* Vùng export (ref) — chỉ chứa nội dung muốn chụp */}
       <div ref={exportRef} className={styles.exportArea}>

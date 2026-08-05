@@ -46,6 +46,7 @@ import {
   type ContactStatus,
 } from "../services/contactRequestApi";
 import { ContactRequestDetailModal } from "../components/ContactRequestDetailModal";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./ContactRequestManagementPage.module.css";
 
 const SORTABLE_CONTACT_KEYS = [
@@ -126,6 +127,9 @@ export function ContactRequestManagementPage() {
   // xem (read-only) nhưng không cho đổi status / xoá.
   const canManage = isAdmin(currentUser?.role);
 
+  // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
+  const toast = useToast();
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<FilterState>(() => {
     const init: FilterState = { ...INITIAL_FILTERS };
@@ -181,9 +185,6 @@ export function ContactRequestManagementPage() {
   }>({ NEW: 0, CONTACTED: 0, CLOSED: 0 });
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(
-    null
-  );
 
   const loadContacts = useCallback(async () => {
     setLoading(true);
@@ -277,10 +278,9 @@ export function ContactRequestManagementPage() {
     setConfirm((p) => ({ ...p, loading: true }));
     try {
       await deleteContactRequest(confirm.contact.id);
-      setBanner({
-        type: "success",
-        text: `Đã chuyển yêu cầu của "${confirm.contact.fullName}" vào thùng rác`,
-      });
+      toast.success(
+        `Đã chuyển yêu cầu của "${confirm.contact.fullName}" vào thùng rác`,
+      );
       setConfirm({ open: false, loading: false, contact: null });
       loadContacts();
     } catch (err) {
@@ -290,7 +290,7 @@ export function ContactRequestManagementPage() {
           : err instanceof Error
           ? err.message
           : "Không xoá được yêu cầu";
-      setBanner({ type: "error", text: msg });
+      toast.error(msg);
       setConfirm((p) => ({ ...p, loading: false }));
     }
   }
@@ -406,15 +406,6 @@ export function ContactRequestManagementPage() {
           </p>
         </div>
       </header>
-
-      {banner ? (
-        <Alert
-          variant={banner.type === "success" ? "success" : "error"}
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       {!canManage ? (
         <Alert variant="info">

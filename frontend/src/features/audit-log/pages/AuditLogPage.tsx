@@ -41,6 +41,7 @@ import {
   type AuditModule,
 } from "../services/auditLogApi";
 import { ApiError } from "../../../shared/api";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import { listUsers, type User } from "../../users";
 import {
   Calendar,
@@ -201,8 +202,8 @@ export function AuditLogPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLog, setDetailLog] = useState<AuditLog | null>(null);
 
-  // ===== Toast banner =====
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  // ===== Toast =====
+  const toast = useToast();
 
   // ===== Filter actions =====
   const loadList = useCallback(async () => {
@@ -332,19 +333,16 @@ export function AuditLogPage() {
 
   function handleExportCsv() {
     if (items.length === 0) {
-      setBanner({ type: "error", text: "Không có dữ liệu để xuất" });
+      toast.error("Không có dữ liệu để xuất");
       return;
     }
     try {
       exportAuditLogsCsv(items);
-      setBanner({
-        type: "success",
-        text: `Đã xuất ${items.length} bản ghi ra CSV`,
-      });
+      toast.success(`Đã xuất ${items.length} bản ghi ra CSV`);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Xuất CSV thất bại";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
     }
   }
 
@@ -528,15 +526,6 @@ export function AuditLogPage() {
           </div>
         </div>
       </header>
-
-      {banner ? (
-        <Alert
-          variant={banner.type === "success" ? "success" : "error"}
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       <Card padding="md" className={styles.tableCard}>
         <AuditFilter

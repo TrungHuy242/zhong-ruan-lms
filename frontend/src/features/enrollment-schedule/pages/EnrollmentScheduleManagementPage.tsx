@@ -21,6 +21,7 @@ import {
   type ListEnrollmentSchedulesParams,
 } from "../services/enrollmentScheduleApi";
 import { ApiError } from "../../../shared/api";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./EnrollmentScheduleManagementPage.module.css";
 
 type SortKey = "displayOrder" | "createdAt" | "title";
@@ -75,6 +76,9 @@ function computeStatus(
 }
 
 export function EnrollmentScheduleManagementPage() {
+  // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
+  const toast = useToast();
+
   const [data, setData] = useState<{
     schedules: EnrollmentSchedule[];
     total: number;
@@ -83,7 +87,8 @@ export function EnrollmentScheduleManagementPage() {
   const [sortKey, setSortKey] = useState<SortKey>("displayOrder");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  // loadError: hiển thị inline khi fetch list thất bại (giữ để có nút "Thử lại")
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<EnrollmentSchedule | null>(null);
@@ -106,7 +111,7 @@ export function EnrollmentScheduleManagementPage() {
   const fetchData = useCallback(
     async (p: number, sk: SortKey, so: "asc" | "desc") => {
       setLoading(true);
-      setApiError(null);
+      setLoadError(null);
       try {
         const params: ListEnrollmentSchedulesParams = {
           page: p,
@@ -120,7 +125,7 @@ export function EnrollmentScheduleManagementPage() {
           total: result.pagination.total,
         });
       } catch (err) {
-        setApiError(
+        setLoadError(
           err instanceof ApiError ? err.message : "Lỗi tải dữ liệu"
         );
       } finally {
@@ -172,6 +177,7 @@ export function EnrollmentScheduleManagementPage() {
   const handleFormSuccess = () => {
     setFormOpen(false);
     setEditing(null);
+    toast.success(editing ? "Cập nhật lịch khai giảng thành công" : "Tạo lịch khai giảng thành công");
     fetchData(page, sortKey, sortOrder);
   };
 
@@ -184,14 +190,18 @@ export function EnrollmentScheduleManagementPage() {
     try {
       if (confirm.mode === "delete") {
         await deleteEnrollmentSchedule(confirm.schedule.id);
+        toast.success("Đã chuyển lịch khai giảng vào thùng rác");
       } else {
         await restoreEnrollmentSchedule(confirm.schedule.id);
+        toast.success("Khôi phục lịch khai giảng thành công");
       }
       setConfirm((c) => ({ ...c, open: false, loading: false }));
       fetchData(page, sortKey, sortOrder);
     } catch (err) {
       setConfirm((c) => ({ ...c, loading: false }));
-      setApiError(err instanceof ApiError ? err.message : "Thao tác thất bại");
+      toast.error(
+        err instanceof ApiError ? err.message : "Thao tác thất bại"
+      );
     }
   };
 
@@ -224,7 +234,7 @@ export function EnrollmentScheduleManagementPage() {
         </button>
       </div>
 
-      {apiError && (
+      {loadError && (
         <div
           style={{
             background: "var(--color-error-bg)",
@@ -236,7 +246,7 @@ export function EnrollmentScheduleManagementPage() {
             fontSize: 14,
           }}
         >
-          {apiError}
+          {loadError}
         </div>
       )}
 

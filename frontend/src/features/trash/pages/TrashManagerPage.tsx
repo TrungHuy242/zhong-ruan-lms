@@ -79,6 +79,7 @@ import type { UserOption } from "../components/UserOption";
 import { listUsers, type User } from "../../users";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import {
   AlertTriangle,
   Bell,
@@ -176,6 +177,9 @@ export function TrashManagerPage() {
   const currentUser = authStorage.getUser();
   const isAdmin = checkIsAdmin(currentUser?.role);
 
+  // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
+  const toast = useToast();
+
   // ===== URL sync =====
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -245,7 +249,6 @@ export function TrashManagerPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // ===== Debounce search =====
   const debounceRef = useRef<number | null>(null);
@@ -264,11 +267,7 @@ export function TrashManagerPage() {
   }, [filters.search]);
 
   // Auto-clear banner after 4s.
-  useEffect(() => {
-    if (!banner) return;
-    const t = window.setTimeout(() => setBanner(null), 4000);
-    return () => window.clearTimeout(t);
-  }, [banner]);
+  // (toast tự động dismiss — không cần useEffect clear thủ công)
 
   // ===== Load list =====
   const loadList = useCallback(async () => {
@@ -495,7 +494,7 @@ export function TrashManagerPage() {
     try {
       const lookup = it.module === "settings" ? (it.key ?? String(it.id)) : it.id;
       await restoreItem(it.module, lookup);
-      setBanner({ type: "success", text: `Khôi phục "${it.label}" thành công` });
+      toast.success(`Khôi phục "${it.label}" thành công`);
       closeConfirm();
       clearSelection();
       await Promise.all([loadList(), loadStats()]);
@@ -514,7 +513,7 @@ export function TrashManagerPage() {
     try {
       const lookup = it.module === "settings" ? (it.key ?? String(it.id)) : it.id;
       await forceDeleteItem(it.module, lookup);
-      setBanner({ type: "success", text: `Đã xoá vĩnh viễn "${it.label}"` });
+      toast.success(`Đã xoá vĩnh viễn "${it.label}"`);
       closeConfirm();
       clearSelection();
       await Promise.all([loadList(), loadStats()]);
@@ -534,15 +533,13 @@ export function TrashManagerPage() {
       const result = await bulkRestore(items);
       const failedDetail = (result.results ?? []).filter((r) => !r.ok);
       if (result.failed === 0) {
-        setBanner({
-          type: "success",
-          text: `Khôi phục hàng loạt thành công ${result.success}/${result.total} bản ghi`,
-        });
+        toast.success(
+          `Khôi phục hàng loạt thành công ${result.success}/${result.total} bản ghi`,
+        );
       } else {
-        setBanner({
-          type: "success",
-          text: `Khôi phục hàng loạt: ${result.success} thành công, ${result.failed} thất bại`,
-        });
+        toast.warning(
+          `Khôi phục hàng loạt: ${result.success} thành công, ${result.failed} thất bại`,
+        );
         setActionError(
           failedDetail.length > 0
             ? failedDetail.map((r) => `${r.module}:${r.key ?? r.id} — ${r.error}`).join("\n")
@@ -568,15 +565,13 @@ export function TrashManagerPage() {
       const result = await bulkForceDelete(items);
       const failedDetail = (result.results ?? []).filter((r) => !r.ok);
       if (result.failed === 0) {
-        setBanner({
-          type: "success",
-          text: `Đã xoá vĩnh viễn ${result.success}/${result.total} bản ghi`,
-        });
+        toast.success(
+          `Đã xoá vĩnh viễn ${result.success}/${result.total} bản ghi`,
+        );
       } else {
-        setBanner({
-          type: "success",
-          text: `Xoá vĩnh viễn hàng loạt: ${result.success} thành công, ${result.failed} thất bại`,
-        });
+        toast.warning(
+          `Xoá vĩnh viễn hàng loạt: ${result.success} thành công, ${result.failed} thất bại`,
+        );
         setActionError(
           failedDetail.length > 0
             ? failedDetail.map((r) => `${r.module}:${r.key ?? r.id} — ${r.error}`).join("\n")
@@ -838,16 +833,6 @@ export function TrashManagerPage() {
 
       {/* ===== KPI / Stats ===== */}
       <TrashStats data={stats} loading={statsLoading} />
-
-      {/* ===== Banner (success / error) ===== */}
-      {banner ? (
-        <Alert
-          variant={banner.type === "success" ? "success" : "error"}
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       <Card padding="md" className={styles.tableCard}>
         {/* ===== Filter row ===== */}

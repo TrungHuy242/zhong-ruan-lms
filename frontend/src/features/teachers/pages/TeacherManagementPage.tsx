@@ -59,6 +59,7 @@ import { ApiError } from "../../../shared/api";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { isAdmin } from "../../../shared/utils/auth";
 import { useTableColumns } from "../../../shared/hooks/useTableColumns";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import {
   ChevronDown,
   Columns,
@@ -134,6 +135,9 @@ interface BulkConfirmState {
 export function TeacherManagementPage() {
   const currentUser = authStorage.getUser();
   const canManage = isAdmin(currentUser?.role);
+
+  // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
+  const toast = useToast();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<FilterState>(() => {
@@ -392,10 +396,6 @@ export function TeacherManagementPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(
-    null
-  );
-
   function openCreate() {
     setFormTeacher(null);
     setFormModalOpen(true);
@@ -415,13 +415,11 @@ export function TeacherManagementPage() {
 
   function handleTeacherSave(_saved: Teacher, mode: "create" | "update") {
     setFormModalOpen(false);
-    setBanner({
-      type: "success",
-      text:
-        mode === "create"
-          ? "Tạo giảng viên thành công"
-          : "Cập nhật giảng viên thành công",
-    });
+    toast.success(
+      mode === "create"
+        ? "Tạo giảng viên thành công"
+        : "Cập nhật giảng viên thành công",
+    );
     loadTeachers();
   }
 
@@ -431,10 +429,10 @@ export function TeacherManagementPage() {
     try {
       if (confirm.mode === "delete") {
         await deleteTeacher(confirm.teacher.id);
-        setBanner({ type: "success", text: "Đã chuyển giảng viên vào thùng rác" });
+        toast.success("Đã chuyển giảng viên vào thùng rác");
       } else {
         await restoreTeacher(confirm.teacher.id);
-        setBanner({ type: "success", text: "Khôi phục giảng viên thành công" });
+        toast.success("Khôi phục giảng viên thành công");
       }
       setConfirm({ open: false, loading: false, teacher: null, mode: "delete" });
       loadTeachers();
@@ -445,7 +443,7 @@ export function TeacherManagementPage() {
           : err instanceof Error
           ? err.message
           : "Thao tác thất bại";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
       setConfirm((p) => ({ ...p, loading: false }));
     }
   }
@@ -471,13 +469,11 @@ export function TeacherManagementPage() {
     try {
       if (bulkConfirm.mode === "delete") {
         const result = await bulkDeleteTeachers(selectedIds.map(String));
-        setBanner({
-          type: result.deletedCount > 0 ? "success" : "error",
-          text:
-            result.deletedCount > 0
-              ? `Đã chuyển ${result.deletedCount} giảng viên vào thùng rác`
-              : "Không xoá được giảng viên nào",
-        });
+        if (result.deletedCount > 0) {
+          toast.success(`Đã chuyển ${result.deletedCount} giảng viên vào thùng rác`);
+        } else {
+          toast.error("Không xoá được giảng viên nào");
+        }
       } else {
         const target = bulkConfirm.mode === "publish";
         const ids = selectedIds.map(String);
@@ -496,14 +492,14 @@ export function TeacherManagementPage() {
                 : "Thất bại";
           }
         }
-        setBanner({
-          type: ok > 0 ? "success" : "error",
-          text:
-            ok > 0
-              ? `Đã ${target ? "xuất bản" : "ẩn"} ${ok}/${ids.length} giảng viên` +
-                (lastError && ok < ids.length ? ` (lỗi: ${lastError})` : "")
-              : lastError ?? "Không cập nhật được giảng viên nào",
-        });
+        if (ok > 0) {
+          toast.success(
+            `Đã ${target ? "xuất bản" : "ẩn"} ${ok}/${ids.length} giảng viên` +
+              (lastError && ok < ids.length ? ` (lỗi: ${lastError})` : ""),
+          );
+        } else {
+          toast.error(lastError ?? "Không cập nhật được giảng viên nào");
+        }
       }
       setBulkConfirm((p) => ({ ...p, open: false, loading: false }));
       setSelectedIds([]);
@@ -515,7 +511,7 @@ export function TeacherManagementPage() {
           : err instanceof Error
           ? err.message
           : "Thao tác hàng loạt thất bại";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
       setBulkConfirm((p) => ({ ...p, loading: false }));
     }
   }
@@ -525,12 +521,11 @@ export function TeacherManagementPage() {
     setOpenActionId(null);
     try {
       await updateTeacher(t.id, { isPublished: !t.isPublished });
-      setBanner({
-        type: "success",
-        text: t.isPublished
+      toast.success(
+        t.isPublished
           ? `Đã ẩn "${t.fullName}" khỏi trang public`
           : `Đã xuất bản "${t.fullName}"`,
-      });
+      );
       loadTeachers();
     } catch (err) {
       const message =
@@ -539,7 +534,7 @@ export function TeacherManagementPage() {
           : err instanceof Error
           ? err.message
           : "Không cập nhật được trạng thái";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
     }
   }
 
@@ -793,15 +788,6 @@ export function TeacherManagementPage() {
           </Button>
         ) : null}
       </header>
-
-      {banner ? (
-        <Alert
-          variant={banner.type === "success" ? "success" : "error"}
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       {!canManage ? (
         <Alert variant="info">

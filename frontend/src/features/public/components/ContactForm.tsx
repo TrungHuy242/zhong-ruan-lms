@@ -14,10 +14,11 @@
  *   - message:  tối thiểu 10 ký tự.
  */
 import { FormEvent, useState } from "react";
-import { Alert, Button } from "../../../shared/components/ui";
+import { Button } from "../../../shared/components/ui";
 import { ApiError } from "../../../shared/api";
 import { submitContactRequest } from "../services/publicContactApi";
 import type { PublicContactRequestPayload } from "../services/publicContactApi";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./ContactForm.module.css";
 
 interface FieldErrors {
@@ -81,13 +82,13 @@ export function ContactForm({
   onSubmitted,
   successMessage = "Đã gửi yêu cầu, chúng tôi sẽ liên hệ lại sớm nhất.",
 }: ContactFormProps) {
+  const toast = useToast();
+
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   function validateField(field: keyof FieldErrors, value: string): string | undefined {
@@ -138,8 +139,6 @@ export function ContactForm({
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submitting) return;
-    setApiError(null);
-    setSuccess(null);
     if (!validateAll()) return;
 
     setSubmitting(true);
@@ -152,7 +151,7 @@ export function ContactForm({
     try {
       await submitContactRequest(payload);
       resetForm();
-      setSuccess(successMessage);
+      toast.success(successMessage);
       onSubmitted?.();
     } catch (err) {
       // BE trả message rất rõ cho từng case:
@@ -165,7 +164,7 @@ export function ContactForm({
           : err instanceof Error
           ? err.message
           : "Đã có lỗi xảy ra. Vui lòng thử lại.";
-      setApiError(message);
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -178,22 +177,6 @@ export function ContactForm({
       aria-busy={submitting || undefined}
       className={styles.form}
     >
-      {success ? (
-        <div className={styles.alertWrap}>
-          <Alert variant="success" onClose={() => setSuccess(null)}>
-            {success}
-          </Alert>
-        </div>
-      ) : null}
-
-      {apiError ? (
-        <div className={styles.alertWrap}>
-          <Alert variant="error" onClose={() => setApiError(null)}>
-            {apiError}
-          </Alert>
-        </div>
-      ) : null}
-
       <fieldset disabled={submitting} className={styles.fieldset}>
         <div className={styles.row}>
           <label className={styles.field}>

@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Alert, Button, Input, Modal } from "../ui";
+import { Button, Input, Modal } from "../ui";
 import {
   createUser,
   updateUser,
@@ -9,6 +9,7 @@ import {
   type UserRole,
 } from "../../../features/users/services/userApi";
 import { ApiError } from "../../../shared/api";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./UserFormModal.module.css";
 
 interface FieldErrors {
@@ -87,8 +88,8 @@ export function UserFormModal({
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("STUDENT");
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const toast = useToast();
 
   // Mỗi lần mở modal → reset state từ props (tránh giữ data user cũ).
   useEffect(() => {
@@ -99,7 +100,6 @@ export function UserFormModal({
     setPassword(""); // luôn rỗng — không cho sửa password ở đây
     setRole(user?.role ?? "STUDENT");
     setErrors({});
-    setSubmitError(null);
     setIsSubmitting(false);
   }, [open, user]);
 
@@ -142,7 +142,6 @@ export function UserFormModal({
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isSubmitting) return;
-    setSubmitError(null);
     if (!validateAll()) return;
 
     setIsSubmitting(true);
@@ -179,7 +178,7 @@ export function UserFormModal({
       if (/email/i.test(message)) {
         setErrors((prev) => ({ ...prev, email: message }));
       } else {
-        setSubmitError(message);
+        toast.error(message);
       }
     } finally {
       setIsSubmitting(false);
@@ -194,12 +193,6 @@ export function UserFormModal({
       size="md"
     >
       <form onSubmit={handleSubmit} noValidate className={styles.form}>
-        {submitError ? (
-          <Alert variant="error" onClose={() => setSubmitError(null)}>
-            {submitError}
-          </Alert>
-        ) : null}
-
         <Input
           label="Họ và tên"
           placeholder="Nguyễn Văn A"

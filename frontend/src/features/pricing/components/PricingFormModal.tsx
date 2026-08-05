@@ -33,6 +33,7 @@ import {
 import { ApiError } from "../../../shared/api";
 import { coursesContent } from "../../public/data/coursesContent";
 import { Link2, X as XIcon } from "lucide-react";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./PricingFormModal.module.css";
 
 interface FieldErrors {
@@ -128,8 +129,8 @@ export function PricingFormModal({
   const [displayOrder, setDisplayOrder] = useState("0");
 
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const toast = useToast();
 
   // Cảnh báo khi chọn nổi bật (có >1 gói đã nổi bật)
   const [featuredWarning, setFeaturedWarning] = useState<string | null>(null);
@@ -154,7 +155,6 @@ export function PricingFormModal({
       plan?.displayOrder != null ? String(plan.displayOrder) : "0"
     );
     setErrors({});
-    setSubmitError(null);
     setIsSubmitting(false);
     setFeaturedWarning(null);
   }, [open, plan]);
@@ -221,7 +221,6 @@ export function PricingFormModal({
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isSubmitting) return;
-    setSubmitError(null);
     if (!validateAll()) return;
 
     setIsSubmitting(true);
@@ -263,7 +262,7 @@ export function PricingFormModal({
           : err instanceof Error
           ? err.message
           : "Đã có lỗi xảy ra. Vui lòng thử lại.";
-      setSubmitError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -277,12 +276,6 @@ export function PricingFormModal({
       size="lg"
     >
       <form onSubmit={handleSubmit} noValidate className={styles.form}>
-        {submitError ? (
-          <Alert variant="error" onClose={() => setSubmitError(null)}>
-            {submitError}
-          </Alert>
-        ) : null}
-
         {/* Tên gói + Loại lớp */}
         <div className={styles.grid2}>
           <Input

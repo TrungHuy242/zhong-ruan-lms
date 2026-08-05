@@ -64,6 +64,7 @@ import {
 } from "../../../shared/validation/fileValidation";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import { listUsers, type User } from "../../users/services/userApi";
 import styles from "./FileManagerPage.module.css";
 
@@ -99,6 +100,9 @@ export function FileManagerPage() {
   // ===== Auth =====
   const currentUser = authStorage.getUser();
   const isAdmin = checkIsAdmin(currentUser?.role);
+
+  // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
+  const toast = useToast();
   const currentUserId =
     currentUser?.id !== undefined
       ? typeof currentUser.id === "number"
@@ -275,11 +279,7 @@ export function FileManagerPage() {
     file: null,
   });
 
-  // ===== Banner (toast inline) =====
-  const [banner, setBanner] = useState<{
-    type: "success" | "error" | "info";
-    text: string;
-  } | null>(null);
+  // ===== Banner (toast inline) — đã chuyển sang toast floating =====
 
   // ===== Load list =====
   const loadList = useCallback(async () => {
@@ -370,10 +370,11 @@ export function FileManagerPage() {
         if (success > 0) parts.push(`Đã tải lên thành công ${success} file`);
         if (error > 0) parts.push(`${error} file lỗi`);
         if (cancelled > 0) parts.push(`${cancelled} file đã huỷ`);
-        setBanner({
-          type: success > 0 && error === 0 ? "success" : "info",
-          text: parts.join(" · "),
-        });
+        if (success > 0 && error === 0) {
+          toast.success(parts.join(" · "));
+        } else {
+          toast.info(parts.join(" · "));
+        }
       }
     }
   }, [
@@ -422,10 +423,9 @@ export function FileManagerPage() {
       else invalid.push(f.name);
     }
     if (invalid.length > 0) {
-      setBanner({
-        type: "error",
-        text: `Bỏ qua ${invalid.length} file không hợp lệ: ${invalid.join(", ")}. Chỉ chấp nhận jpg/jpeg/png/pdf/doc/docx, tối đa 10MB.`,
-      });
+      toast.error(
+        `Bỏ qua ${invalid.length} file không hợp lệ: ${invalid.join(", ")}. Chỉ chấp nhận jpg/jpeg/png/pdf/doc/docx, tối đa 10MB.`,
+      );
     }
     if (valid.length > 0) uploadQueue.enqueue(valid);
   }
@@ -463,10 +463,9 @@ export function FileManagerPage() {
     const url = `${window.location.origin}/api/files/${file.id}/preview`;
     try {
       await navigator.clipboard.writeText(url);
-      setBanner({
-        type: "success",
-        text: `Đã sao chép liên kết của "${file.originalName}". (Lưu ý: BE chưa serve file vật lý — link này dùng làm ID reference.)`,
-      });
+      toast.success(
+        `Đã sao chép liên kết của "${file.originalName}". (Lưu ý: BE chưa serve file vật lý — link này dùng làm ID reference.)`,
+      );
     } catch {
       // Fallback cho trình duyệt không hỗ trợ clipboard API (vd HTTP)
       const ta = document.createElement("textarea");
@@ -475,15 +474,13 @@ export function FileManagerPage() {
       ta.select();
       try {
         document.execCommand("copy");
-        setBanner({
-          type: "success",
-          text: `Đã sao chép liên kết của "${file.originalName}".`,
-        });
+        toast.success(
+          `Đã sao chép liên kết của "${file.originalName}".`,
+        );
       } catch {
-        setBanner({
-          type: "error",
-          text: "Trình duyệt không hỗ trợ sao chép tự động — vui lòng copy thủ công.",
-        });
+        toast.error(
+          "Trình duyệt không hỗ trợ sao chép tự động — vui lòng copy thủ công.",
+        );
       }
       document.body.removeChild(ta);
     }
@@ -500,10 +497,9 @@ export function FileManagerPage() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setBanner({
-      type: "info",
-      text: `Đã gửi yêu cầu tải "${file.originalName}". (Nếu download không bắt đầu, BE chưa serve file vật lý.)`,
-    });
+    toast.info(
+      `Đã gửi yêu cầu tải "${file.originalName}". (Nếu download không bắt đầu, BE chưa serve file vật lý.)`,
+    );
   }
 
   function askDelete(file: UploadedFile) {
@@ -516,24 +512,20 @@ export function FileManagerPage() {
     try {
       if (confirm.mode === "bulk") {
         const result = await bulkDeleteFiles(selectedIds);
-        setBanner({
-          type: "success",
-          text: `Đã chuyển ${result.deletedCount} file vào thùng rác.`,
-        });
+        toast.success(
+          `Đã chuyển ${result.deletedCount} file vào thùng rác.`,
+        );
         setSelectedIds([]);
       } else {
         await deleteFile(confirm.file.id);
-        setBanner({
-          type: "success",
-          text: `Đã xoá file "${confirm.file.originalName}".`,
-        });
+        toast.success(`Đã xoá file "${confirm.file.originalName}".`);
       }
       setConfirm({ open: false, loading: false, mode: "single", file: null });
       await loadList();
       setStorageStatsRefreshKey((k) => k + 1);
     } catch (err) {
       const message = getApiErrorMessage(err, "Không xoá được file");
-      setBanner({ type: "error", text: message });
+      toast.error(message);
       setConfirm((p) => ({ ...p, loading: false }));
     }
   }
@@ -545,7 +537,7 @@ export function FileManagerPage() {
 
   async function bulkDownload() {
     if (selectedIds.length === 0) return;
-    setBanner({ type: "info", text: `Đang nén ${selectedIds.length} file thành zip...` });
+    toast.info(`Đang nén ${selectedIds.length} file thành zip...`);
     try {
       const result = await bulkDownloadFiles(selectedIds);
       const url = URL.createObjectURL(result.blob);
@@ -559,17 +551,16 @@ export function FileManagerPage() {
       setTimeout(() => URL.revokeObjectURL(url), 30_000);
 
       if (result.missingFiles.length > 0) {
-        setBanner({
-          type: "info",
-          text: `Đã tải zip nhưng có ${result.missingFiles.length} file vật lý bị thiếu trên đĩa — đã bỏ qua khỏi zip.`,
-        });
+        toast.info(
+          `Đã tải zip nhưng có ${result.missingFiles.length} file vật lý bị thiếu trên đĩa — đã bỏ qua khỏi zip.`,
+        );
       } else {
-        setBanner({ type: "success", text: `Đã tải xuống zip ${selectedIds.length} file.` });
+        toast.success(`Đã tải xuống zip ${selectedIds.length} file.`);
       }
       setSelectedIds([]);
     } catch (err) {
       const message = getApiErrorMessage(err, "Không tải được zip");
-      setBanner({ type: "error", text: message });
+      toast.error(message);
     }
   }
 
@@ -667,21 +658,6 @@ export function FileManagerPage() {
 
       {/* ===== Storage Stats — chỉ Admin ===== */}
       <StorageStatsCard isAdmin={isAdmin} refreshKey={storageStatsRefreshKey} />
-
-      {banner ? (
-        <Alert
-          variant={
-            banner.type === "success"
-              ? "success"
-              : banner.type === "error"
-                ? "error"
-                : "info"
-          }
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       {/* ===== Drag & Drop area + Upload Queue ===== */}
       <section className={styles.uploadSection}>

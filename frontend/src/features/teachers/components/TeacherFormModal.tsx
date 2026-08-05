@@ -22,7 +22,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Alert, Button, Input, Modal, UploadZone } from "../../../shared/components/ui";
+import { Button, Input, Modal, UploadZone } from "../../../shared/components/ui";
 import {
   createTeacher,
   getTeacherAvatarUrl,
@@ -36,6 +36,7 @@ import {
 } from "../services/teacherApi";
 import { ApiError } from "../../../shared/api";
 import { ImageIcon, Link2, X as XIcon } from "lucide-react";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./TeacherFormModal.module.css";
 
 interface FieldErrors {
@@ -153,9 +154,9 @@ export function TeacherFormModal({
   const [teacherUserOptions, setTeacherUserOptions] = useState<TeacherUserOption[]>([]);
   const [linkedUserTouched, setLinkedUserTouched] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const toast = useToast();
 
   // Mỗi lần mở modal → reset từ props (tránh giữ data teacher cũ).
   useEffect(() => {
@@ -179,7 +180,6 @@ export function TeacherFormModal({
     setLinkedUserId(teacher?.linkedUserId ?? "");
     setLinkedUserTouched(false);
     setErrors({});
-    setSubmitError(null);
     setIsSubmitting(false);
     setIsUploadingAvatar(false);
   }, [open, teacher]);
@@ -260,7 +260,6 @@ export function TeacherFormModal({
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isSubmitting) return;
-    setSubmitError(null);
     if (!validateAll()) return;
 
     setIsSubmitting(true);
@@ -331,7 +330,7 @@ export function TeacherFormModal({
       if (/slug/i.test(message)) {
         setErrors((prev) => ({ ...prev, slug: message }));
       } else {
-        setSubmitError(message);
+        toast.error(message);
       }
     } finally {
       setIsSubmitting(false);
@@ -354,12 +353,6 @@ export function TeacherFormModal({
       size="lg"
     >
       <form onSubmit={handleSubmit} noValidate className={styles.form}>
-        {submitError ? (
-          <Alert variant="error" onClose={() => setSubmitError(null)}>
-            {submitError}
-          </Alert>
-        ) : null}
-
         <div className={styles.grid2}>
           <Input
             label="Họ và tên"

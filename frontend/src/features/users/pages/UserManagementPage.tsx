@@ -17,6 +17,7 @@ import {
   type SortConfig,
   type TableColumn,
 } from "../../../shared/components/ui";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import { UserFormModal } from "../../../shared/components/modals/UserFormModal";
 import { UserDetailModal } from "../components/UserDetailModal";
 import {
@@ -435,8 +436,8 @@ export function UserManagementPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // ===== Toast banner (success ngắn) =====
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  // ===== Toast (success/error) — dùng useToast() thay cho inline banner =====
+  const toast = useToast();
 
   function openCreate() {
     setFormUser(null);
@@ -461,10 +462,9 @@ export function UserManagementPage() {
 
   function handleUserSave(_saved: User, mode: "create" | "update") {
     setFormModalOpen(false);
-    setBanner({
-      type: "success",
-      text: mode === "create" ? "Tạo người dùng thành công" : "Cập nhật người dùng thành công",
-    });
+    toast.success(
+      mode === "create" ? "Tạo người dùng thành công" : "Cập nhật người dùng thành công",
+    );
     loadUsers();
   }
 
@@ -474,10 +474,10 @@ export function UserManagementPage() {
     try {
       if (confirm.mode === "delete") {
         await deleteUser(confirm.user.id);
-        setBanner({ type: "success", text: "Đã chuyển người dùng vào thùng rác" });
+        toast.success("Đã chuyển người dùng vào thùng rác");
       } else {
         await restoreUser(confirm.user.id);
-        setBanner({ type: "success", text: "Khôi phục người dùng thành công" });
+        toast.success("Khôi phục người dùng thành công");
       }
       setConfirm({ open: false, loading: false, user: null, mode: "delete" });
       loadUsers();
@@ -488,7 +488,7 @@ export function UserManagementPage() {
           : err instanceof Error
           ? err.message
           : "Thao tác thất bại";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
       setConfirm((p) => ({ ...p, loading: false }));
     }
   }
@@ -511,16 +511,10 @@ export function UserManagementPage() {
     try {
       if (bulkConfirm.mode === "delete") {
         const result = await bulkDeleteUsers(selectedIds);
-        setBanner({
-          type: "success",
-          text: `Đã chuyển ${result.deletedCount} người dùng vào thùng rác`,
-        });
+        toast.success(`Đã chuyển ${result.deletedCount} người dùng vào thùng rác`);
       } else {
         const result = await bulkUpdateStatus(selectedIds, bulkConfirm.status);
-        setBanner({
-          type: "success",
-          text: `Đã cập nhật trạng thái cho ${result.updatedCount} người dùng`,
-        });
+        toast.success(`Đã cập nhật trạng thái cho ${result.updatedCount} người dùng`);
       }
       setBulkConfirm((p) => ({ ...p, open: false, loading: false }));
       setSelectedIds([]);
@@ -532,7 +526,7 @@ export function UserManagementPage() {
           : err instanceof Error
           ? err.message
           : "Thao tác hàng loạt thất bại";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
       setBulkConfirm((p) => ({ ...p, loading: false }));
     }
   }
@@ -743,15 +737,6 @@ export function UserManagementPage() {
           </Button>
         ) : null}
       </header>
-
-      {banner ? (
-        <Alert
-          variant={banner.type === "success" ? "success" : "error"}
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       {!canManage ? (
         <Alert variant="info">

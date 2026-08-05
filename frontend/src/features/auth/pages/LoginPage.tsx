@@ -5,6 +5,7 @@ import { authStorage } from "../../../shared/storage/authStorage";
 import { login } from "../services/authApi";
 import { ApiError } from "../../../shared/api";
 import { AuthMinimalHeader } from "../components/AuthMinimalHeader";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./LoginPage.module.css";
 
 interface FieldErrors {
@@ -59,12 +60,12 @@ function EyeOffIcon() {
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [apiError, setApiError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Nếu đã có token hợp lệ (F5 / truy cập trực tiếp /login khi đã login) → đẩy về /dashboard.
@@ -105,7 +106,6 @@ export function LoginPage() {
     e.preventDefault();
     // Chặn double-submit: Enter có thể bắn 2 nhịp trước khi React kịp disable fieldset.
     if (isLoading) return;
-    setApiError(null);
     if (!validateAll()) return;
 
     setIsLoading(true);
@@ -120,7 +120,7 @@ export function LoginPage() {
           : err instanceof Error
           ? err.message
           : "Đã có lỗi xảy ra. Vui lòng thử lại.";
-      setApiError(message);
+      toast.error(message);
       // Giữ email, xoá password theo yêu cầu PASS.
       setPassword("");
     } finally {
@@ -176,15 +176,7 @@ export function LoginPage() {
               <h2 className={styles.formTitle}>Tiếp tục hành trình học</h2>
             </header>
 
-            {apiError ? (
-              <div className={styles.alertWrap}>
-                <Alert variant="error" onClose={() => setApiError(null)}>
-                  {apiError}
-                </Alert>
-              </div>
-            ) : null}
-
-            {justRegistered && !apiError ? (
+            {justRegistered ? (
               <div className={styles.alertWrap}>
                 <Alert variant="success">
                   Đăng ký tài khoản thành công. Vui lòng đăng nhập để tiếp tục.

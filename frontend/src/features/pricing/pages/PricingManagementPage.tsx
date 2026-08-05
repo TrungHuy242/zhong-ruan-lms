@@ -45,6 +45,7 @@ import {
 import { ApiError } from "../../../shared/api";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { isAdmin } from "../../../shared/utils/auth";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import {
   ChevronDown,
   Edit3,
@@ -109,6 +110,9 @@ interface ConfirmState {
 export function PricingManagementPage() {
   const currentUser = authStorage.getUser();
   const canManage = isAdmin(currentUser?.role);
+
+  // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
+  const toast = useToast();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<FilterState>(() => {
@@ -309,10 +313,6 @@ export function PricingManagementPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(
-    null
-  );
-
   function openCreate() {
     setFormPlan(null);
     setFormModalOpen(true);
@@ -328,13 +328,11 @@ export function PricingManagementPage() {
 
   function handlePlanSave(_saved: PricingPlan, mode: "create" | "update") {
     setFormModalOpen(false);
-    setBanner({
-      type: "success",
-      text:
-        mode === "create"
-          ? "Tạo bảng giá thành công"
-          : "Cập nhật bảng giá thành công",
-    });
+    toast.success(
+      mode === "create"
+        ? "Tạo bảng giá thành công"
+        : "Cập nhật bảng giá thành công",
+    );
     loadPlans();
   }
 
@@ -343,7 +341,7 @@ export function PricingManagementPage() {
     setConfirm((p) => ({ ...p, loading: true }));
     try {
       await deletePricingPlan(confirm.plan.id);
-      setBanner({ type: "success", text: "Đã xoá bảng giá thành công" });
+      toast.success("Đã xoá bảng giá thành công");
       setConfirm({ open: false, loading: false, plan: null });
       loadPlans();
     } catch (err) {
@@ -353,7 +351,7 @@ export function PricingManagementPage() {
           : err instanceof Error
           ? err.message
           : "Thao tác thất bại";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
       setConfirm((p) => ({ ...p, loading: false }));
     }
   }
@@ -363,12 +361,11 @@ export function PricingManagementPage() {
     setOpenActionId(null);
     try {
       await updatePricingPlan(p.id, { isPublished: !p.isPublished });
-      setBanner({
-        type: "success",
-        text: p.isPublished
+      toast.success(
+        p.isPublished
           ? `Đã ẩn "${p.name}"`
           : `Đã xuất bản "${p.name}"`,
-      });
+      );
       loadPlans();
     } catch (err) {
       const message =
@@ -377,7 +374,7 @@ export function PricingManagementPage() {
           : err instanceof Error
           ? err.message
           : "Không cập nhật được trạng thái";
-      setBanner({ type: "error", text: message });
+      toast.error(message);
     }
   }
 
@@ -590,15 +587,6 @@ export function PricingManagementPage() {
           </Button>
         ) : null}
       </header>
-
-      {banner ? (
-        <Alert
-          variant={banner.type === "success" ? "success" : "error"}
-          onClose={() => setBanner(null)}
-        >
-          {banner.text}
-        </Alert>
-      ) : null}
 
       {!canManage ? (
         <Alert variant="info">

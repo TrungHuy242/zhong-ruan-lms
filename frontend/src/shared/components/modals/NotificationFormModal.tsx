@@ -7,6 +7,7 @@ import {
 } from "../../../features/notifications/services/notificationApi";
 import { ApiError } from "../../../shared/api";
 import { listUsers, type User, type UserRole } from "../../../features/users";
+import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./NotificationFormModal.module.css";
 
 type AudienceMode = "all" | "role";
@@ -57,9 +58,9 @@ export function NotificationFormModal({
   const [role, setRole] = useState<UserRole>("STUDENT");
 
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
+  const toast = useToast();
 
   // Reset mỗi lần mở.
   useEffect(() => {
@@ -70,7 +71,6 @@ export function NotificationFormModal({
     setAudienceMode("all");
     setRole("STUDENT");
     setErrors({});
-    setSubmitError(null);
     setIsSubmitting(false);
     setProgress(null);
   }, [open]);
@@ -108,14 +108,13 @@ export function NotificationFormModal({
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (isSubmitting) return;
-    setSubmitError(null);
     if (!validateAll()) return;
 
     setIsSubmitting(true);
     try {
       const recipients = await resolveRecipients();
       if (recipients.length === 0) {
-        setSubmitError(
+        toast.error(
           audienceMode === "all"
             ? "Hệ thống chưa có người dùng nào để gửi thông báo"
             : `Không có người dùng nào đang giữ vai trò ${role}`
@@ -153,8 +152,8 @@ export function NotificationFormModal({
       onSuccess(created);
 
       if (failed > 0) {
-        setSubmitError(
-          `Đã gửi ${created.length}/${total} thông báo thành công, ${failed} lỗi.`
+        toast.warning(
+          `Đã gửi ${created.length}/${total} thông báo thành công, ${failed} lỗi.`,
         );
         setIsSubmitting(false);
         setProgress(null);
@@ -168,7 +167,7 @@ export function NotificationFormModal({
           : err instanceof Error
           ? err.message
           : "Đã có lỗi xảy ra. Vui lòng thử lại.";
-      setSubmitError(message);
+      toast.error(message);
       setIsSubmitting(false);
       setProgress(null);
     }
@@ -182,11 +181,6 @@ export function NotificationFormModal({
       size="md"
     >
       <form onSubmit={handleSubmit} noValidate className={styles.form}>
-        {submitError ? (
-          <Alert variant="error" onClose={() => setSubmitError(null)}>
-            {submitError}
-          </Alert>
-        ) : null}
         {progress ? (
           <Alert variant="info">{progress}</Alert>
         ) : null}
