@@ -3,7 +3,7 @@
  *
  * Luồng tổng thể:
  *   ┌─────────────────────────┐
- *   │ KPI / Stats (TrashStats)│  ← 6 card (Tổng · Hôm nay · 7 ngày · ×4 module)
+ *   │ KPI / Stats (TrashStats)│  ← 11 card (Tổng · Hôm nay · 7 ngày · ×8 module)
  *   ├─────────────────────────┤
  *   │ Filter (TrashFilter)    │  ← 4 trục (Module · Người xoá · Khoảng TG · Keyword)
  *   │   Active filter chips   │  ← UX helper hiển thị filter đang áp dụng
@@ -84,18 +84,22 @@ import {
   AlertTriangle,
   Bell,
   Calendar,
+  CalendarClock,
   CheckSquare,
   Eye,
   FileText,
   Filter as FilterIcon,
   Inbox,
+  MessageSquare,
   RotateCcw,
   Search as SearchIcon,
   Settings as SettingsIcon,
   SlidersHorizontal,
   Square,
+  Tag,
   Trash2,
   User as UserIcon,
+  Users,
   X as XIcon,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
@@ -128,6 +132,10 @@ const MODULE_TONE: Record<TrashModule, string> = {
   notifications: "badgeNotification",
   files: "badgeFile",
   settings: "badgeSetting",
+  teachers: "badgeTeacher",
+  pricingplans: "badgePricingPlan",
+  contactrequests: "badgeContactRequest",
+  enrollmentschedules: "badgeEnrollmentSchedule",
 };
 
 const MODULE_ICON: Record<TrashModule, React.ReactNode> = {
@@ -135,6 +143,10 @@ const MODULE_ICON: Record<TrashModule, React.ReactNode> = {
   notifications: <Bell size={14} aria-hidden="true" />,
   files: <FileText size={14} aria-hidden="true" />,
   settings: <SettingsIcon size={14} aria-hidden="true" />,
+  teachers: <Users size={14} aria-hidden="true" />,
+  pricingplans: <Tag size={14} aria-hidden="true" />,
+  contactrequests: <MessageSquare size={14} aria-hidden="true" />,
+  enrollmentschedules: <CalendarClock size={14} aria-hidden="true" />,
 };
 
 const DEBOUNCE_MS = 450;
@@ -819,8 +831,9 @@ export function TrashManagerPage() {
           </h1>
           <p className={styles.subtitle}>
             Khôi phục hoặc xoá vĩnh viễn các bản ghi đã soft-delete trên toàn hệ thống.
-            Hỗ trợ 4 module (Người dùng · Thông báo · Tệp · Cấu hình), filter theo
-            người xoá / khoảng thời gian / từ khoá, và bulk action.
+            Hỗ trợ 8 module (Người dùng · Thông báo · Tệp · Cấu hình · Giảng viên · Gói học phí ·
+            Yêu cầu tư vấn · Lịch khai giảng), filter theo người xoá / khoảng thời gian / từ khoá,
+            và bulk action.
           </p>
         </div>
       </header>

@@ -11,7 +11,20 @@
 import type { UserRole, UserStatus } from "../../users/types/user.types";
 
 // ============== Trash module enum ==============
-export type TrashModule = "users" | "notifications" | "files" | "settings";
+// 8 module — BE module trash đã hỗ trợ đủ từ trước (xem
+// backend/src/modules/trash/trash.service.js, const MODULES). FE trước đây
+// chỉ expose 4 module trong dropdown filter; task này mở rộng đủ 8 để
+// Admin lọc được rác từ Teachers / PricingPlans / ContactRequests /
+// EnrollmentSchedules — đúng tên tiếng Việt nhất quán với Sidebar.
+export type TrashModule =
+  | "users"
+  | "notifications"
+  | "files"
+  | "settings"
+  | "teachers"
+  | "pricingplans"
+  | "contactrequests"
+  | "enrollmentschedules";
 
 export type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR" | string;
 

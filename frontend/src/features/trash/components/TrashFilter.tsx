@@ -5,7 +5,7 @@
  * (filter cố định) + `onSearchChange` (search raw, debounce ở page cha).
  *
  * Filter gồm:
- *   - Module (4 module + "Tất cả")
+ *   - Module (8 module + "Tất cả")
  *   - Người xoá (dropdown user từ BE — dùng listUsers với includeDeleted=false)
  *   - Từ ngày / Đến ngày (date range)
  *   - Keyword (search có debounce ở page cha)

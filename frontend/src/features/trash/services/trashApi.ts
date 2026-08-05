@@ -212,7 +212,16 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
     const items = users.map(toUserTrashItem);
     return {
       items,
-      totals: { users: items.length, notifications: 0, files: 0, settings: 0 },
+      totals: {
+        users: items.length,
+        notifications: 0,
+        files: 0,
+        settings: 0,
+        teachers: 0,
+        pricingplans: 0,
+        contactrequests: 0,
+        enrollmentschedules: 0,
+      },
     };
   }
   if (module === "notifications") {
@@ -220,7 +229,16 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
     const items = notifs.items.filter((n) => n.deletedAt).map(toNotificationTrashItem);
     return {
       items,
-      totals: { users: 0, notifications: notifs.total, files: 0, settings: 0 },
+      totals: {
+        users: 0,
+        notifications: notifs.total,
+        files: 0,
+        settings: 0,
+        teachers: 0,
+        pricingplans: 0,
+        contactrequests: 0,
+        enrollmentschedules: 0,
+      },
     };
   }
   if (module === "files") {
@@ -228,7 +246,16 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
     const items = files.items.filter((f) => f.deletedAt).map(toFileTrashItem);
     return {
       items,
-      totals: { users: 0, notifications: 0, files: files.total, settings: 0 },
+      totals: {
+        users: 0,
+        notifications: 0,
+        files: files.total,
+        settings: 0,
+        teachers: 0,
+        pricingplans: 0,
+        contactrequests: 0,
+        enrollmentschedules: 0,
+      },
     };
   }
   // module = undefined → load tất cả (3 module).
@@ -250,6 +277,10 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
       notifications: notifs.total,
       files: files.total,
       settings: 0,
+      teachers: 0,
+      pricingplans: 0,
+      contactrequests: 0,
+      enrollmentschedules: 0,
     },
   };
 }

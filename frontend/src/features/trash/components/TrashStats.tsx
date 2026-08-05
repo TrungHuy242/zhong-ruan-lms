@@ -3,15 +3,27 @@
  *
  * Hiển thị:
  *   - Tổng bản ghi đã xoá
- *   - Theo từng module (4 module)
+ *   - Theo từng module (8 module)
  *   - Hôm nay
  *   - 7 ngày gần nhất
  *
  * Tái sử dụng StatCard từ shared/components/ui (đã có sẵn tone primary/accent/info/success/warning/neutral).
  */
-import { Bell, CalendarDays, Clock, FileText, Settings as SettingsIcon, Trash2, User as UserIcon } from "lucide-react";
+import {
+  Bell,
+  CalendarClock,
+  CalendarDays,
+  Clock,
+  FileText,
+  MessageSquare,
+  Settings as SettingsIcon,
+  Tag,
+  Trash2,
+  User as UserIcon,
+  Users,
+} from "lucide-react";
 import { StatCard } from "../../../shared/components/ui";
-import { TRASH_MODULE_LABELS } from "../constants/trash.constants";
+import { TRASH_MODULE_LABELS, TRASH_MODULES } from "../constants/trash.constants";
 import type { TrashModule, TrashStats as TrashStatsData } from "../types/trash.types";
 import styles from "./TrashStats.module.css";
 
@@ -20,14 +32,23 @@ const MODULE_ICONS: Record<TrashModule, React.ReactNode> = {
   notifications: <Bell size={20} aria-hidden="true" />,
   files: <FileText size={20} aria-hidden="true" />,
   settings: <SettingsIcon size={20} aria-hidden="true" />,
+  teachers: <Users size={20} aria-hidden="true" />,
+  pricingplans: <Tag size={20} aria-hidden="true" />,
+  contactrequests: <MessageSquare size={20} aria-hidden="true" />,
+  enrollmentschedules: <CalendarClock size={20} aria-hidden="true" />,
 };
 
 // Tone cho từng module — giữ mapping riêng để không phụ thuộc vào StatCard mặc định.
+// Tuân theo semantic palette trong DESIGN.md §1 (success/error/warning/info/brand-primary/brand-accent).
 const MODULE_TONE: Record<TrashModule, React.ComponentProps<typeof StatCard>["tone"]> = {
   users: "primary",
   notifications: "warning",
   files: "info",
   settings: "accent",
+  teachers: "success",
+  pricingplans: "primary",
+  contactrequests: "info",
+  enrollmentschedules: "warning",
 };
 
 export interface TrashStatsProps {
@@ -35,18 +56,17 @@ export interface TrashStatsProps {
   loading?: boolean;
 }
 
-const MODULES_ORDER: TrashModule[] = ["users", "notifications", "files", "settings"];
-
 /**
  * TrashStats — render lưới StatCard.
  *
- * - Khi loading: hiển thị 6 StatCard với `loading=true` (skeleton đã có sẵn).
- * - Khi data null (lỗi / chưa load): hiển thị 6 card = 0, không skeleton (UX
+ * - Khi loading: hiển thị 3 KPI tổng quan + 8 StatCard module với `loading=true`
+ *   (skeleton đã có sẵn).
+ * - Khi data null (lỗi / chưa load): hiển thị card = 0, không skeleton (UX
  *   rõ "không có dữ liệu" hơn là loading mãi).
  *
- * Cấu trúc: 2 hàng × 3 cột
+ * Cấu trúc: 2 hàng
  *   Hàng 1: Tổng · Hôm nay · 7 ngày
- *   Hàng 2: 4 module (cuộn ngang trên mobile)
+ *   Hàng 2: 8 module (cuộn ngang trên mobile)
  */
 export function TrashStats({ data, loading = false }: TrashStatsProps) {
   return (
@@ -75,7 +95,7 @@ export function TrashStats({ data, loading = false }: TrashStatsProps) {
       />
 
       {/* Hàng 2 — Per module */}
-      {MODULES_ORDER.map((mod) => (
+      {TRASH_MODULES.map((mod) => (
         <StatCard
           key={mod}
           icon={MODULE_ICONS[mod]}
