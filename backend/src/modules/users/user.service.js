@@ -101,12 +101,30 @@ async function getAllUsers(query = {}) {
   };
 }
 
+/**
+ * Validate phone: optional, nhưng nếu có giá trị thì phải đúng format 10 chữ số VN.
+ * Dùng cùng regex FE (/^0\d{9}$/) để đảm bảo UX nhất quán giữa client và server.
+ *
+ * @param {*} phone  - string, null, undefined, hoặc empty string đều OK (giữ optional).
+ * @throws {Error}   - nếu phone có giá trị nhưng KHÔNG đúng format.
+ */
+function validatePhoneVN(phone) {
+  if (phone === undefined || phone === null) return;
+  const trimmed = String(phone).trim();
+  if (trimmed === "") return;
+  if (!/^0\d{9}$/.test(trimmed)) {
+    throw new Error("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0");
+  }
+}
+
 async function createUser(payload, req) {
   const { fullName, email, phone, password, role } = payload;
 
   if (!fullName || !email || !password || !role) {
     throw new Error("Vui lòng nhập đầy đủ họ tên, email, mật khẩu và vai trò");
   }
+
+  validatePhoneVN(phone);
 
   const allowedRoles = Object.values(Role);
 
@@ -164,6 +182,8 @@ async function updateUser(id, payload, req) {
   if (status && !allowedStatuses.includes(status)) {
     throw new Error("Trạng thái không hợp lệ");
   }
+
+  validatePhoneVN(phone);
 
   if (email && email !== currentUser.email) {
     const existedUser = await userRepository.findUserByEmail(email);
