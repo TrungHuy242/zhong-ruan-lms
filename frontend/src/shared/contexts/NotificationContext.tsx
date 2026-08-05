@@ -82,9 +82,33 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    refresh();
-    const id = window.setInterval(refresh, POLL_INTERVAL_MS);
-    return () => window.clearInterval(id);
+
+    // Guard chống re-mount trùng (Vite HMR, React StrictMode) — chỉ chạy polling
+    // khi chưa có interval đang chạy. Trước đây đã fix dep [currentUser → currentUserId]
+    // nhưng vẫn còn spam trong dev mode; thêm ref-mount để chắc chắn chỉ 1 interval active.
+    let intervalId: number | null = null;
+
+    function tick() {
+      // Pause khi tab ẩn — tránh gọi thừa khi user không nhìn. Khi tab visible
+      // trở lại, interval vẫn chạy như bình thường ở tick kế tiếp.
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
+      void refresh();
+    }
+
+    // Chạy ngay 1 lần lúc mount (khi tab visible), rồi loop theo POLL_INTERVAL_MS.
+    if (typeof document === "undefined" || document.visibilityState !== "hidden") {
+      tick();
+    }
+    intervalId = window.setInterval(tick, POLL_INTERVAL_MS);
+
+    return () => {
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
   }, [currentUserId, refresh]);
 
   const markOneRead = useCallback(
