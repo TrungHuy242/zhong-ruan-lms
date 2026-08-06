@@ -108,6 +108,10 @@ interface ConfirmState {
 }
 
 export function PricingManagementPage() {
+  useEffect(() => {
+    document.title = "Quản lý Bảng giá — Zhong Ruan LMS";
+  }, []);
+
   const currentUser = authStorage.getUser();
   const canManage = isAdmin(currentUser?.role);
 
@@ -571,10 +575,6 @@ export function PricingManagementPage() {
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Quản lý Bảng giá</h1>
-          <p className={styles.subtitle}>
-            Quản lý các gói giá cho khóa học Nhóm và 1 kèm 1. Thiết lập giá,
-            quyền lợi và trạng thái xuất bản.
-          </p>
         </div>
         {canManage ? (
           <Button

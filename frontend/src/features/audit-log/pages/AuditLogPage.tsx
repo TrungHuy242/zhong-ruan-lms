@@ -1,14 +1,17 @@
 ﻿/**
- * AuditLogPage — Audit Center (nâng cấp từ bảng cơ bản).
+ * AuditLogPage — Audit Center.
  *
  * Tính năng:
- *   - View toggle: Table View ↔ Timeline View (lưu localStorage)
+ *   - Chỉ Table view (ẩn Timeline view theo quyết định audit 2026-08)
  *   - Filter nâng cao (search/user/action/module/date) — sync URL
  *   - AuditActionBadge tone-based (CSS token theo DESIGN.md)
- *   - AuditLogDetailModal tái sử dụng với Before/After + Copy JSON + Quick Link
+ *   - AuditLogDetailModal với Before/After + Copy JSON + Quick Link
  *   - Export CSV (client-side, page hiện tại) — RFC 4180 + UTF-8 BOM
  *   - Loading skeleton / Empty state / Error Alert + nút Thử lại
  *   - Responsive desktop + mobile
+ *
+ * Ẩn UI theo audit 2026-08:
+ *   - Timeline view: ẩn, AuditTimeline component vẫn còn trong codebase
  */
 import {
   useCallback,
@@ -28,12 +31,11 @@ import {
 import { AuditLogDetailModal } from "../components/AuditLogDetailModal";
 import { AuditFilter, EMPTY_AUDIT_FILTERS } from "../components/AuditFilter";
 import { AuditActionBadge } from "../components/AuditActionBadge";
-import { AuditTimeline } from "../components/AuditTimeline";
 import {
-  AUDIT_ACTIONS,
   AUDIT_ACTION_LABELS,
-  AUDIT_MODULES,
+  AUDIT_ACTIONS,
   AUDIT_MODULE_LABELS,
+  AUDIT_MODULES,
   exportAuditLogsCsv,
   listAuditLogs,
   type AuditAction,
@@ -44,33 +46,14 @@ import { ApiError } from "../../../shared/api";
 import { useToast } from "../../../shared/contexts/ToastContext";
 import { listUsers, type User } from "../../users";
 import {
-  Calendar,
-  ChevronDown,
   Download,
-  List as ListIcon,
   ScrollText,
   Search as SearchIcon,
   SlidersHorizontal,
-  Table as TableIcon,
   X as XIcon,
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import styles from "./AuditLogPage.module.css";
-
-// ===== View mode =====
-const VIEW_MODE_STORAGE_KEY = "zrlms_audit_view_mode";
-type ViewMode = "table" | "timeline";
-
-function readStoredViewMode(): ViewMode {
-  if (typeof window === "undefined") return "table";
-  try {
-    const v = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    if (v === "timeline" || v === "table") return v;
-  } catch {
-    // localStorage có thể không khả dụng (private mode, v.v.) → bỏ qua.
-  }
-  return "table";
-}
 
 // ===== Filter state =====
 interface FiltersState {
@@ -82,7 +65,6 @@ interface FiltersState {
   from: string;
   to: string;
   page: number;
-  view: ViewMode;
 }
 
 const INITIAL_FILTERS: FiltersState = {
@@ -94,7 +76,6 @@ const INITIAL_FILTERS: FiltersState = {
   from: "",
   to: "",
   page: 1,
-  view: readStoredViewMode(),
 };
 
 function isFiltersActive(f: FiltersState): boolean {
@@ -124,6 +105,10 @@ function formatDateTime(value: string | null | undefined): string {
 }
 
 export function AuditLogPage() {
+  useEffect(() => {
+    document.title = "Nhật ký hệ thống — Zhong Ruan LMS";
+  }, []);
+
   // ===== URL sync =====
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -148,22 +133,12 @@ export function AuditLogPage() {
       initial.search = search;
       initial.searchApplied = search;
     }
-    const view = searchParams.get("view");
-    if (view === "timeline" || view === "table") initial.view = view;
     const page = Number(searchParams.get("page") ?? "1");
     if (page > 1) initial.page = page;
     return initial;
   });
 
-  // View mode → localStorage + URL (chỉ ghi URL khi != default để tránh rác URL).
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, filters.view);
-    } catch {
-      // ignore
-    }
-  }, [filters.view]);
-
+  // Filter state → URL sync
   useEffect(() => {
     const next: Record<string, string> = {};
     if (filters.searchApplied) next.search = filters.searchApplied;
@@ -172,7 +147,6 @@ export function AuditLogPage() {
     if (filters.module) next.module = filters.module;
     if (filters.from) next.from = filters.from;
     if (filters.to) next.to = filters.to;
-    if (filters.view !== "table") next.view = filters.view;
     if (filters.page > 1) next.page = String(filters.page);
     setSearchParams(next, { replace: true });
   }, [
@@ -182,7 +156,6 @@ export function AuditLogPage() {
     filters.module,
     filters.from,
     filters.to,
-    filters.view,
     filters.page,
     setSearchParams,
   ]);
@@ -315,17 +288,12 @@ export function AuditLogPage() {
       module: "",
       from: "",
       to: "",
-      view: prev.view,
       page: 1,
     }));
   }
   function handlePageChange(page: number) {
     setFilters((prev) => ({ ...prev, page }));
   }
-  function setView(view: ViewMode) {
-    setFilters((prev) => ({ ...prev, view }));
-  }
-
   function openDetail(log: AuditLog) {
     setDetailLog(log);
     setDetailOpen(true);
@@ -481,37 +449,8 @@ export function AuditLogPage() {
           </p>
         </div>
 
-        {/* ===== Toolbar: view toggle + export + clear filters ===== */}
+        {/* ===== Toolbar: export + clear filters ===== */}
         <div className={styles.headerActions}>
-          <div className={styles.viewToggle} role="tablist" aria-label="Chế độ xem">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={filters.view === "table"}
-              className={[
-                styles.viewBtn2,
-                filters.view === "table" ? styles.viewBtn2Active : "",
-              ].join(" ")}
-              onClick={() => setView("table")}
-            >
-              <TableIcon size={14} aria-hidden="true" />
-              <span>Bảng</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={filters.view === "timeline"}
-              className={[
-                styles.viewBtn2,
-                filters.view === "timeline" ? styles.viewBtn2Active : "",
-              ].join(" ")}
-              onClick={() => setView("timeline")}
-            >
-              <Calendar size={14} aria-hidden="true" />
-              <span>Dòng thời gian</span>
-            </button>
-          </div>
-
           <div className={styles.exportMenu}>
             <Button
               variant="secondary"
@@ -628,19 +567,6 @@ export function AuditLogPage() {
               Thử lại
             </Button>
           </div>
-        ) : filters.view === "timeline" ? (
-          <>
-            {/* Timeline view */}
-            {loading || items.length > 0 ? (
-              <AuditTimeline
-                items={items}
-                loading={loading}
-                onOpenDetail={openDetail}
-              />
-            ) : (
-              emptyState
-            )}
-          </>
         ) : (
           <>
             {/* Table view */}
@@ -660,17 +586,6 @@ export function AuditLogPage() {
           <div className={styles.tableFooter}>
             <span className={styles.totalLabel}>
               Hiển thị <b>{items.length}</b> / <b>{total}</b> bản ghi
-              <span className={styles.viewHint}>
-                {filters.view === "timeline" ? (
-                  <>
-                    <ChevronDown size={12} aria-hidden="true" /> Timeline · click để xem chi tiết
-                  </>
-                ) : (
-                  <>
-                    <ListIcon size={12} aria-hidden="true" /> Bảng
-                  </>
-                )}
-              </span>
             </span>
             <Pagination
               currentPage={filters.page}

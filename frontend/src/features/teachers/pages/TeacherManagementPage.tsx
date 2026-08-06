@@ -35,11 +35,9 @@ import {
   type SortConfig,
   type TableColumn,
 } from "../../../shared/components/ui";
-import { BulkActionBar } from "../../../shared/components/layout/BulkActionBar";
 import { TeacherFormModal } from "../components/TeacherFormModal";
 import { TeacherFilterPanel } from "../components/TeacherFilterPanel";
 import {
-  bulkDeleteTeachers,
   deleteTeacher,
   listTeachers,
   restoreTeacher,
@@ -50,19 +48,14 @@ import {
   EMPTY_TEACHER_ADVANCED_FILTERS,
 } from "../services/teacherApi";
 import {
-  TEACHER_AVAILABLE_COLUMN_KEYS,
-  TEACHER_LOCKED_COLUMN_KEYS,
   TEACHER_PAGE_SIZE,
-  TEACHER_SORT_LABELS,
 } from "../constants/teacher.constants";
 import { ApiError } from "../../../shared/api";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { isAdmin } from "../../../shared/utils/auth";
-import { useTableColumns } from "../../../shared/hooks/useTableColumns";
 import { useToast } from "../../../shared/contexts/ToastContext";
 import {
   ChevronDown,
-  Columns,
   Edit3,
   Eye,
   EyeOff,
@@ -107,18 +100,6 @@ const INITIAL_FILTERS: FilterState = {
   sort: { key: "displayOrder", order: "asc" },
 };
 
-const COLUMN_LABELS: Record<string, string> = {
-  title: "Chức danh",
-  yearsOfExperience: "Số năm KN",
-  specialties: "Chuyên môn",
-  isFeatured: "Nổi bật",
-  isPublished: "Trạng thái",
-  displayOrder: "Thứ tự",
-  createdAt: "Ngày tạo",
-};
-
-const COLUMNS_STORAGE_KEY = "zrlms_teacher_table_columns";
-
 interface ConfirmState {
   open: boolean;
   loading: boolean;
@@ -126,13 +107,11 @@ interface ConfirmState {
   mode: "delete" | "restore";
 }
 
-interface BulkConfirmState {
-  open: boolean;
-  loading: boolean;
-  mode: "delete" | "publish" | "unpublish";
-}
-
 export function TeacherManagementPage() {
+  useEffect(() => {
+    document.title = "Quản lý giảng viên — Zhong Ruan LMS";
+  }, []);
+
   const currentUser = authStorage.getUser();
   const canManage = isAdmin(currentUser?.role);
 
@@ -321,52 +300,9 @@ export function TeacherManagementPage() {
     setFilters((prev) => ({ ...prev, sort: next, page: 1 }));
   }
 
-  const allColumnKeysForHook = [
-    ...TEACHER_AVAILABLE_COLUMN_KEYS,
-    ...TEACHER_LOCKED_COLUMN_KEYS,
-  ] as unknown as readonly string[];
-  const {
-    hiddenKeys: hiddenColumnKeys,
-    toggle: toggleColumn,
-    reset: resetColumns,
-  } = useTableColumns({
-    availableKeys: allColumnKeysForHook,
-    lockedKeys: TEACHER_LOCKED_COLUMN_KEYS as unknown as readonly string[],
-    storageKey: COLUMNS_STORAGE_KEY,
-  });
-
-  const [columnMenuOpen, setColumnMenuOpen] = useState(false);
-  const columnMenuRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!columnMenuOpen) return;
-    function handleClick(e: MouseEvent) {
-      if (columnMenuRef.current && !columnMenuRef.current.contains(e.target as Node)) {
-        setColumnMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [columnMenuOpen]);
-
   function handlePageChange(page: number) {
     setFilters((prev) => ({ ...prev, page }));
   }
-
-  const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-
-  useEffect(() => {
-    setSelectedIds([]);
-  }, [
-    filterOpen,
-    filters.searchApplied,
-    filters.advanced.fullName,
-    filters.advanced.title,
-    filters.advanced.isFeatured,
-    filters.advanced.isPublished,
-    filters.sort.key,
-    filters.sort.order,
-    filters.page,
-  ]);
 
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [formTeacher, setFormTeacher] = useState<Teacher | null>(null);
@@ -375,12 +311,6 @@ export function TeacherManagementPage() {
     open: false,
     loading: false,
     teacher: null,
-    mode: "delete",
-  });
-
-  const [bulkConfirm, setBulkConfirm] = useState<BulkConfirmState>({
-    open: false,
-    loading: false,
     mode: "delete",
   });
 
@@ -445,74 +375,6 @@ export function TeacherManagementPage() {
           : "Thao tác thất bại";
       toast.error(message);
       setConfirm((p) => ({ ...p, loading: false }));
-    }
-  }
-
-  function openBulkDelete() {
-    if (selectedIds.length === 0) return;
-    setBulkConfirm({ open: true, loading: false, mode: "delete" });
-  }
-  function openBulkPublish(publish: boolean) {
-    if (selectedIds.length === 0) return;
-    setBulkConfirm({
-      open: true,
-      loading: false,
-      mode: publish ? "publish" : "unpublish",
-    });
-  }
-  function clearBulkSelection() {
-    setSelectedIds([]);
-  }
-
-  async function handleBulkConfirm() {
-    setBulkConfirm((p) => ({ ...p, loading: true }));
-    try {
-      if (bulkConfirm.mode === "delete") {
-        const result = await bulkDeleteTeachers(selectedIds.map(String));
-        if (result.deletedCount > 0) {
-          toast.success(`Đã chuyển ${result.deletedCount} giảng viên vào thùng rác`);
-        } else {
-          toast.error("Không xoá được giảng viên nào");
-        }
-      } else {
-        const target = bulkConfirm.mode === "publish";
-        const ids = selectedIds.map(String);
-        let ok = 0;
-        let lastError: string | null = null;
-        for (const id of ids) {
-          try {
-            await updateTeacher(id, { isPublished: target });
-            ok++;
-          } catch (err) {
-            lastError =
-              err instanceof ApiError
-                ? err.message
-                : err instanceof Error
-                ? err.message
-                : "Thất bại";
-          }
-        }
-        if (ok > 0) {
-          toast.success(
-            `Đã ${target ? "xuất bản" : "ẩn"} ${ok}/${ids.length} giảng viên` +
-              (lastError && ok < ids.length ? ` (lỗi: ${lastError})` : ""),
-          );
-        } else {
-          toast.error(lastError ?? "Không cập nhật được giảng viên nào");
-        }
-      }
-      setBulkConfirm((p) => ({ ...p, open: false, loading: false }));
-      setSelectedIds([]);
-      loadTeachers();
-    } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-          ? err.message
-          : "Thao tác hàng loạt thất bại";
-      toast.error(message);
-      setBulkConfirm((p) => ({ ...p, loading: false }));
     }
   }
 
@@ -772,10 +634,6 @@ export function TeacherManagementPage() {
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Quản lý giảng viên</h1>
-          <p className={styles.subtitle}>
-            Danh sách giảng viên hiển thị trên trang public. Quản lý hồ sơ,
-            chức danh, chuyên môn và trạng thái xuất bản.
-          </p>
         </div>
         {canManage ? (
           <Button
@@ -844,56 +702,6 @@ export function TeacherManagementPage() {
                 className={`${styles.chevron} ${filterOpen ? styles.chevronOpen : ""}`}
               />
             </button>
-
-            <div className={styles.columnToggleWrap} ref={columnMenuRef}>
-              <button
-                type="button"
-                className={styles.filterToggleBtn}
-                onClick={() => setColumnMenuOpen((v) => !v)}
-                aria-haspopup="menu"
-                aria-expanded={columnMenuOpen}
-              >
-                <Columns size={14} />
-                <span>Cột hiển thị</span>
-              </button>
-              {columnMenuOpen ? (
-                <div role="menu" className={styles.columnMenu}>
-                  <div className={styles.columnMenuHeader}>Cột có thể ẩn</div>
-                  {TEACHER_AVAILABLE_COLUMN_KEYS.map((key) => {
-                    const isLocked = (
-                      TEACHER_LOCKED_COLUMN_KEYS as readonly string[]
-                    ).includes(key);
-                    const hidden = hiddenColumnKeys.includes(key);
-                    return (
-                      <label
-                        key={key}
-                        className={`${styles.columnItem} ${
-                          isLocked ? styles.columnItemLocked : ""
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={!hidden}
-                          disabled={isLocked}
-                          onChange={() => toggleColumn(key)}
-                        />
-                        <span>{COLUMN_LABELS[key] ?? TEACHER_SORT_LABELS[key] ?? key}</span>
-                      </label>
-                    );
-                  })}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      resetColumns();
-                    }}
-                    style={{ marginTop: "var(--space-1)" }}
-                  >
-                    Khôi phục mặc định
-                  </Button>
-                </div>
-              ) : null}
-            </div>
           </div>
         </div>
 
@@ -903,38 +711,6 @@ export function TeacherManagementPage() {
           onChange={handleFilterPanelChange}
           onClear={clearAdvancedFilters}
         />
-
-        {canManage ? (
-          <BulkActionBar
-            selectedCount={selectedIds.length}
-            itemLabel="giảng viên"
-            loading={bulkConfirm.loading}
-            actions={[
-              {
-                key: "publish",
-                label: "Xuất bản",
-                icon: <Eye size={14} />,
-                variant: "secondary",
-                onAction: () => openBulkPublish(true),
-              },
-              {
-                key: "unpublish",
-                label: "Ẩn",
-                icon: <EyeOff size={14} />,
-                variant: "secondary",
-                onAction: () => openBulkPublish(false),
-              },
-              {
-                key: "delete",
-                label: "Xoá",
-                icon: <Trash2 size={14} />,
-                variant: "danger",
-                onAction: openBulkDelete,
-              },
-            ]}
-            onClearSelection={clearBulkSelection}
-          />
-        ) : null}
 
         {loadError ? (
           <div className={styles.errorWrap}>
@@ -953,14 +729,9 @@ export function TeacherManagementPage() {
               rowKey={(t) => t.id}
               emptyState={emptyState}
               rowClassName={(t) => (t.deletedAt ? styles.rowDeleted : undefined)}
-              selectable={canManage}
-              selectedIds={selectedIds}
-              onSelectedChange={setSelectedIds}
-              selectableKey={(t) => t.id}
               sortable
               sortConfig={filters.sort}
               onSortChange={handleSortChange}
-              hiddenColumnKeys={hiddenColumnKeys as string[]}
             />
 
             {!loading && teachers.length > 0 ? (
@@ -978,46 +749,6 @@ export function TeacherManagementPage() {
           </>
         )}
       </Card>
-
-      <ConfirmDialog
-        open={bulkConfirm.open}
-        loading={bulkConfirm.loading}
-        title={
-          bulkConfirm.mode === "delete"
-            ? `Xoá ${selectedIds.length} giảng viên?`
-            : bulkConfirm.mode === "publish"
-            ? `Xuất bản ${selectedIds.length} giảng viên?`
-            : `Ẩn ${selectedIds.length} giảng viên?`
-        }
-        message={
-          bulkConfirm.mode === "delete" ? (
-            <>
-              Bạn sắp <b>xoá mềm</b> {selectedIds.length} giảng viên đã chọn.
-              Hành động này sẽ chuyển họ vào thùng rác và có thể khôi phục lại sau.
-            </>
-          ) : bulkConfirm.mode === "publish" ? (
-            <>
-              Xuất bản {selectedIds.length} giảng viên đã chọn — họ sẽ hiển thị
-              trên trang public.
-            </>
-          ) : (
-            <>
-              Ẩn {selectedIds.length} giảng viên đã chọn khỏi trang public.
-              Dữ liệu vẫn được giữ nguyên.
-            </>
-          )
-        }
-        confirmText={
-          bulkConfirm.mode === "delete"
-            ? "Xoá"
-            : bulkConfirm.mode === "publish"
-            ? "Xuất bản"
-            : "Ẩn"
-        }
-        confirmVariant={bulkConfirm.mode === "delete" ? "danger" : "primary"}
-        onConfirm={handleBulkConfirm}
-        onCancel={() => setBulkConfirm((p) => ({ ...p, open: false }))}
-      />
 
       <TeacherFormModal
         open={formModalOpen}

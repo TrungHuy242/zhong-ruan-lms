@@ -6,7 +6,7 @@
  *
  * Filter gồm:
  *   - Module (8 module + "Tất cả")
- *   - Người xoá (dropdown user từ BE — dùng listUsers với includeDeleted=false)
+ *   - Người xoá (text input — ẩn dropdown theo audit 2026-08)
  *   - Từ ngày / Đến ngày (date range)
  *   - Keyword (search có debounce ở page cha)
  *
@@ -20,7 +20,6 @@ import { Input } from "../../../shared/components/ui";
 import { TRASH_MODULES, TRASH_MODULE_LABELS } from "../constants/trash.constants";
 import type { TrashModule } from "../types/trash.types";
 import type { TrashItemV2 } from "../types/trash.types";
-import type { UserOption } from "./UserOption";
 import { Calendar, Filter, Search, User as UserIcon, X as XIcon } from "lucide-react";
 import styles from "./TrashFilter.module.css";
 
@@ -33,7 +32,8 @@ import styles from "./TrashFilter.module.css";
  */
 export interface TrashFilterValues {
   module: TrashModule | "all";
-  deletedById: "" | number;
+  /** Người xoá: string thuần (name/email input) — chuyển sang number ở page cha trước khi gọi API. */
+  deletedById: string;
   from: string;
   to: string;
   keyword: string;
@@ -50,12 +50,6 @@ export const EMPTY_TRASH_FILTERS: TrashFilterValues = {
 export interface TrashFilterProps {
   values: TrashFilterValues;
   onChange: (next: TrashFilterValues) => void;
-  /**
-   * Dropdown người xoá — caller tự load từ listUsers (xem AuditFilter làm mẫu).
-   * Filter không cần biết loadUsers() từ đâu → tránh duplicate logic.
-   */
-  users: UserOption[];
-  usersLoading?: boolean;
   /**
    * Trigger mỗi khi user gõ vào ô search (debounce ở page cha).
    * Không truyền → filter vẫn hoạt động nhưng không báo raw → page sẽ set
@@ -76,8 +70,6 @@ export function trashItemActorId(it: TrashItemV2): number | null {
 export function TrashFilter({
   values,
   onChange,
-  users,
-  usersLoading,
   onSearchChange,
   onClearSearch,
 }: TrashFilterProps) {
@@ -91,9 +83,10 @@ export function TrashFilter({
   function handleModuleChange(e: ChangeEvent<HTMLSelectElement>) {
     onChange({ ...values, module: e.target.value as TrashModule | "all" });
   }
-  function handleDeletedByChange(e: ChangeEvent<HTMLSelectElement>) {
-    const val = e.target.value;
-    onChange({ ...values, deletedById: val ? Number(val) : "" });
+  function handleDeletedByChange(e: ChangeEvent<HTMLInputElement>) {
+    // Chuyển string thuần (input text) — page cha tự parse thành number
+    // khi gọi API nếu cần.
+    onChange({ ...values, deletedById: e.target.value });
   }
   function handleFromChange(e: ChangeEvent<HTMLInputElement>) {
     onChange({ ...values, from: e.target.value });
@@ -133,23 +126,18 @@ export function TrashFilter({
         </select>
       </label>
 
+      {/* Ẩn theo audit 2026-08: dropdown → text input cho người xoá */}
       <label className={styles.filterLabel}>
         <span className={styles.filterLabelTitle}>
           <UserIcon size={12} aria-hidden="true" /> Người xoá
         </span>
-        <select
+        <input
+          type="text"
           className={styles.select}
-          value={values.deletedById === "" ? "" : String(values.deletedById)}
+          placeholder="Tên hoặc email..."
+          value={values.deletedById}
           onChange={handleDeletedByChange}
-          disabled={usersLoading}
-        >
-          <option value="">Tất cả</option>
-          {users.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.fullName} ({u.email})
-            </option>
-          ))}
-        </select>
+        />
       </label>
 
       <label className={styles.filterLabel}>

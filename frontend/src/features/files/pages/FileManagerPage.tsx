@@ -2,20 +2,18 @@
  * FileManagerPage — File Manager chuẩn SaaS.
  *
  * Tính năng (nâng cấp từ bản CRUD cơ bản):
- *  - View toggle: Table | Grid (lưu localStorage)
+ *  - View: chỉ Table (ẩn toggle Bảng/Lưới theo quyết định audit 2026-08)
  *  - Sort: name | size | createdAt (URL sync)
  *  - Filter nâng cao: fileType / uploaderId / dateFrom / dateTo (URL sync)
  *  - Upload queue với progress % thật (XMLHttpRequest) + retry + cancel
  *  - Auto-inject file vừa upload xong vào list
  *  - Storage stats card (chỉ Admin)
- *  - Bulk actions: xoá nhiều / tải zip
- *  - Copy Link / Download nhanh / Preview mở rộng (ảnh/PDF/video/audio)
+ *  - Xoá đơn (không có bulk delete/zip — ẩn theo audit 2026-08)
  *
- * Component reusable:
- *  - FileFilterPanel, FileTableView, FileGridView, FileDetailModal,
- *    StorageStatsCard, UploadQueue
- *  - Shared: BulkActionBar (move lên shared), useUploadQueue
- *  - Shared: Table, Pagination, Alert, ConfirmDialog (đã có sẵn)
+ * Ẩn UI theo audit 2026-08:
+ *   - Toggle Bảng/Lưới: ẩn, chỉ hiện Table view
+ *   - Bulk download zip: ẩn, API vẫn còn trong fileApi
+ *   - BulkActionBar: ẩn, API bulkDeleteFiles vẫn còn
  */
 import {
   ChangeEvent,
@@ -33,19 +31,15 @@ import {
   Pagination,
   type SortConfig,
 } from "../../../shared/components/ui";
-import { CloudUpload as CloudUploadIcon, FolderOpen, LayoutGrid, List as ListIcon, Search, SlidersHorizontal, Trash2 as Trash2Icon, X as XIcon, Download as DownloadIcon } from "lucide-react";
-import { BulkActionBar, type BulkAction } from "../../../shared/components/layout/BulkActionBar";
+import { CloudUpload as CloudUploadIcon, FolderOpen, Search, SlidersHorizontal, X as XIcon } from "lucide-react";
 import { useUploadQueue } from "../../../shared/hooks/useUploadQueue";
 import { useSearchParams } from "react-router-dom";
 import {
   FILE_PAGE_SIZE,
-  FILE_VIEW_MODE_STORAGE_KEY,
 } from "../constants/file.constants";
-import type { FileViewMode } from "../types/file.types";
 import type { FileAdvancedFilterValues } from "../components/FileFilterPanel";
 import { FileFilterPanel, EMPTY_FILE_FILTERS } from "../components/FileFilterPanel";
 import { FileTableView } from "../components/FileTableView";
-import { FileGridView } from "../components/FileGridView";
 import { FileDetailModal } from "../components/FileDetailModal";
 import { StorageStatsCard } from "../components/StorageStatsCard";
 import { UploadQueue } from "../components/UploadQueue";
@@ -53,8 +47,6 @@ import {
   type UploadedFile,
   getFiles,
   deleteFile,
-  bulkDeleteFiles,
-  bulkDownloadFiles,
   uploadFileRaw,
   uploadFile,
 } from "../services/fileApi";
@@ -97,6 +89,10 @@ function findUploader(users: User[], uploadedById: number) {
 }
 
 export function FileManagerPage() {
+  useEffect(() => {
+    document.title = "Quản lý tệp — Zhong Ruan LMS";
+  }, []);
+
   // ===== Auth =====
   const currentUser = authStorage.getUser();
   const isAdmin = checkIsAdmin(currentUser?.role);
@@ -192,19 +188,6 @@ export function FileManagerPage() {
     filters.page,
     setSearchParams,
   ]);
-
-  // ===== View mode (lưu localStorage) =====
-  const [viewMode, setViewMode] = useState<FileViewMode>(() => {
-    if (typeof window === "undefined") return "table";
-    const v = window.localStorage.getItem(FILE_VIEW_MODE_STORAGE_KEY);
-    return v === "grid" ? "grid" : "table";
-  });
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(FILE_VIEW_MODE_STORAGE_KEY, viewMode);
-    }
-  }, [viewMode]);
 
   // ===== Filter panel open (UI state, KHÔNG lưu URL) =====
   const [filterPanelOpen, setFilterPanelOpen] = useState<boolean>(() => {
@@ -510,16 +493,8 @@ export function FileManagerPage() {
     if (!confirm.file) return;
     setConfirm((p) => ({ ...p, loading: true }));
     try {
-      if (confirm.mode === "bulk") {
-        const result = await bulkDeleteFiles(selectedIds);
-        toast.success(
-          `Đã chuyển ${result.deletedCount} file vào thùng rác.`,
-        );
-        setSelectedIds([]);
-      } else {
-        await deleteFile(confirm.file.id);
-        toast.success(`Đã xoá file "${confirm.file.originalName}".`);
-      }
+      await deleteFile(confirm.file.id);
+      toast.success(`Đã xoá file "${confirm.file.originalName}".`);
       setConfirm({ open: false, loading: false, mode: "single", file: null });
       await loadList();
       setStorageStatsRefreshKey((k) => k + 1);
@@ -528,44 +503,6 @@ export function FileManagerPage() {
       toast.error(message);
       setConfirm((p) => ({ ...p, loading: false }));
     }
-  }
-
-  // ===== Bulk handlers =====
-  function clearBulkSelection() {
-    setSelectedIds([]);
-  }
-
-  async function bulkDownload() {
-    if (selectedIds.length === 0) return;
-    toast.info(`Đang nén ${selectedIds.length} file thành zip...`);
-    try {
-      const result = await bulkDownloadFiles(selectedIds);
-      const url = URL.createObjectURL(result.blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = result.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      // Clean up sau 30s để browser kịp tải
-      setTimeout(() => URL.revokeObjectURL(url), 30_000);
-
-      if (result.missingFiles.length > 0) {
-        toast.info(
-          `Đã tải zip nhưng có ${result.missingFiles.length} file vật lý bị thiếu trên đĩa — đã bỏ qua khỏi zip.`,
-        );
-      } else {
-        toast.success(`Đã tải xuống zip ${selectedIds.length} file.`);
-      }
-      setSelectedIds([]);
-    } catch (err) {
-      const message = getApiErrorMessage(err, "Không tải được zip");
-      toast.error(message);
-    }
-  }
-
-  function askBulkDelete() {
-    setConfirm({ open: true, loading: false, mode: "bulk", file: null });
   }
 
   // ===== Computed =====
@@ -604,37 +541,11 @@ export function FileManagerPage() {
     </div>
   );
 
-  // ===== Bulk action config =====
-  const bulkActions: BulkAction[] = useMemo(
-    () => [
-      {
-        key: "download",
-        label: "Tải xuống (zip)",
-        icon: <DownloadIcon size={14} />,
-        variant: "secondary",
-        onAction: () => void bulkDownload(),
-      },
-      {
-        key: "delete",
-        label: "Xoá nhiều",
-        icon: <Trash2Icon />,
-        variant: "danger",
-        onAction: askBulkDelete,
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedIds]
-  );
-
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Quản lý tệp</h1>
-          <p className={styles.subtitle}>
-            Kho lưu trữ file đã tải lên. Mỗi thành viên có thể upload và xoá
-            file của chính mình; Admin xoá được mọi file.
-          </p>
         </div>
         <div className={styles.headerActions}>
           <Button
@@ -703,35 +614,7 @@ export function FileManagerPage() {
             />
           </div>
 
-          <div className={styles.toolbarRight}>
-            <button
-              type="button"
-              className={`${styles.viewToggleBtn} ${
-                viewMode === "table" ? styles.viewToggleBtnActive : ""
-              }`}
-              onClick={() => setViewMode("table")}
-              aria-pressed={viewMode === "table"}
-              aria-label="Chế độ bảng"
-              title="Xem dạng bảng"
-            >
-              <ListIcon size={14} />
-              <span>Bảng</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.viewToggleBtn} ${
-                viewMode === "grid" ? styles.viewToggleBtnActive : ""
-              }`}
-              onClick={() => setViewMode("grid")}
-              aria-pressed={viewMode === "grid"}
-              aria-label="Chế độ lưới"
-              title="Xem dạng lưới"
-            >
-              <LayoutGrid size={14} />
-              <span>Lưới</span>
-            </button>
           </div>
-        </div>
 
         {/* Filter panel toggle */}
         <div className={styles.advFilterToggle}>
@@ -764,15 +647,6 @@ export function FileManagerPage() {
           isAdmin={isAdmin}
         />
 
-        {/* Bulk action bar — chỉ hiển thị khi có selection */}
-        <BulkActionBar
-          selectedCount={selectedIds.length}
-          itemLabel="file"
-          loading={false}
-          actions={bulkActions}
-          onClearSelection={clearBulkSelection}
-        />
-
         {/* Error state */}
         {loadError ? (
           <div className={styles.errorWrap}>
@@ -781,7 +655,7 @@ export function FileManagerPage() {
               Thử lại
             </Button>
           </div>
-        ) : viewMode === "table" ? (
+        ) : (
           <>
             <FileTableView
               items={items}
@@ -792,35 +666,6 @@ export function FileManagerPage() {
               sortConfig={filters.sort}
               onSortChange={handleSortChange}
               users={filteredUsers}
-              currentUserId={currentUserId}
-              isAdmin={isAdmin}
-              onOpenDetail={openDetail}
-              onCopyLink={copyLink}
-              onDownload={quickDownload}
-              onAskDelete={askDelete}
-              emptyState={emptyState}
-            />
-            {!loading && items.length > 0 ? (
-              <div className={styles.tableFooter}>
-                <span className={styles.totalLabel}>
-                  Hiển thị <b>{items.length}</b> / <b>{total}</b> file
-                </span>
-                <Pagination
-                  currentPage={filters.page}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <FileGridView
-              items={items}
-              loading={loading}
-              selectable
-              selectedIds={selectedIds}
-              onSelectedChange={setSelectedIds}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
               onOpenDetail={openDetail}
@@ -854,32 +699,13 @@ export function FileManagerPage() {
         onClose={() => setDetailOpen(false)}
       />
 
-      {/* Confirm dialog (xoá 1 file hoặc bulk) */}
+      {/* Confirm dialog */}
       <ConfirmDialog
         open={confirm.open}
         loading={confirm.loading}
-        title={
-          confirm.mode === "bulk"
-            ? `Xoá ${selectedIds.length} file?`
-            : "Xoá file này?"
-        }
-        message={
-          confirm.mode === "bulk" ? (
-            <>
-              Bạn sắp <b>xoá mềm</b> {selectedIds.length} file đã chọn. Hành
-              động này sẽ chuyển chúng vào thùng rác và có thể khôi phục lại
-              sau.
-              <br />
-              <span style={{ color: "var(--text-secondary)", fontSize: 13 }}>
-                Nếu trong danh sách có file bạn không có quyền xoá, thao tác
-                sẽ thất bại rõ ràng với danh sách id bị từ chối.
-              </span>
-            </>
-          ) : (
-            `Hành động này sẽ chuyển file "${confirm.file?.originalName}" vào thùng rác. Admin có thể khôi phục lại sau.`
-          )
-        }
-        confirmText={confirm.mode === "bulk" ? "Xoá tất cả" : "Xoá file"}
+        title="Xoá file này?"
+        message={`Hành động này sẽ chuyển file "${confirm.file?.originalName}" vào thùng rác. Admin có thể khôi phục lại sau.`}
+        confirmText="Xoá file"
         cancelText="Huỷ"
         confirmVariant="danger"
         onConfirm={confirmDelete}

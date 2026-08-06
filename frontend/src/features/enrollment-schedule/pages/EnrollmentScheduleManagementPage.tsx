@@ -76,6 +76,10 @@ function computeStatus(
 }
 
 export function EnrollmentScheduleManagementPage() {
+  useEffect(() => {
+    document.title = "Quản lý lịch khai giảng — Zhong Ruan LMS";
+  }, []);
+
   // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
   const toast = useToast();
 

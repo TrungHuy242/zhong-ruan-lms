@@ -72,9 +72,13 @@ function formatDateTime(value: string | null | undefined): string {
 }
 
 export function NotificationManagementPage() {
+  useEffect(() => {
+    document.title = "Quản lý thông báo — Zhong Ruan LMS";
+  }, []);
+
   const currentUser = authStorage.getUser();
   const canCreate = isAdmin(currentUser?.role);
-  const { unreadCount, refresh, markAll, markOneRead } = useNotifications();
+  const { refresh, markOneRead } = useNotifications();
 
   // Toast (thông báo CRUD chuyển sang toast floating bottom-right)
   const toast = useToast();
@@ -193,8 +197,6 @@ export function NotificationManagementPage() {
     notification: null,
   });
 
-  const [markAllLoading, setMarkAllLoading] = useState(false);
-
   // Dropdown action
   const [openActionId, setOpenActionId] = useState<number | null>(null);
   const actionMenuRef = useRef<HTMLDivElement | null>(null);
@@ -229,25 +231,6 @@ export function NotificationManagementPage() {
       prev.map((it) => (it.id === n.id ? { ...it, isRead: true } : it))
     );
     toast.success("Đã đánh dấu thông báo là đã đọc");
-  }
-
-  async function handleMarkAll() {
-    setMarkAllLoading(true);
-    try {
-      await markAll();
-      setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      toast.success("Đã đánh dấu tất cả thông báo là đã đọc");
-    } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-          ? err.message
-          : "Không thể đánh dấu tất cả";
-      toast.error(message);
-    } finally {
-      setMarkAllLoading(false);
-    }
   }
 
   async function handleCreateSuccess(created: Notification[]) {
@@ -450,24 +433,8 @@ export function NotificationManagementPage() {
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Quản lý thông báo</h1>
-          <p className={styles.subtitle}>
-            Theo dõi, đánh dấu đã đọc và gửi thông báo tới người dùng.
-          </p>
         </div>
         <div className={styles.headerActions}>
-          <Button
-            variant="secondary"
-            size="md"
-            leftIcon={<CheckCheck size={16} />}
-            onClick={handleMarkAll}
-            isLoading={markAllLoading}
-            disabled={unreadCount === 0}
-          >
-            Đánh dấu tất cả đã đọc
-            {unreadCount > 0 ? (
-              <span className={styles.countChip}>{unreadCount}</span>
-            ) : null}
-          </Button>
           {canCreate ? (
             <Button
               variant="primary"

@@ -75,8 +75,6 @@ import {
 import { TrashFilter, EMPTY_TRASH_FILTERS } from "../components/TrashFilter";
 import { TrashStats } from "../components/TrashStats";
 import { TrashDetailModal } from "../components/TrashDetailModal";
-import type { UserOption } from "../components/UserOption";
-import { listUsers, type User } from "../../users";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
 import { useToast } from "../../../shared/contexts/ToastContext";
@@ -156,7 +154,7 @@ interface FiltersState {
   search: string;
   searchApplied: string;
   module: TrashModule | "all";
-  deletedById: "" | number;
+  deletedById: string;
   from: string;
   to: string;
   page: number;
@@ -186,6 +184,10 @@ function isFiltersActive(f: FiltersState): boolean {
 type ConfirmKind = "single-restore" | "single-force" | "bulk-restore" | "bulk-force" | null;
 
 export function TrashManagerPage() {
+  useEffect(() => {
+    document.title = "Thùng rác — Zhong Ruan LMS";
+  }, []);
+
   const currentUser = authStorage.getUser();
   const isAdmin = checkIsAdmin(currentUser?.role);
 
@@ -202,7 +204,7 @@ export function TrashManagerPage() {
       initial.module = module as TrashModule | "all";
     }
     const deletedById = searchParams.get("deletedById");
-    if (deletedById) initial.deletedById = Number(deletedById) || "";
+    if (deletedById) initial.deletedById = deletedById;
     const from = searchParams.get("from");
     if (from) initial.from = from;
     const to = searchParams.get("to");
@@ -247,10 +249,6 @@ export function TrashManagerPage() {
   const [stats, setStats] = useState<TrashStatsData | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // ===== Users dropdown =====
-  const [users, setUsers] = useState<User[]>([]);
-  const [usersLoading, setUsersLoading] = useState(false);
-
   // ===== Selection =====
   const [selected, setSelected] = useState<Set<string>>(new Set()); // key = `${module}:${idOrKey}`
 
@@ -289,7 +287,7 @@ export function TrashManagerPage() {
       const params: ListTrashV2Params = {
         module: filters.module === "all" ? null : filters.module,
         keyword: filters.searchApplied || null,
-        deletedById: filters.deletedById === "" ? null : filters.deletedById,
+        deletedById: filters.deletedById === "" ? null : Number(filters.deletedById) || null,
         from: filters.from ? `${filters.from}T00:00:00.000Z` : null,
         to: filters.to ? `${filters.to}T23:59:59.999Z` : null,
         page: filters.page,
@@ -343,31 +341,6 @@ export function TrashManagerPage() {
   useEffect(() => {
     void loadStats();
   }, [loadStats]);
-
-  // ===== Load users cho dropdown =====
-  useEffect(() => {
-    let cancelled = false;
-    async function loadUsers() {
-      setUsersLoading(true);
-      try {
-        const result = await listUsers({});
-        if (cancelled) return;
-        const list = Array.isArray(result.users) ? result.users : [];
-        // Chỉ lấy user CHƯA bị xoá mềm.
-        const active = list.filter((u) => !u.deletedAt);
-        active.sort((a, b) => a.fullName.localeCompare(b.fullName, "vi"));
-        setUsers(active);
-      } catch {
-        // Không block UI nếu user list fail.
-      } finally {
-        if (!cancelled) setUsersLoading(false);
-      }
-    }
-    loadUsers();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Reset selection khi filter/page đổi.
   useEffect(() => {
@@ -428,7 +401,7 @@ export function TrashManagerPage() {
       ...prev,
       search: next.keyword,
       module: next.module,
-      deletedById: next.deletedById === "" ? "" : Number(next.deletedById) || "",
+      deletedById: next.deletedById,
       from: next.from,
       to: next.to,
       page: 1,
@@ -601,17 +574,6 @@ export function TrashManagerPage() {
   }
 
   // ===== Derived =====
-  const userOptions = useMemo<UserOption[]>(
-    () => users.map((u) => ({ id: u.id, fullName: u.fullName, email: u.email })),
-    [users]
-  );
-
-  // Module user fullName từ dropdown (để hiển thị chip filter).
-  const selectedUser = useMemo(
-    () => users.find((u) => u.id === filters.deletedById),
-    [users, filters.deletedById]
-  );
-
   // Lấy phần filter cố định (không search) để truyền xuống TrashFilter.
   const filterValues = useMemo(
     () => ({
@@ -852,8 +814,6 @@ export function TrashManagerPage() {
         <TrashFilter
           values={filterValues}
           onChange={handleFilterChange}
-          users={userOptions}
-          usersLoading={usersLoading}
           onSearchChange={handleSearchChange}
           onClearSearch={clearSearch}
         />
@@ -897,7 +857,7 @@ export function TrashManagerPage() {
               <span className={styles.chip}>
                 <UserIcon size={12} aria-hidden="true" />
                 <span>
-                  Người xoá: {selectedUser?.fullName ?? `#${filters.deletedById}`}
+                  Người xoá: {filters.deletedById}
                 </span>
                 <button
                   type="button"

@@ -66,6 +66,10 @@ const ROLE_LABEL: Record<UserRole, string> = {
 };
 
 export function ProfilePage() {
+  useEffect(() => {
+    document.title = "Hồ sơ cá nhân — Zhong Ruan LMS";
+  }, []);
+
   // ===== State =====
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [form, setForm] = useState<FormState>({
@@ -282,8 +286,7 @@ export function ProfilePage() {
             Hồ sơ cá nhân
           </h1>
           <p className={styles.subtitle}>
-            Quản lý thông tin cá nhân, ảnh đại diện và bảo mật tài khoản của bạn.
-            Email và vai trò do quản trị viên cấp và không thể thay đổi tại đây.
+            Quản lý thông tin cá nhân và bảo mật tài khoản.
           </p>
         </div>
         <div className={styles.headerActions}>

@@ -153,6 +153,10 @@ function highlight(text: string, keyword: string): React.ReactNode {
 const DEBOUNCE_MS = 450;
 
 export function GlobalSearchPage() {
+  useEffect(() => {
+    document.title = "Tìm kiếm — Zhong Ruan LMS";
+  }, []);
+
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const mainInputRef = useRef<HTMLInputElement>(null);
@@ -700,8 +704,7 @@ export function GlobalSearchPage() {
             Tìm kiếm toàn hệ thống
           </h1>
           <p className={styles.subtitle}>
-            Tra cứu nhanh người dùng, thông báo, tệp tin và cấu hình trong một
-            giao diện thống nhất. Từ khoá được highlight trực tiếp trong kết quả.
+            Tra cứu nhanh người dùng, thông báo, tệp tin và cấu hình.
           </p>
         </div>
         <Button

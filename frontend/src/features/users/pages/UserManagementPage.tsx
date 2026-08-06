@@ -161,6 +161,10 @@ interface BulkConfirmState {
 }
 
 export function UserManagementPage() {
+  useEffect(() => {
+    document.title = "Quản lý người dùng — Zhong Ruan LMS";
+  }, []);
+
   // ===== Phân quyền (UI-level) =====
   const currentUser = authStorage.getUser();
   const canManage = checkIsAdmin(currentUser?.role);

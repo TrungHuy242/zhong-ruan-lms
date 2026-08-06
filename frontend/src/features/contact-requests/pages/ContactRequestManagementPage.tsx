@@ -122,6 +122,10 @@ const STATUS_BADGE_CLASS: Record<ContactStatus, string> = {
 };
 
 export function ContactRequestManagementPage() {
+  useEffect(() => {
+    document.title = "Yêu cầu tư vấn — Zhong Ruan LMS";
+  }, []);
+
   const currentUser = authStorage.getUser();
   // Theo SPEC: trang này chỉ dành cho ADMIN. Nếu role khác mở được thì vẫn cho
   // xem (read-only) nhưng không cho đổi status / xoá.
@@ -400,10 +404,6 @@ export function ContactRequestManagementPage() {
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Yêu cầu tư vấn</h1>
-          <p className={styles.subtitle}>
-            Quản lý các yêu cầu liên hệ gửi từ form trên trang Liên hệ công khai
-            (<code>/lien-he</code>). Cập nhật trạng thái và phản hồi khách hàng.
-          </p>
         </div>
       </header>
 

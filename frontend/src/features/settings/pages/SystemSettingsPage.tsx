@@ -19,7 +19,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import {
@@ -40,26 +39,20 @@ import {
   type SettingsSidebarCounts,
 } from "../components/SettingsSidebar";
 import {
-  Download,
   Eye,
   Plus,
   Search,
   Settings as SettingsIcon,
   Trash2,
-  Upload as UploadIcon,
   X as XIcon,
 } from "lucide-react";
 import {
   deleteSetting,
-  exportSettings,
   getSettings,
-  importSettings,
   updateSetting,
-  type ImportSettingsPayload,
   type Setting,
   type SettingGroup,
 } from "../services/settingApi";
-import { ApiError } from "../../../shared/api";
 import { getApiErrorMessage } from "../../../shared/validation/fileValidation";
 import { authStorage } from "../../../shared/storage/authStorage";
 import { isAdmin as checkIsAdmin } from "../../../shared/utils/auth";
@@ -120,6 +113,10 @@ function shouldUseSearchApi(search: string): boolean {
 }
 
 export function SystemSettingsPage() {
+  useEffect(() => {
+    document.title = "Cài đặt hệ thống — Zhong Ruan LMS";
+  }, []);
+
   // ===== Auth =====
   const currentUser = authStorage.getUser();
   const isAdmin = checkIsAdmin(currentUser?.role);
@@ -148,14 +145,6 @@ export function SystemSettingsPage() {
     type: "success" | "error" | "info";
     text: string;
   } | null>(null);
-
-  // ===== Import / Export =====
-  const [exportLoading, setExportLoading] = useState(false);
-  const [importConfirmOpen, setImportConfirmOpen] = useState(false);
-  const [importFile, setImportFile] = useState<File | null>(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const [importReplace, setImportReplace] = useState(true);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ===== Debounce search =====
   useEffect(() => {
@@ -315,116 +304,6 @@ export function SystemSettingsPage() {
     }
   }
 
-  // ===== Import / Export =====
-  async function handleExport() {
-    setExportLoading(true);
-    try {
-      const snapshot = await exportSettings();
-      const blob = new Blob([JSON.stringify(snapshot, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const ts = new Date().toISOString().replace(/[:.]/g, "-");
-      a.href = url;
-      a.download = `system-settings-${ts}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setAlertMessage({
-        type: "success",
-        text: `Đã xuất ${snapshot.settings.length} cấu hình.`,
-      });
-    } catch (err) {
-      const message = getApiErrorMessage(err, "Không xuất được cấu hình");
-      setAlertMessage({ type: "error", text: message });
-    } finally {
-      setExportLoading(false);
-    }
-  }
-
-  function openFilePicker() {
-    fileInputRef.current?.click();
-  }
-
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".json")) {
-      setAlertMessage({
-        type: "error",
-        text: "Vui lòng chọn file .JSON.",
-      });
-      return;
-    }
-    setImportFile(file);
-    setImportConfirmOpen(true);
-    // Reset input để cùng 1 file có thể chọn lại
-    e.target.value = "";
-  }
-
-  async function performImport() {
-    if (!importFile) return;
-    setImportLoading(true);
-    try {
-      const text = await importFile.text();
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-        setAlertMessage({
-          type: "error",
-          text: "File JSON không hợp lệ — không parse được.",
-        });
-        setImportConfirmOpen(false);
-        setImportFile(null);
-        return;
-      }
-
-      const payload: ImportSettingsPayload = Array.isArray(parsed)
-        ? { settings: parsed as ImportSettingsPayload["settings"] }
-        : (parsed as ImportSettingsPayload);
-
-      if (!payload || !Array.isArray(payload.settings)) {
-        setAlertMessage({
-          type: "error",
-          text: "Cấu trúc file không hợp lệ — thiếu mảng 'settings'.",
-        });
-        setImportConfirmOpen(false);
-        setImportFile(null);
-        return;
-      }
-
-      const result = await importSettings(payload, importReplace);
-      setAlertMessage({
-        type: result.imported > 0 ? "success" : "info",
-        text: `Import: ${result.imported}/${result.total} thành công, ${result.skipped} bỏ qua${
-          result.errors.length > 0 ? ` (${result.errors.length} lỗi)` : ""
-        }.`,
-      });
-      setImportConfirmOpen(false);
-      setImportFile(null);
-      void loadList();
-    } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-          ? err.message
-          : "Không import được cấu hình";
-      setAlertMessage({ type: "error", text: message });
-    } finally {
-      setImportLoading(false);
-    }
-  }
-
-  function cancelImport() {
-    if (importLoading) return;
-    setImportConfirmOpen(false);
-    setImportFile(null);
-  }
-
   // ===== Columns =====
   const columns: TableColumn<Setting>[] = useMemo(
     () => [
@@ -538,40 +417,12 @@ export function SystemSettingsPage() {
             <SettingsIcon size={24} className={styles.titleIcon} aria-hidden="true" />
             Cài đặt hệ thống
           </h1>
-          <p className={styles.subtitle}>
-            Quản lý các cấu hình chung của hệ thống (SMTP, Maintenance mode, cờ
-            tính năng…). Chỉ Admin được phép tạo, sửa, xoá.
-          </p>
         </div>
         {isAdmin ? (
           <div className={styles.headerActions}>
             <Button
-              variant="secondary"
-              size="md"
-              leftIcon={<Download size={16} />}
-              onClick={handleExport}
-              isLoading={exportLoading}
-              loadingText="Đang xuất…"
-            >
-              Export JSON
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              leftIcon={<UploadIcon size={16} />}
-              onClick={openFilePicker}
-            >
-              Import JSON
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json,application/json"
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-            />
-            <Button
               variant="primary"
+              size="md"
               leftIcon={<Plus size={16} />}
               onClick={openCreate}
             >
@@ -726,71 +577,6 @@ export function SystemSettingsPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleting(null)}
       />
-
-      <ConfirmDialog
-        open={importConfirmOpen}
-        title="Import cấu hình từ JSON?"
-        message={
-          <ImportConfirmMessage
-            fileName={importFile?.name}
-            replace={importReplace}
-            onReplaceChange={setImportReplace}
-          />
-        }
-        confirmText={
-          importReplace ? "Import & ghi đè" : "Import (chỉ thêm mới)"
-        }
-        cancelText="Huỷ"
-        confirmVariant="primary"
-        loading={importLoading}
-        onConfirm={performImport}
-        onCancel={cancelImport}
-      />
-    </div>
-  );
-}
-
-// ===== Sub-component: ImportConfirmMessage =====
-
-function ImportConfirmMessage({
-  fileName,
-  replace,
-  onReplaceChange,
-}: {
-  fileName?: string;
-  replace: boolean;
-  onReplaceChange: (v: boolean) => void;
-}) {
-  return (
-    <div className={styles.importConfirm}>
-      <p style={{ margin: "0 0 var(--space-3)" }}>
-        Sắp import cấu hình từ file <code>{fileName ?? "(không tên)"}</code>.
-      </p>
-      <label className={styles.replaceToggle}>
-        <input
-          type="checkbox"
-          checked={replace}
-          onChange={(e) => onReplaceChange(e.target.checked)}
-          disabled={false}
-        />
-        <span>
-          <b>Ghi đè</b> các cấu hình đã tồn tại (cùng key).{" "}
-          {!replace ? (
-            <em style={{ color: "var(--text-secondary)" }}>
-              Đang ở chế độ "chỉ thêm mới" — các key trùng sẽ bị bỏ qua.
-            </em>
-          ) : null}
-        </span>
-      </label>
-      <p
-        style={{
-          margin: "var(--space-3) 0 0",
-          fontSize: 12,
-          color: "var(--text-secondary)",
-        }}
-      >
-        Hành động này sẽ được ghi vào Audit Log. Không thể hoàn tác.
-      </p>
     </div>
   );
 }
