@@ -660,7 +660,7 @@ export function FileManagerPage() {
             <FileTableView
               items={items}
               loading={loading}
-              selectable
+              selectable={false}
               selectedIds={selectedIds}
               onSelectedChange={setSelectedIds}
               sortConfig={filters.sort}

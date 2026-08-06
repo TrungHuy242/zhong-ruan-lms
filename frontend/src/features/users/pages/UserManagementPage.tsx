@@ -801,6 +801,9 @@ export function UserManagementPage() {
               />
             </button>
 
+            {/* Ẩn theo audit 2026-08: column visibility toggle.
+                Backend không bị xóa — có thể bật lại nếu cần. */}
+            {false ? (
             <div className={styles.columnToggleWrap} ref={columnMenuRef}>
               <button
                 type="button"
@@ -846,6 +849,7 @@ export function UserManagementPage() {
                 </div>
               ) : null}
             </div>
+            ) : null}
           </div>
         </div>
 
@@ -857,8 +861,9 @@ export function UserManagementPage() {
           onClear={clearAdvancedFilters}
         />
 
-        {/* Bulk Action Bar (sticky, chỉ hiện khi có selection) */}
-        {canManage ? (
+        {/* Ẩn theo audit 2026-08: BulkActionBar (xoá nhiều / đổi trạng thái hàng loạt).
+            Backend không bị xóa — có thể bật lại nếu cần. */}
+        {false && canManage ? (
           <BulkActionBar
             selectedCount={selectedIds.length}
             itemLabel="người dùng"
@@ -905,10 +910,6 @@ export function UserManagementPage() {
               rowKey={(u) => u.id}
               emptyState={emptyState}
               rowClassName={(u) => (isDeletedUser(u) ? styles.rowDeleted : undefined)}
-              selectable={canManage}
-              selectedIds={selectedIds}
-              onSelectedChange={setSelectedIds}
-              selectableKey={(u) => u.id}
               sortable
               sortConfig={filters.sort}
               onSortChange={handleSortChange}
