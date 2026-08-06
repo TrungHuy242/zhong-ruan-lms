@@ -27,7 +27,6 @@ import type {
   FileListResponse,
   FileListResult,
   FileStorageStats,
-  FileStorageStatsResponse,
   UploadedFile,
 } from "../types/file.types";
 
@@ -38,7 +37,6 @@ export type {
   FileListResponse,
   FileListResult,
   FileStorageStats,
-  FileStorageStatsResponse,
   FileViewMode,
   UploadedFile,
   FileSortBy,
@@ -311,7 +309,6 @@ export function uploadFileRaw(
  * GET /files/storage-stats (chỉ Admin). Throw ApiError 403 nếu user thường.
  */
 export async function getStorageStats(): Promise<FileStorageStats> {
-  const response = await apiFetch<FileStorageStatsResponse>("/files/storage-stats");
-  if (!response.data) throw new Error("Phản hồi từ máy chủ không hợp lệ");
-  return response.data;
+  // apiFetch tự động unwrap {data: ...}, nên trả về thẳng FileStorageStats.
+  return apiFetch<FileStorageStats>("/files/storage-stats");
 }

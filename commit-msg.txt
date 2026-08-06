@@ -1,0 +1,21 @@
+refactor(frontend): audit UI/UX — rut gon subtitles, an tinh nang thua, them document.title
+
+1. Rut gon subtitle dai dong:
+   - Teachers, Pricing, Contact Requests, Files, Settings, Search, Profile
+
+2. An tinh nang it dung theo audit 2026-08:
+   - Users: BulkActionBar, Column visibility toggle
+   - Files: View toggle (grid/table), Bulk download, BulkActionBar
+   - Dashboard: Xuat anh, Tuy chinh widget, chart tabs (hardcode User)
+   - Audit Log: Timeline view toggle (chi con Table)
+   - Notifications: "Danh dau tat ca da doc"
+   - Settings: Export/Import JSON buttons
+   - Trash: Nguoi xoa dropdown → text input filter
+   Backend logic/API khong bi xoa — co the bat lai de dang.
+
+3. Dat document.title rieng cho 13 trang Admin:
+   - Dashboard, Teachers, Users, Pricing, Contact, Notifications,
+   - Files, Trash, Settings, Audit Log, Search, Profile, Schedule
+
+4. Don orphan layout files (AdminLayout, Header, Footer — trung lap).
+   API van con, chi an UI. TypeScript: 0 loi.

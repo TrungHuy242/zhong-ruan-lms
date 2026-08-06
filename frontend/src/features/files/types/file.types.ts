@@ -70,10 +70,6 @@ export interface FileStorageStats {
   byType: Record<import("../constants/file.constants").FileApiCategory, FileCategoryBucket>;
 }
 
-export interface FileStorageStatsResponse {
-  data: FileStorageStats;
-}
-
 // ===== Bulk operations =====
 export interface BulkDeleteFilesResponse {
   message?: string;

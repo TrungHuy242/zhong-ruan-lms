@@ -1,0 +1,12 @@
+fix(frontend): Users page (sửa sót) + Files page (ẩn bulk checkbox chọn hàng)
+
+Khi test sống qua Chrome DevTools MCP phát hiện:
+1. Users: column toggle "Cột hiển thị" và BulkActionBar (chọn nhiều user + đổi
+   trạng thái/xoá hàng loạt) vẫn còn hiện — đã wrap bằng {false ? ... : null}
+   để ẩn nhưng giữ code + state (có thể bật lại bằng đổi {false} thành {canManage}).
+   Tương tự Pattern đã làm ở Teacher: BulkActionBar + columnMenuRef + hiddenColumnKeys.
+2. Files: truyền selectable={false} thay vì selectable (truthy) — ẩn checkbox
+   chọn hàng trên table mà trước đó vẫn hiện.
+
+document.title và 13 trang khác đã verify PASS qua MCP live navigation.
+TypeScript: 0 lỗi.
