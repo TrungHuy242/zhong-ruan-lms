@@ -37,6 +37,19 @@
   min-width: 0;
 }
 
+/* ===== Refresh button (admin §10 — secondary variant, không translate) =====
+ * Đặt ở WelcomeBar bên phải H1. Mobile (< 767px): xuống dòng, full-width. */
+.refreshBtn {
+  flex-shrink: 0;
+  min-height: 36px;
+}
+
+@media (max-width: 767px) {
+  .refreshBtn {
+    width: 100%;
+  }
+}
+
 /* ===== Error block (per-widget) ===== */
 .errorWrap {
   display: flex;

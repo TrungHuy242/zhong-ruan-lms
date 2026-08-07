@@ -17,6 +17,7 @@ import {
   Bell,
   FolderOpen,
   GraduationCap,
+  RefreshCw,
   ScrollText,
   UserCog,
   Users as UsersIcon,
@@ -33,12 +34,12 @@ import styles from "./DashboardPage.module.css";
  *   - Nút "Tùy chỉnh widget" (layout cố định là đủ)
  *   - Tab switcher trên chart — chỉ hiện User trends
  *
- * Ẩn theo quyết định audit 2026-08:
+ * Giữ lại theo audit 2026-08:
+ *   - Nút Refresh thủ công: cho phép admin fetch data mới ngay (không đợi auto 60s)
  *   - html2canvas import: vẫn trong package.json
  *   - useDashboardWidgets / DashboardWidgetSettings: giữ nguyên file/component
  *   - MonthlyChart series prop: vẫn accept 3 series, hardcode "users"
- *   - Auto-refresh logic: giữ nguyên, chỉ ẩn Refresh button
- *   Có thể bật lại nếu cần.
+ *   - Auto-refresh logic: giữ nguyên 60s, độc lập với Refresh button
  */
 
 /** Chu kỳ auto refresh (ms). */
@@ -164,7 +165,10 @@ export function DashboardPage() {
   const [monthlyLoading, setMonthlyLoading] = useState(true);
   const [monthlyError, setMonthlyError] = useState<string | null>(null);
 
-  const loadOverview = useCallback(async () => {
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+
+  const loadOverview = useCallback(async (manual = false) => {
+    if (manual) setIsManualRefreshing(true);
     setOverviewLoading(true);
     setOverviewError(null);
     try {
@@ -180,10 +184,12 @@ export function DashboardPage() {
       );
     } finally {
       setOverviewLoading(false);
+      if (manual) setIsManualRefreshing(false);
     }
   }, []);
 
-  const loadMonthly = useCallback(async () => {
+  const loadMonthly = useCallback(async (manual = false) => {
+    if (manual) setIsManualRefreshing(true);
     setMonthlyLoading(true);
     setMonthlyError(null);
     try {
@@ -199,11 +205,16 @@ export function DashboardPage() {
       );
     } finally {
       setMonthlyLoading(false);
+      if (manual) setIsManualRefreshing(false);
     }
   }, []);
 
   const loadAll = useCallback(async () => {
     await Promise.all([loadOverview(), loadMonthly()]);
+  }, [loadOverview, loadMonthly]);
+
+  const handleManualRefresh = useCallback(async () => {
+    await Promise.all([loadOverview(true), loadMonthly(true)]);
   }, [loadOverview, loadMonthly]);
 
   // Load lần đầu
@@ -252,6 +263,18 @@ export function DashboardPage() {
             {currentUser?.fullName ?? "bạn"}
           </span>
         </h1>
+        <Button
+          variant="secondary"
+          size="sm"
+          className={styles.refreshBtn}
+          isLoading={isManualRefreshing}
+          loadingText="Đang tải..."
+          leftIcon={<RefreshCw size={14} aria-hidden="true" />}
+          onClick={() => void handleManualRefresh()}
+          aria-label="Làm mới dữ liệu Dashboard"
+        >
+          Làm mới
+        </Button>
       </header>
 
       {/* KPI Cards — always visible */}
