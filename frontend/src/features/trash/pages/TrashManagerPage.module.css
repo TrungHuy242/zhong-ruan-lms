@@ -41,15 +41,6 @@
   color: var(--color-error);
 }
 
-.subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-  max-width: 720px;
-  font-family: var(--font-admin);
-  line-height: 1.5;
-}
-
 /* ===== Table card ===== */
 .tableCard {
   padding: 0 !important;

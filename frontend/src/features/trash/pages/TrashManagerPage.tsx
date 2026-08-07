@@ -791,12 +791,6 @@ export function TrashManagerPage() {
             <Trash2 size={24} className={styles.titleIcon} aria-hidden="true" />
             Thùng rác hệ thống
           </h1>
-          <p className={styles.subtitle}>
-            Khôi phục hoặc xoá vĩnh viễn các bản ghi đã soft-delete trên toàn hệ thống.
-            Hỗ trợ 8 module (Người dùng · Thông báo · Tệp · Cấu hình · Giảng viên · Gói học phí ·
-            Yêu cầu tư vấn · Lịch khai giảng), filter theo người xoá / khoảng thời gian / từ khoá,
-            và bulk action.
-          </p>
         </div>
       </header>
 
