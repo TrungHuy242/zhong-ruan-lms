@@ -34,6 +34,7 @@ import { GlobalSearchPage } from "../../features/search/pages/GlobalSearchPage";
 import { TrashManagerPage } from "../../features/trash/pages/TrashManagerPage";
 import { ContactRequestManagementPage } from "../../features/contact-requests/pages/ContactRequestManagementPage";
 import { EnrollmentScheduleManagementPage } from "../../features/enrollment-schedule/pages/EnrollmentScheduleManagementPage";
+import { EnrollmentScheduleFormPage } from "../../features/enrollment-schedule/pages/EnrollmentScheduleFormPage";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { ProtectedRoute } from "../guards/ProtectedRoute";
 import { PublicLayout } from "../../layouts/PublicLayout";
@@ -93,6 +94,14 @@ export function AppRoutes() {
         <Route
           path="/enrollment-schedule"
           element={<EnrollmentScheduleManagementPage />}
+        />
+        <Route
+          path="/enrollment-schedule/new"
+          element={<EnrollmentScheduleFormPage />}
+        />
+        <Route
+          path="/enrollment-schedule/:id/edit"
+          element={<EnrollmentScheduleFormPage />}
         />
       </Route>
 

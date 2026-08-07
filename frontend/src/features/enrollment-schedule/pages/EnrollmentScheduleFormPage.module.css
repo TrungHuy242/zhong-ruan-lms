@@ -1,0 +1,279 @@
+/* EnrollmentScheduleFormPage — full-page form (Admin).
+ * Tuân theo DESIGN.md §10 Admin Dashboard System — Be Vietnam Pro, soft radii (6-8px),
+ * subtle shadow, brand-red anchor, semantic tones cho state.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 20px);
+  width: 100%;
+  max-width: 100%;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 20px);
+  width: 100%;
+  max-width: 880px;
+  padding-bottom: 96px; /* chừa chỗ cho StickyFooter */
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4, 16px);
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  min-width: 0;
+}
+
+.fieldSmall {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  max-width: 180px;
+}
+
+.label {
+  font-family: var(--font-body, "Be Vietnam Pro", system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+.required {
+  color: var(--brand-primary, #C8102E);
+  margin-left: 2px;
+}
+
+.fieldError {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-error, #DC2626);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ----- Tag input cho coursesEnrolling + phoneNumbers ----- */
+.tagInput {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  padding: var(--space-2, 8px);
+  min-height: 48px;
+  border: 1px solid var(--border-default, #E5E7EB);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-surface, #FFFFFF);
+  align-items: center;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.tagList:focus-within {
+  border-color: var(--brand-primary, #C8102E);
+  box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(200, 16, 46, 0.12));
+}
+
+.tagListError {
+  border-color: var(--color-error, #DC2626);
+}
+
+.tagPlaceholder {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 0 var(--space-2);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: 4px 10px;
+  background: var(--brand-primary-soft, rgba(200, 16, 46, 0.08));
+  color: var(--brand-primary, #C8102E);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full, 999px);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.tagRemove {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--brand-primary, #C8102E);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 4px);
+  transition: background 150ms ease;
+}
+
+.tagRemove:hover {
+  background: var(--brand-primary-soft, rgba(200, 16, 46, 0.12));
+}
+
+.tagRemove:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tagInputRow {
+  display: flex;
+  gap: var(--space-2, 8px);
+  align-items: stretch;
+}
+
+.tagInputControl {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 var(--space-3, 12px);
+  border: 1px solid var(--border-default, #E5E7EB);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-surface, #FFFFFF);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.tagInputControl:focus {
+  outline: none;
+  border-color: var(--brand-primary, #C8102E);
+  box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(200, 16, 46, 0.12));
+}
+
+.tagInputControl:disabled {
+  background: var(--bg-surface-alt, #F3F4F6);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.tagHint {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ----- Textarea (ghi chú) ----- */
+.textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  border: 1px solid var(--border-default, #E5E7EB);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-surface, #FFFFFF);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--brand-primary, #C8102E);
+  box-shadow: var(--shadow-focus-ring, 0 0 0 3px rgba(200, 16, 46, 0.12));
+}
+
+.textarea:disabled {
+  background: var(--bg-surface-alt, #F3F4F6);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ----- Toggle ----- */
+.toggleRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px);
+  background: var(--bg-surface-alt, #F3F4F6);
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--border-default, #E5E7EB);
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand-primary, #C8102E);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ----- Retry button (load error) ----- */
+.retryBtn {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border: 1px solid var(--brand-primary, #C8102E);
+  background: transparent;
+  color: var(--brand-primary, #C8102E);
+  border-radius: var(--radius-sm, 6px);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.retryBtn:hover {
+  background: var(--brand-primary-soft, rgba(200, 16, 46, 0.08));
+}
+
+/* ----- Mobile responsive ----- */
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+  .fieldSmall {
+    max-width: 100%;
+  }
+  .form {
+    padding-bottom: 120px;
+  }
+}

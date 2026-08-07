@@ -10,8 +10,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Modal } from "../../../shared/components/ui";
-import { EnrollmentScheduleFormModal } from "../components/EnrollmentScheduleFormModal";
 import { PreviewScheduleBanner } from "../components/PreviewScheduleBanner";
 import {
   deleteEnrollmentSchedule,
@@ -94,9 +94,6 @@ export function EnrollmentScheduleManagementPage() {
   // loadError: hiển thị inline khi fetch list thất bại (giữ để có nút "Thử lại")
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<EnrollmentSchedule | null>(null);
-
   const [confirm, setConfirm] = useState<ConfirmState>({
     open: false,
     loading: false,
@@ -108,6 +105,8 @@ export function EnrollmentScheduleManagementPage() {
     open: false,
     schedule: null,
   });
+
+  const navigate = useNavigate();
 
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
@@ -144,6 +143,23 @@ export function EnrollmentScheduleManagementPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Tự refresh khi quay về từ form page (navigate kèm ?refresh=1 query)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("refresh") === "1") {
+      fetchData(page, sortKey, sortOrder);
+      // Xoá query để F5 không refresh lại
+      params.delete("refresh");
+      const next = params.toString();
+      window.history.replaceState(
+        {},
+        "",
+        `${window.location.pathname}${next ? `?${next}` : ""}`
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     fetchData(newPage, sortKey, sortOrder);
@@ -169,20 +185,11 @@ export function EnrollmentScheduleManagementPage() {
   };
 
   const openAdd = () => {
-    setEditing(null);
-    setFormOpen(true);
+    navigate("/enrollment-schedule/new");
   };
 
   const openEdit = (s: EnrollmentSchedule) => {
-    setEditing(s);
-    setFormOpen(true);
-  };
-
-  const handleFormSuccess = () => {
-    setFormOpen(false);
-    setEditing(null);
-    toast.success(editing ? "Cập nhật lịch khai giảng thành công" : "Tạo lịch khai giảng thành công");
-    fetchData(page, sortKey, sortOrder);
+    navigate(`/enrollment-schedule/${s.id}/edit`);
   };
 
   const openDelete = (s: EnrollmentSchedule) =>
@@ -397,17 +404,6 @@ export function EnrollmentScheduleManagementPage() {
             </button>
           </div>
         </div>
-      )}
-
-      {formOpen && (
-        <EnrollmentScheduleFormModal
-          schedule={editing}
-          onClose={() => {
-            setFormOpen(false);
-            setEditing(null);
-          }}
-          onSuccess={handleFormSuccess}
-        />
       )}
 
       {/* Confirm dialog — dùng Modal shared cho đồng bộ pattern */}
