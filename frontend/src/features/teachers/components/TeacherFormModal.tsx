@@ -456,7 +456,7 @@ export function TeacherFormModal({
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             disabled={isSubmitting}
-            rows={6}
+            rows={4}
           />
           {errors.bio ? (
             <span className={styles.fieldError} role="alert">
