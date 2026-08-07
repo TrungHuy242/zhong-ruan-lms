@@ -25,6 +25,7 @@ import { TeacherFormPage } from "../../features/teachers/pages/TeacherFormPage";
 import { PricingManagementPage } from "../../features/pricing/pages/PricingManagementPage";
 import { PricingFormPage } from "../../features/pricing/pages/PricingFormPage";
 import { NotificationManagementPage } from "../../features/notifications/pages/NotificationManagementPage";
+import { NotificationFormPage } from "../../features/notifications/pages/NotificationFormPage";
 import { AuditLogPage } from "../../features/audit-log/pages/AuditLogPage";
 import { FileManagerPage } from "../../features/files/pages/FileManagerPage";
 import { SystemSettingsPage } from "../../features/settings/pages/SystemSettingsPage";
@@ -81,6 +82,7 @@ export function AppRoutes() {
         <Route path="/pricing-plans/new" element={<PricingFormPage />} />
         <Route path="/pricing-plans/:id/edit" element={<PricingFormPage />} />
         <Route path="/notifications" element={<NotificationManagementPage />} />
+        <Route path="/notifications/new" element={<NotificationFormPage />} />
         <Route path="/files" element={<FileManagerPage />} />
         <Route path="/logs" element={<AuditLogPage />} />
         <Route path="/settings" element={<SystemSettingsPage />} />

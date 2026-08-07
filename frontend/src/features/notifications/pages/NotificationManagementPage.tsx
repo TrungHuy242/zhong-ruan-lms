@@ -15,7 +15,6 @@ import {
   Table,
   type TableColumn,
 } from "../../../shared/components/ui";
-import { NotificationFormModal } from "../../../shared/components/modals/NotificationFormModal";
 import { NotificationDetailModal } from "../components/NotificationDetailModal";
 import {
   deleteNotification,
@@ -37,7 +36,7 @@ import {
   X as XIcon,
   Bell as BellIcon,
 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./NotificationManagementPage.module.css";
 
@@ -186,8 +185,18 @@ export function NotificationManagementPage() {
     setFilters((prev) => ({ ...prev, page }));
   }
 
-  // ===== Modal state =====
-  const [formModalOpen, setFormModalOpen] = useState(false);
+  // ===== Navigation (FormPage đã tách — navigate thay vì open modal) =====
+  const navigate = useNavigate();
+  function goCreate() {
+    navigate("/notifications/new");
+  }
+
+  // Refresh data khi quay lại từ NotificationFormPage (searchParams thay đổi)
+  useEffect(() => {
+    loadList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailId, setDetailId] = useState<number | string | null>(null);
 
@@ -210,9 +219,6 @@ export function NotificationManagementPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  function openCreate() {
-    setFormModalOpen(true);
-  }
   function openDetail(n: Notification) {
     setDetailId(n.id);
     setDetailOpen(true);
@@ -233,12 +239,7 @@ export function NotificationManagementPage() {
     toast.success("Đã đánh dấu thông báo là đã đọc");
   }
 
-  async function handleCreateSuccess(created: Notification[]) {
-    setFormModalOpen(false);
-    toast.success(`Đã gửi thông báo tới ${created.length} người dùng`);
-    await refresh();
-    await loadList();
-  }
+  // Note: NotificationFormPage tự navigate về /notifications sau khi save + toast success.
 
   async function handleConfirmDelete() {
     if (!confirm.notification) return;
@@ -440,7 +441,7 @@ export function NotificationManagementPage() {
               variant="primary"
               size="md"
               leftIcon={<Plus size={16} />}
-              onClick={openCreate}
+              onClick={goCreate}
             >
               Tạo thông báo
             </Button>
@@ -511,12 +512,6 @@ export function NotificationManagementPage() {
           </>
         )}
       </div>
-
-      <NotificationFormModal
-        open={formModalOpen}
-        onClose={() => setFormModalOpen(false)}
-        onSuccess={handleCreateSuccess}
-      />
 
       <NotificationDetailModal
         open={detailOpen}

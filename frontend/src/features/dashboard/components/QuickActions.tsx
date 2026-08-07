@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserPlus, Bell, UploadCloud, Settings } from "lucide-react";
-import { NotificationFormModal } from "../../../shared/components/modals/NotificationFormModal";
 import { uploadFile } from "../../files/services/fileApi";
 import { useNotifications } from "../../../shared/contexts/NotificationContext";
 import styles from "./QuickActions.module.css";
@@ -54,19 +53,11 @@ export function QuickActions({ onChanged }: QuickActionsProps) {
   const navigate = useNavigate();
   const { refresh } = useNotifications();
 
-  // State cho 2 modal (NotificationFormModal + UploadZone overlay).
-  // UserForm đã migrate sang page riêng — navigate thẳng /users/new.
-  const [notifModalOpen, setNotifModalOpen] = useState(false);
+  // State cho 1 overlay (UploadZone). User + Notification đã migrate sang
+  // page riêng — navigate thẳng /users/new + /notifications/new.
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-
-  const handleNotifSuccess = useCallback(async () => {
-    setNotifModalOpen(false);
-    // Bell badge cần refresh (số unread có thể đã tăng).
-    void refresh();
-    onChanged("notification");
-  }, [onChanged, refresh]);
 
   const handleUploadOne = useCallback(
     async (file: File): Promise<void> => {
@@ -87,21 +78,25 @@ export function QuickActions({ onChanged }: QuickActionsProps) {
     [onChanged]
   );
 
-  // Khi UserFormPage save → dispatch custom event → refresh KPI.
+  // Khi UserFormPage / NotificationFormPage save → dispatch custom event → refresh KPI.
   useEffect(() => {
-    function onUserCreated() {
+    function onUserChanged() {
       onChanged("user");
     }
-    function onUserUpdated() {
-      onChanged("user");
+    function onNotifCreated() {
+      // Bell badge cần refresh (số unread có thể đã tăng).
+      void refresh();
+      onChanged("notification");
     }
-    window.addEventListener("lms:user-created", onUserCreated);
-    window.addEventListener("lms:user-updated", onUserUpdated);
+    window.addEventListener("lms:user-created", onUserChanged);
+    window.addEventListener("lms:user-updated", onUserChanged);
+    window.addEventListener("lms:notification-created", onNotifCreated);
     return () => {
-      window.removeEventListener("lms:user-created", onUserCreated);
-      window.removeEventListener("lms:user-updated", onUserUpdated);
+      window.removeEventListener("lms:user-created", onUserChanged);
+      window.removeEventListener("lms:user-updated", onUserChanged);
+      window.removeEventListener("lms:notification-created", onNotifCreated);
     };
-  }, [onChanged]);
+  }, [onChanged, refresh]);
 
   function handleAction(key: (typeof ACTIONS)[number]["key"]) {
     if (key === "settings") {
@@ -114,7 +109,9 @@ export function QuickActions({ onChanged }: QuickActionsProps) {
       return;
     }
     if (key === "notification") {
-      setNotifModalOpen(true);
+      // Navigate đến trang tạo notification mới — thay vì mở modal
+      // (đã migrate sang page riêng /notifications/new).
+      navigate("/notifications/new");
       return;
     }
     if (key === "upload") {
@@ -149,12 +146,6 @@ export function QuickActions({ onChanged }: QuickActionsProps) {
           );
         })}
       </ul>
-
-      <NotificationFormModal
-        open={notifModalOpen}
-        onClose={() => setNotifModalOpen(false)}
-        onSuccess={(_created) => void handleNotifSuccess()}
-      />
 
       {uploadModalOpen ? (
         <div
