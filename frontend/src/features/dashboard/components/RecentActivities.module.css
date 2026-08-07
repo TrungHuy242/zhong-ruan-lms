@@ -1,5 +1,10 @@
+/* Hallmark · admin-component: RecentActivities
+ * theme: Admin Operations (inherited §10)
+ * shape: list rows with hover bg-lighter, focus inset left-bar, 8px radii
+ */
 .wrapper {
   width: 100%;
+  font-family: var(--font-admin);
 }
 
 .list {
@@ -19,31 +24,33 @@
   background: transparent;
   border: 0;
   border-bottom: 1px solid var(--border-default);
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
   font: inherit;
   color: inherit;
-  transition: background-color 0.15s ease;
+  transition: background-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .list li:last-child .item {
   border-bottom: 0;
 }
 
-.item:hover,
-.item:focus-visible {
+.item:hover {
   background-color: var(--brand-primary-lighter);
-  outline: none;
+  border-radius: var(--admin-radius-input);
 }
 
 .item:focus-visible {
-  box-shadow: inset 2px 0 0 var(--brand-primary);
+  outline: none;
+  background-color: var(--brand-primary-lighter);
+  box-shadow: inset 2px 0 0 var(--brand-primary), var(--admin-focus-ring);
 }
 
 .icon {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -53,12 +60,12 @@
 .iconSkeleton {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   flex-shrink: 0;
   background: linear-gradient(
     90deg,
     var(--bg-surface-alt) 0%,
-    rgba(0, 0, 0, 0.06) 50%,
+    rgba(20, 20, 30, 0.06) 50%,
     var(--bg-surface-alt) 100%
   );
   background-size: 200% 100%;
@@ -102,6 +109,7 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  letter-spacing: var(--admin-track-flat);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -110,6 +118,7 @@
 .meta {
   font-size: 12px;
   color: var(--text-secondary);
+  letter-spacing: var(--admin-track-flat);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -118,12 +127,13 @@
 .groupBadge {
   display: none;
   padding: 2px 8px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-input);
   font-size: 11px;
   font-weight: 600;
   background-color: var(--bg-surface-alt);
   color: var(--text-secondary);
   flex-shrink: 0;
+  letter-spacing: 0.04em;
 }
 
 @media (min-width: 1024px) {
@@ -136,21 +146,21 @@
   display: block;
   height: 14px;
   width: 70%;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
 }
 
 .subline {
   display: block;
   height: 11px;
   width: 40%;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
 }
 
 .skeleton {
   background: linear-gradient(
     90deg,
     var(--bg-surface-alt) 0%,
-    rgba(0, 0, 0, 0.06) 50%,
+    rgba(20, 20, 30, 0.06) 50%,
     var(--bg-surface-alt) 100%
   );
   background-size: 200% 100%;
@@ -164,6 +174,7 @@
   text-align: center;
   font-size: 13px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
 .errorText {

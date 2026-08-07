@@ -1,26 +1,47 @@
+/* Hallmark · admin-component: KpiCard
+ * theme: Admin Operations (inherited §10)
+ * shape: radius-control 8px, shadow-elevated on hover, focus ring 3px
+ */
 .card {
   background-color: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-control);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   min-height: 130px;
   position: relative;
+  transition: box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Lift rất nhẹ khi hover — dùng shadow-elevated, KHÔNG transform translateY */
+.card:hover {
+  box-shadow: var(--admin-shadow-elevated);
+  border-color: var(--border-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
+
+/* ===== Header (icon badge + hint) ===== */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 .iconBadge {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-full);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--admin-radius-pill);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -28,8 +49,8 @@
 }
 
 .iconBadge svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .tone_primary {
@@ -57,14 +78,18 @@
   color: var(--text-secondary);
 }
 
+/* ===== Value (số liệu chính) ===== */
 .value {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.2;
+  line-height: 1.15;
   margin: 0;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--admin-track-heading);
+  /* chống tách dấu tiếng Việt + số dài */
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .label {
@@ -80,24 +105,33 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  margin: 0;
+  margin: var(--space-1) 0 0;
   font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  letter-spacing: var(--admin-track-flat);
+  /* Pill nhẹ — admin-radius-input 6px (KHÔNG dùng pill full) */
+  padding: 2px 8px;
+  border-radius: var(--admin-radius-input);
+  align-self: flex-start;
 }
 
 .trendArrow {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
+  font-weight: 700;
 }
 
 .trendUp {
+  background-color: var(--color-success-bg);
   color: var(--color-success);
 }
 .trendDown {
+  background-color: var(--color-error-bg);
   color: var(--color-error);
 }
 .trendFlat {
+  background-color: var(--bg-surface-alt);
   color: var(--text-secondary);
 }
 
@@ -109,10 +143,10 @@
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   color: var(--text-placeholder);
   cursor: help;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition: color 120ms ease, background-color 120ms ease;
 }
 
 .hintWrap:hover,
@@ -123,7 +157,7 @@
 }
 
 .hintWrap:focus-visible {
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 .hintTooltip {
@@ -133,18 +167,18 @@
   top: calc(100% + 8px);
   right: 0;
   width: max-content;
-  max-width: 220px;
+  max-width: 240px;
   padding: var(--space-2) var(--space-3);
   background-color: var(--text-primary);
   color: var(--text-on-primary);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.45;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-modal);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-elevated);
   z-index: 20;
   pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  transition: opacity 120ms ease, transform 120ms ease, visibility 120ms ease;
   transform: translateY(-4px);
   text-align: left;
 }
@@ -158,6 +192,7 @@
   height: 8px;
   background-color: var(--text-primary);
   transform: rotate(45deg);
+  border-radius: 1px;
 }
 
 .hintWrap:hover .hintTooltip,
@@ -167,14 +202,20 @@
   transform: translateY(0);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .hintTooltip {
+    transition: none;
+  }
+}
+
 /* ===== Skeleton ===== */
 .skeletonBox {
   display: block;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   background: linear-gradient(
     90deg,
     var(--bg-surface-alt) 0%,
-    rgba(0, 0, 0, 0.06) 50%,
+    rgba(20, 20, 30, 0.06) 50%,
     var(--bg-surface-alt) 100%
   );
   background-size: 200% 100%;
@@ -183,7 +224,8 @@
 
 .skeletonValue {
   width: 60%;
-  height: 32px;
+  height: 30px;
+  margin-bottom: var(--space-2);
 }
 
 .skeletonLabel {
