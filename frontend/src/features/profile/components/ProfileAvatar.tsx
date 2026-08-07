@@ -253,12 +253,7 @@ export function ProfileAvatar({
           <p className={styles.error} role="alert">
             {error}
           </p>
-        ) : (
-          <p className={styles.hint}>
-            JPG, PNG, WEBP. Tối đa {(MAX_SIZE / 1024 / 1024).toFixed(0)}MB. Chỉ bạn
-            mới có thể thay đổi ảnh đại diện của mình.
-          </p>
-        )}
+        ) : null}
       </div>
     </div>
   );

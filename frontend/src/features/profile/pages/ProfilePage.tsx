@@ -285,9 +285,6 @@ export function ProfilePage() {
             <UserIcon size={24} className={styles.titleIcon} aria-hidden="true" />
             Hồ sơ cá nhân
           </h1>
-          <p className={styles.subtitle}>
-            Quản lý thông tin cá nhân và bảo mật tài khoản.
-          </p>
         </div>
         <div className={styles.headerActions}>
           <Button
@@ -406,7 +403,6 @@ export function ProfilePage() {
                   disabled
                   readOnly
                   leftIcon={<Mail size={16} />}
-                  hint="Email được dùng để đăng nhập, không thể thay đổi tại đây."
                 />
 
                 <div className={styles.formCols}>
@@ -418,7 +414,6 @@ export function ProfilePage() {
                     error={errors.phone}
                     placeholder="VD: 0901 234 567"
                     leftIcon={<Phone size={16} />}
-                    hint="Để trống nếu không muốn cung cấp."
                     maxLength={20}
                     autoComplete="tel"
                     inputMode="tel"
@@ -441,9 +436,11 @@ export function ProfilePage() {
                       rows={3}
                       maxLength={ADDRESS_MAX}
                     />
-                    <span className={styles.hintText}>
-                      {errors.address ?? "Để trống nếu không muốn cung cấp."}
-                    </span>
+                    {errors.address ? (
+                      <span className={styles.hintError} role="alert">
+                        {errors.address}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 
@@ -453,10 +450,6 @@ export function ProfilePage() {
                     <Shield size={16} className={styles.roleIcon} aria-hidden="true" />
                     <span>{ROLE_LABEL[user.role]}</span>
                   </div>
-                  <span className={styles.hintText}>
-                    Vai trò được cấp bởi quản trị viên, không thể thay đổi tại
-                    đây.
-                  </span>
                 </div>
 
                 <div className={styles.actions}>
@@ -496,10 +489,6 @@ export function ProfilePage() {
                 <HistoryIcon size={18} aria-hidden="true" />
                 Lịch sử đăng nhập
               </h3>
-              <p className={styles.historyHint}>
-                10 lần đăng nhập/đăng xuất gần nhất của bạn. Nếu phát hiện hoạt
-                động lạ, vui lòng đổi mật khẩu ngay.
-              </p>
             </header>
             <Card padding="md">
               <LoginHistory limit={10} />
