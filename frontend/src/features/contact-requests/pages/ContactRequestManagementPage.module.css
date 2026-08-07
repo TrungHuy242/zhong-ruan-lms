@@ -1,11 +1,18 @@
-/* ContactRequestManagementPage */
+/* Hallmark · admin-page: ContactRequestManagementPage · §10 tokens
+ * macrostructure: Table-Led + stat cards (stats -> search/filter toolbar -> table -> pagination)
+ * theme: Admin Operations (§10 · light · warm-red · geometric-sans)
+ */
 
+/* ===== Page root ===== */
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  font-family: var(--font-admin);
+  color: var(--text-primary);
 }
 
+/* ===== Header ===== */
 .header {
   display: flex;
   align-items: flex-start;
@@ -16,26 +23,12 @@
 
 .title {
   margin: 0 0 var(--space-2);
-  font-size: 24px;
+  font-size: var(--admin-text-page-title);
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-secondary);
-  max-width: 640px;
-  line-height: 1.5;
-}
-
-.subtitle code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  background-color: var(--bg-surface-alt);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
+  letter-spacing: var(--admin-track-heading);
+  line-height: 1.25;
+  font-family: var(--font-admin);
 }
 
 /* ===== Stat row ===== */
@@ -45,7 +38,7 @@
   gap: var(--space-3);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .statRow {
     grid-template-columns: 1fr;
   }
@@ -57,7 +50,7 @@
   gap: 4px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
+  border-radius: var(--admin-radius-control);
   padding: var(--space-4) var(--space-5);
 }
 
@@ -67,6 +60,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-tertiary);
+  font-family: var(--font-admin);
 }
 
 .statValue {
@@ -74,23 +68,24 @@
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1;
+  font-family: var(--font-admin);
 }
 
 .statCardNEW {
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid var(--color-warning);
 }
 
 .statCardCONTACTED {
-  border-left: 4px solid #2563eb;
+  border-left: 4px solid var(--color-info);
 }
 
 .statCardCLOSED {
-  border-left: 4px solid #059669;
+  border-left: 4px solid var(--color-success);
 }
 
 /* ===== Toolbar ===== */
 .tableCard {
-  /* inherit Card */
+  /* Card wraps the table; border/shadow/padding come from <Card> component */
 }
 
 .toolbar {
@@ -122,17 +117,18 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
 .statusFilterSelect {
   appearance: none;
   padding: 7px 28px 7px 12px;
   font-size: 13px;
-  font-family: inherit;
+  font-family: var(--font-admin);
   color: var(--text-primary);
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--admin-radius-input);
   cursor: pointer;
   background-image: linear-gradient(
       45deg,
@@ -143,12 +139,19 @@
   background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.statusFilterSelect:hover {
+  border-color: var(--border-strong);
 }
 
 .statusFilterSelect:focus {
   outline: none;
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px var(--brand-primary-light);
+  box-shadow: var(--admin-focus-ring);
 }
 
 .clearFilterBtn {
@@ -160,9 +163,12 @@
   color: var(--text-secondary);
   background-color: transparent;
   border: 1px dashed var(--border-default);
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  font-family: var(--font-admin);
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
 }
 
 .clearFilterBtn:hover {
@@ -170,12 +176,17 @@
   border-color: var(--brand-primary);
 }
 
+.clearFilterBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
+}
+
 /* ===== Cell styles ===== */
 .valueLink {
   color: var(--text-primary);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.15s ease;
+  transition: color 120ms ease;
 }
 
 .valueLink:hover {
@@ -198,35 +209,37 @@
   color: var(--text-secondary);
   font-size: 13px;
   white-space: nowrap;
+  font-family: var(--font-admin);
 }
 
-/* ===== Status badges ===== */
+/* ===== Status badges — §10 semantic colors ===== */
 .statusBadge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 3px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
+  font-family: var(--font-admin);
 }
 
 .status_NEW {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 
 .status_CONTACTED {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
 }
 
 .status_CLOSED {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 /* ===== Actions ===== */
@@ -242,23 +255,36 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   border: 1px solid var(--border-default);
   background-color: var(--bg-surface);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
 }
 
 .actionTrigger:hover {
   background-color: var(--bg-surface-alt);
   color: var(--text-primary);
-  border-color: var(--text-tertiary);
+  border-color: var(--border-strong);
+}
+
+.actionTrigger:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 .actionDanger:hover {
-  color: #dc2626;
-  border-color: #dc2626;
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.actionDanger:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 /* ===== Empty state ===== */
@@ -276,6 +302,7 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  font-family: var(--font-admin);
 }
 
 .emptyHint {
@@ -284,6 +311,7 @@
   color: var(--text-tertiary);
   max-width: 480px;
   line-height: 1.5;
+  font-family: var(--font-admin);
 }
 
 /* ===== Footer ===== */
@@ -299,6 +327,7 @@
 .totalLabel {
   font-size: 13px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
 /* ===== Error wrap ===== */
@@ -308,4 +337,20 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-4);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 767px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchWrap {
+    max-width: none;
+  }
+
+  .toolbarActions {
+    justify-content: flex-start;
+  }
 }
