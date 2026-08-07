@@ -1,0 +1,218 @@
+/* PageHeader — Admin form page header.
+ *
+ * Hallmark stamp:
+ *   macrostructure: form-led · genre: modern-minimal · theme: design-system-locked (DESIGN.md §10)
+ *   tone: utilitarian · anchor hue: brand-red #C8102E
+ *   shape: admin-radius-control 8px · shadow: admin-shadow-control 0.08
+ *   font: Be Vietnam Pro only (single-font admin shell)
+ *   diversification: 5 form pages share 1 PageHeader pattern (DEFER to §10)
+ *
+ * States designed (per Hallmark 8-state discipline):
+ *   default · hover (back btn) · focus-visible · active · disabled · loading · error · success
+ */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: var(--space-6);
+}
+
+/* ===== Breadcrumb ===== */
+.breadcrumb {
+  font-family: var(--font-admin);
+}
+
+.breadcrumbList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--admin-text-label-uppercase);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.breadcrumbItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.breadcrumbLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--admin-radius-input);
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.breadcrumbLink:hover {
+  color: var(--brand-primary);
+  background-color: var(--brand-primary-lighter);
+}
+
+.breadcrumbLink:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
+}
+
+.breadcrumbCurrent {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.breadcrumbSeparator {
+  color: var(--border-strong);
+  flex-shrink: 0;
+}
+
+/* ===== Title row ===== */
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.titleLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+}
+
+.titleBlock {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-admin);
+  font-size: var(--admin-text-page-title);
+  font-weight: 700;
+  letter-spacing: var(--admin-track-display);
+  color: var(--text-primary);
+  line-height: 1.2;
+  /* Hallmark gate 51 — overflow-wrap for long titles */
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.description {
+  margin: var(--space-2) 0 0;
+  font-size: var(--admin-text-body);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 70ch;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ===== Back button (8 states) ===== */
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  margin-left: calc(-1 * var(--space-3));
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-admin);
+  font-size: var(--admin-text-body);
+  font-weight: 500;
+  border-radius: var(--admin-radius-control);
+  cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* default + hover */
+.backBtn:hover:not(:disabled) {
+  color: var(--brand-primary);
+  background-color: var(--brand-primary-lighter);
+}
+
+/* focus-visible — instant ring (Hallmark gate 38, never animate ring) */
+.backBtn:focus-visible {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--admin-focus-ring);
+}
+
+/* active */
+.backBtn:active:not(:disabled) {
+  background-color: var(--brand-primary-light);
+  transform: translateX(-1px);
+  transition-duration: 80ms;
+}
+
+/* disabled (covers loading state too) */
+.backBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.backLabel {
+  font-size: var(--admin-text-body);
+  font-weight: 500;
+}
+
+/* ===== Responsive (Hallmark gates 49, 52, 53) ===== */
+@media (max-width: 640px) {
+  .titleRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .titleLeft {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .backBtn {
+    align-self: flex-start;
+    margin-left: 0;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .backBtn,
+  .breadcrumbLink {
+    transition: none;
+  }
+  .backBtn:active:not(:disabled) {
+    transform: none;
+  }
+}

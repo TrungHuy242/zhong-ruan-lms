@@ -1,0 +1,71 @@
+/* StickyFooter — Form submit bar (sticky bottom inside content).
+ *
+ * Hallmark stamp:
+ *   macrostructure: form-led · genre: modern-minimal · theme: design-system-locked (DESIGN.md §10)
+ *   tone: utilitarian · anchor hue: brand-red #C8102E
+ *   shape: admin-radius-control 8px · shadow: admin-elevated 0.10
+ *   font: Be Vietnam Pro only
+ *   diversification: 5 form pages share 1 StickyFooter pattern (DEFER to §10)
+ *
+ * Trick: KHÔNG dùng position:fixed (sẽ che content + khó responsive).
+ * Dùng sticky trong content flow — page scroll tự nhiên, footer luôn trong tầm tay.
+ *
+ * Trick 2: spacer div bên dưới để bù height của footer (form cuối không bị che).
+ */
+
+.spacer {
+  /* Bình thường không cần spacer, vì footer sticky trong flow. */
+}
+
+.spacerWithPad {
+  /* Thêm khoảng đệm phía dưới cùng của form để button cuối không bị che bởi footer. */
+  height: var(--space-16);
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: var(--space-8);
+  background-color: var(--bg-surface);
+  border-top: 1px solid transparent;
+  padding: var(--space-4) 0;
+  z-index: 10;
+  /* Shadow fade-in/out khi scroll */
+  box-shadow: 0 0 0 rgba(20, 20, 30, 0);
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+}
+
+/* Khi scroll xuống → show shadow + border (visual cue "sticky") */
+.footerScrolled {
+  border-top-color: var(--border-default);
+  box-shadow: var(--admin-shadow-elevated);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .inner {
+    /* Trên mobile — buttons stack vẫn right-align, wrap khi cần */
+    width: 100%;
+    justify-content: stretch;
+  }
+  /* Override Button full-width behaviour: parent Button component tự handle */
+  .spacerWithPad {
+    height: var(--space-20);
+  }
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .footer {
+    transition: none;
+  }
+}
