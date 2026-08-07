@@ -1,9 +1,19 @@
+/* Hallmark · admin-page: FileManagerPage · §10 tokens
+ * macrostructure: Table-Led (upload → dropzone → table → pagination)
+ * theme: Admin Operations (§10 · light · warm-red · geometric-sans)
+ * axis: aligns with Admin Shell macrostructure (AppShell family)
+ */
+
+/* ===== Page root ===== */
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  font-family: var(--font-admin);
+  color: var(--text-primary);
 }
 
+/* ===== Header — title + upload CTA ===== */
 .header {
   display: flex;
   align-items: flex-start;
@@ -13,18 +23,13 @@
 }
 
 .title {
-  font-size: 28px;
+  font-size: var(--admin-text-page-title);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 var(--space-2);
-  letter-spacing: -0.02em;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-  max-width: 720px;
+  letter-spacing: var(--admin-track-heading);
+  line-height: 1.25;
+  font-family: var(--font-admin);
 }
 
 .headerActions {
@@ -37,6 +42,8 @@
   display: none;
 }
 
+/* ===== Storage stats (shared component, styled by its own module) ===== */
+
 /* ===== Upload section: dropzone + queue ===== */
 .uploadSection {
   display: flex;
@@ -44,6 +51,7 @@
   gap: var(--space-3);
 }
 
+/* Dropzone — dashed upload area */
 .dropzone {
   display: flex;
   flex-direction: column;
@@ -52,10 +60,14 @@
   padding: var(--space-6);
   background-color: var(--bg-surface);
   border: 2px dashed var(--border-default);
-  border-radius: var(--radius-lg);
+  border-radius: var(--admin-radius-control);
   text-align: center;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
   color: var(--text-secondary);
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
+  cursor: default;
 }
 
 .dropzoneActive {
@@ -68,28 +80,33 @@
   margin: 0;
   font-size: 14px;
   font-weight: 500;
+  color: inherit;
+  font-family: var(--font-admin);
 }
 
 .dropHint {
   margin: 0;
   font-size: 12px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
-/* ===== Table/Grid card ===== */
+/* ===== Table card ===== */
 .tableCard {
   background-color: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-control);
   overflow: hidden;
 }
 
+/* ===== Toolbar ===== */
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-default);
   background-color: var(--bg-surface-alt);
   flex-wrap: wrap;
@@ -100,52 +117,14 @@
   min-width: 220px;
 }
 
-.toolbarRight {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 4px;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-}
-
-.viewToggleBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 6px 12px;
-  border: 0;
-  background-color: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.viewToggleBtn:hover {
-  background-color: var(--bg-surface-alt);
-  color: var(--text-primary);
-}
-
+/* Dead code — kept for reference (Grid/Table toggle hidden by audit) */
+.toolbarRight,
+.viewToggleBtn,
 .viewToggleBtnActive {
-  background-color: var(--brand-primary);
-  color: var(--text-on-primary);
+  display: none;
 }
 
-.viewToggleBtnActive:hover {
-  background-color: var(--brand-primary-hover);
-  color: var(--text-on-primary);
-}
-
-.viewToggleBtn:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-focus-ring);
-}
-
-/* ===== Adv filter toggle row ===== */
+/* ===== Advanced filter toggle ===== */
 .advFilterToggle {
   display: flex;
   align-items: center;
@@ -167,24 +146,27 @@
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   cursor: pointer;
-  transition: all 0.15s ease;
+  font-family: var(--font-admin);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
 .advFilterBtn:hover {
   background-color: var(--bg-surface-alt);
   color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.advFilterBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 .advFilterBtnActive {
   border-color: var(--brand-primary);
   color: var(--brand-primary);
-  background-color: var(--brand-primary-lighter);
-}
-
-.advFilterBtnFiltering {
-  /* Khi panel đóng nhưng đang filter → highlight nhẹ */
+  background-color: var(--brand-primary-light);
 }
 
 .advFilterActive {
@@ -195,16 +177,12 @@
   color: var(--text-on-primary);
   font-size: 10px;
   font-weight: 700;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   letter-spacing: 0.04em;
+  font-family: var(--font-admin);
 }
 
-.advFilterBtn:focus-visible {
-  outline: none;
-  box-shadow: var(--shadow-focus-ring);
-}
-
-/* ===== Footer (count + pagination) ===== */
+/* ===== Table footer ===== */
 .tableFooter {
   display: flex;
   align-items: center;
@@ -218,8 +196,10 @@
 .totalLabel {
   font-size: 13px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
+/* ===== Error wrap ===== */
 .errorWrap {
   display: flex;
   flex-direction: column;
@@ -227,6 +207,7 @@
   padding: var(--space-4);
 }
 
+/* ===== Empty state ===== */
 .emptyState {
   display: flex;
   flex-direction: column;
@@ -234,26 +215,52 @@
   gap: var(--space-3);
   padding: var(--space-10) var(--space-6);
   color: var(--text-secondary);
+  text-align: center;
 }
 
-.emptyState svg { color: var(--text-placeholder); }
+.emptyState svg {
+  color: var(--text-placeholder);
+}
 
 .emptyTitle {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  font-family: var(--font-admin);
 }
 
 .emptyHint {
   margin: 0;
   font-size: 13px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
   text-align: center;
 }
 
-@media (max-width: 1024px) {
-  .toolbar { align-items: stretch; }
-  .searchWrap { width: 100%; min-width: 0; }
-  .toolbarRight { width: 100%; justify-content: center; }
+/* ===== Responsive ===== */
+@media (max-width: 1023px) {
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .searchWrap {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .title {
+    font-size: 20px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
 }
