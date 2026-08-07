@@ -1,11 +1,21 @@
-﻿.page {
+﻿/* Hallmark · admin-page: SystemSettingsPage · §10 tokens
+ * macrostructure: Master-Detail (header -> sidebar 7 tabs | main toolbar -> table)
+ * theme: Admin Operations (§10 · light · warm-red · geometric-sans)
+ * Note: Export/Import JSON ĐÃ ẨN theo audit — giữ stand-by CSS trong file
+ * (.replaceToggle, .importConfirm) nhưng không dùng tới.
+ * Sidebar: 7 tabs = All + 5 group + Ungrouped.
+ */
+
+/* ===== Page root ===== */
+.page {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  font-family: var(--font-admin);
+  color: var(--text-primary);
 }
 
 /* ===== Header ===== */
-
 .header {
   display: flex;
   align-items: flex-start;
@@ -18,20 +28,26 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 28px;
+  font-size: var(--admin-text-page-title);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 var(--space-2);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--admin-track-heading);
+  line-height: 1.25;
+  font-family: var(--font-admin);
 }
 
-.titleIcon { color: var(--brand-primary); }
+.titleIcon {
+  color: var(--brand-primary);
+}
 
 .subtitle {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
   max-width: 720px;
+  font-family: var(--font-admin);
+  line-height: 1.5;
 }
 
 .headerActions {
@@ -41,8 +57,7 @@
   flex-wrap: wrap;
 }
 
-/* ===== Layout 2 cột ===== */
-
+/* ===== Layout 2 cột (sidebar + main) ===== */
 .layout {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
@@ -58,12 +73,12 @@
 }
 
 /* ===== Table card ===== */
-
 .tableCard {
   background-color: var(--bg-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-card);
   overflow: hidden;
+  border: 1px solid var(--border-default);
 }
 
 .toolbar {
@@ -94,6 +109,12 @@
 .totalLabel {
   font-size: 13px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
+}
+
+.totalLabel b {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .errorWrap {
@@ -105,7 +126,6 @@
 }
 
 /* ===== Empty state ===== */
-
 .emptyState {
   display: flex;
   flex-direction: column;
@@ -113,14 +133,20 @@
   gap: var(--space-3);
   padding: var(--space-10) var(--space-6);
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
-.emptyState svg { color: var(--text-placeholder); }
+
+.emptyState svg {
+  color: var(--text-placeholder);
+}
 
 .emptyTitle {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  text-align: center;
+  font-family: var(--font-admin);
 }
 
 .emptyHint {
@@ -128,17 +154,19 @@
   font-size: 13px;
   color: var(--text-secondary);
   text-align: center;
+  max-width: 480px;
+  line-height: 1.5;
 }
 
 /* ===== Cell styling ===== */
-
 .mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   background-color: var(--brand-primary-light);
   color: var(--brand-primary);
   padding: 2px 8px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
+  font-weight: 500;
 }
 
 .keyCell {
@@ -163,10 +191,12 @@
   padding: 2px 8px;
   font-size: 11px;
   font-weight: 600;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: var(--bg-surface-alt);
   color: var(--text-secondary);
   flex-shrink: 0;
+  border: 1px solid var(--border-default);
+  font-family: var(--font-admin);
 }
 
 .descCell {
@@ -176,11 +206,13 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-family: var(--font-admin);
 }
 
 .descEmpty {
   font-size: 13px;
   color: var(--text-placeholder);
+  font-family: var(--font-admin);
 }
 
 .timeCell {
@@ -188,10 +220,10 @@
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  font-family: var(--font-admin);
 }
 
 /* ===== Action buttons ===== */
-
 .actionCell {
   display: inline-flex;
   align-items: center;
@@ -206,11 +238,14 @@
   width: 32px;
   height: 32px;
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   background-color: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
 }
 
 .iconBtn:hover {
@@ -232,23 +267,23 @@
 
 .iconBtn:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
-/* ===== Import confirm ===== */
-
+/* ===== Import confirm — stand-by (ĐÃ ẨN theo audit) ===== */
 .importConfirm {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  font-family: var(--font-admin);
 }
 
 .importConfirm code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   background-color: var(--bg-surface-alt);
   padding: 2px 6px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   color: var(--text-primary);
 }
 
@@ -257,12 +292,13 @@
   align-items: flex-start;
   gap: var(--space-2);
   padding: var(--space-3);
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   background-color: var(--bg-surface-alt);
   cursor: pointer;
   font-size: 13px;
   color: var(--text-primary);
   line-height: 1.5;
+  font-family: var(--font-admin);
 }
 
 .replaceToggle input {
@@ -273,18 +309,43 @@
 }
 
 /* ===== Responsive ===== */
-
 @media (max-width: 1023px) {
   .layout {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .toolbar { align-items: stretch; }
-  .searchWrap { width: 100%; min-width: 0; }
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .searchWrap {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
-@media (max-width: 600px) {
-  .header { gap: var(--space-3); }
-  .headerActions { width: 100%; }
-  .headerActions > * { flex: 1 1 auto; }
+@media (max-width: 767px) {
+  .header {
+    gap: var(--space-3);
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+
+  .headerActions > * {
+    flex: 1 1 auto;
+  }
+
+  .toolbar {
+    padding: var(--space-3);
+  }
+
+  .tableFooter {
+    padding: var(--space-3);
+  }
+
+  .emptyState {
+    padding: var(--space-8) var(--space-4);
+  }
 }
