@@ -1,12 +1,21 @@
-/* TrashManagerPage — layout (header + stats + filter + bulk + table + dialog).
- * Đồng bộ token với DESIGN.md (màu, radius, spacing, focus ring, table badge tone). */
+/* Hallmark · admin-page: TrashManagerPage · §10 tokens
+ * macrostructure: Brutalist SaaS (header -> KPI grid -> filter -> chips -> bulk bar -> table -> pagination)
+ * theme: Admin Operations (§10 · light · warm-red · geometric-sans)
+ * Note: 8 modules → 8 DISTINCT badge tones. §10 semantic palette has 4
+ * (info/warning/success/error) + brand-primary = 5. Extend with 3 hue
+ * rotations (purple/teal/pink) so all 8 modules remain visually distinct.
+ */
 
+/* ===== Page root ===== */
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  font-family: var(--font-admin);
+  color: var(--text-primary);
 }
 
+/* ===== Header ===== */
 .header {
   display: flex;
   align-items: flex-start;
@@ -19,11 +28,13 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 28px;
+  font-size: var(--admin-text-page-title);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 var(--space-2);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--admin-track-heading);
+  line-height: 1.25;
+  font-family: var(--font-admin);
 }
 
 .titleIcon {
@@ -35,11 +46,13 @@
   color: var(--text-secondary);
   margin: 0;
   max-width: 720px;
+  font-family: var(--font-admin);
+  line-height: 1.5;
 }
 
 /* ===== Table card ===== */
 .tableCard {
-  padding: 0 !important; /* Override default padding để toolbar/table không bị padding đè. */
+  padding: 0 !important;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -65,6 +78,7 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  font-family: var(--font-admin);
 }
 
 .chip {
@@ -73,11 +87,12 @@
   gap: 4px;
   padding: 3px 8px 3px 10px;
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: var(--bg-surface-alt);
   color: var(--text-primary);
   font-size: 12px;
   font-weight: 500;
+  font-family: var(--font-admin);
 }
 
 .chipClose {
@@ -86,13 +101,16 @@
   justify-content: center;
   width: 16px;
   height: 16px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: transparent;
   border: 0;
   color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
   margin-left: 2px;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .chipClose:hover {
@@ -102,7 +120,7 @@
 
 .chipClose:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 /* ===== Bulk action bar ===== */
@@ -121,6 +139,7 @@
   font-size: 0.9rem;
   color: var(--text-primary);
   font-weight: 500;
+  font-family: var(--font-admin);
 }
 
 .bulkLabel b {
@@ -150,6 +169,7 @@
 .totalLabel {
   font-size: 13px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
 .totalLabel b {
@@ -171,7 +191,7 @@
   color: var(--text-secondary);
   background-color: var(--bg-surface);
   border: 1px dashed var(--border-default);
-  border-radius: var(--radius-lg);
+  border-radius: var(--admin-radius-control);
   text-align: center;
 }
 
@@ -184,6 +204,7 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  font-family: var(--font-admin);
 }
 
 .emptyHint {
@@ -191,6 +212,8 @@
   font-size: 13px;
   color: var(--text-secondary);
   max-width: 480px;
+  font-family: var(--font-admin);
+  line-height: 1.5;
 }
 
 .errorWrap {
@@ -201,16 +224,11 @@
   background-color: var(--bg-surface-alt);
 }
 
-/* ===== Highlight (legacy helper — không dùng trong bản nâng cấp) ===== */
-.highlight {
-  background-color: #fef08a;
-  color: #713f12;
-  padding: 0 2px;
-  border-radius: 3px;
-  font-weight: 600;
-}
-
-/* ===== Module badge tone (giữ tone ban đầu của trang cũ) ===== */
+/* ===== Module badge tones — 8 DISTINCT hues =====
+ * §10 semantic palette extended with 3 hue rotations to ensure 8 modules
+ * are visually distinguishable. Pair border + bg + text always share hue.
+ * Contrast: text ≥ 4.5:1 on bg, border ~12% opacity for soft definition.
+ */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -218,57 +236,66 @@
   padding: 3px 9px;
   font-size: 12px;
   font-weight: 600;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   border: 1px solid transparent;
   white-space: nowrap;
+  font-family: var(--font-admin);
 }
 
+/* 1. users — blue (info) */
 .badgeUser {
   background-color: var(--color-info-bg);
   color: var(--color-info);
   border-color: rgba(37, 99, 235, 0.2);
 }
 
+/* 2. notifications — amber (warning) */
 .badgeNotification {
   background-color: var(--color-warning-bg);
   color: var(--color-warning);
   border-color: rgba(217, 119, 6, 0.2);
 }
 
+/* 3. files — teal (NEW: hue 175°, distinct from blue) */
 .badgeFile {
-  background-color: var(--color-info-bg);
-  color: var(--color-info);
-  border-color: rgba(37, 99, 235, 0.2);
+  background-color: rgba(13, 148, 136, 0.1);
+  color: rgb(13, 148, 136);
+  border-color: rgba(13, 148, 136, 0.2);
 }
 
+/* 4. settings — gold lifted from §9 into §10 accent */
 .badgeSetting {
   background-color: var(--brand-accent-light);
   color: var(--brand-accent-hover);
   border-color: rgba(212, 175, 55, 0.25);
 }
 
+/* 5. teachers — green (success) */
 .badgeTeacher {
   background-color: var(--color-success-bg);
   color: var(--color-success);
   border-color: rgba(22, 163, 74, 0.2);
 }
 
+/* 6. pricingplans — warm red (primary) */
 .badgePricingPlan {
   background-color: var(--brand-primary-light);
   color: var(--brand-primary);
   border-color: rgba(200, 16, 46, 0.2);
 }
 
+/* 7. contactrequests — purple (NEW: hue 270°, distinct from red) */
 .badgeContactRequest {
-  background-color: var(--color-info-bg);
-  color: var(--color-info);
-  border-color: rgba(37, 99, 235, 0.2);
+  background-color: rgba(124, 58, 237, 0.1);
+  color: rgb(124, 58, 237);
+  border-color: rgba(124, 58, 237, 0.2);
 }
 
+/* 8. enrollmentschedules — pink (NEW: hue 330°, distinct from red + purple) */
 .badgeEnrollmentSchedule {
-  background-color: var(--color-warning-bg);
-  color: var(--color-warning);
-  border-color: rgba(217, 119, 6, 0.2);
+  background-color: rgba(219, 39, 119, 0.1);
+  color: rgb(219, 39, 119);
+  border-color: rgba(219, 39, 119, 0.2);
 }
 
 /* ===== Cell helpers ===== */
@@ -284,18 +311,21 @@
   font-weight: 500;
   color: var(--text-primary);
   word-break: break-word;
+  font-family: var(--font-admin);
 }
 
 .description {
   font-size: 12px;
   color: var(--text-secondary);
   word-break: break-word;
+  font-family: var(--font-admin);
 }
 
 .cellText {
   font-size: 13px;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-admin);
 }
 
 .dim {
@@ -315,12 +345,14 @@
   font-weight: 500;
   color: var(--text-primary);
   word-break: break-word;
+  font-family: var(--font-admin);
 }
 
 .actorEmail {
   font-size: 12px;
   color: var(--text-secondary);
   word-break: break-word;
+  font-family: var(--font-admin);
 }
 
 /* ===== Action cell ===== */
@@ -343,9 +375,11 @@
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--admin-radius-input);
   padding: 0;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .checkboxBtn:hover {
@@ -355,7 +389,7 @@
 
 .checkboxBtn:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 /* ===== Danger line in ConfirmDialog ===== */
@@ -366,6 +400,7 @@
   color: var(--color-error);
   font-weight: 600;
   margin-bottom: var(--space-2);
+  font-family: var(--font-admin);
 }
 
 /* ===== Floating action error pre ===== */
@@ -386,13 +421,13 @@
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .title {
     font-size: 22px;
   }
 
   .tableCard {
-    border-radius: var(--radius-md);
+    border-radius: var(--admin-radius-control);
   }
 
   .bulkBar {
