@@ -1,13 +1,20 @@
-/* Admin table cho EnrollmentScheduleManagementPage — đồng bộ với BannerManagementPage.module.css.
- * UI Admin nên dùng đúng theo Design.md §1 token (khác Public editorial §9).
+/* Hallmark · admin-page: EnrollmentScheduleManagementPage · §10 tokens
+ * macrostructure: Table-Led (toolbar -> table -> pagination)
+ * theme: Admin Operations (§10 · light · warm-red · geometric-sans)
+ * Note: lịch khai giảng hiển thị ở Public site dùng ScheduleDisplay (shared
+ * component, theme editorial §9) — KHÔNG động vào file đó ở đây.
  */
 
+/* ===== Page root ===== */
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  font-family: var(--font-admin);
+  color: var(--text-primary);
 }
 
+/* ===== Toolbar ===== */
 .toolbar {
   display: flex;
   align-items: center;
@@ -17,20 +24,22 @@
 }
 
 .title {
-  font-family: var(--font-body, "Be Vietnam Pro", "Inter", system-ui, sans-serif);
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--font-admin);
+  font-size: var(--admin-text-page-title);
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0;
-  letter-spacing: 0;
+  letter-spacing: var(--admin-track-heading);
+  line-height: 1.25;
 }
 
+/* ===== Table wrap ===== */
 .tableWrap {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  border-radius: var(--admin-radius-control);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--admin-shadow-control);
 }
 
 .table {
@@ -43,7 +52,7 @@
   padding: var(--space-3) var(--space-4);
   text-align: left;
   border-bottom: 1px solid var(--border-default);
-  font-family: var(--font-body);
+  font-family: var(--font-admin);
   font-size: 14px;
   color: var(--text-primary);
 }
@@ -58,7 +67,7 @@
 }
 
 .table tbody tr:hover {
-  background: var(--brand-primary-lighter, #FFF5F6);
+  background: var(--bg-surface-alt);
 }
 
 .sortable {
@@ -66,11 +75,16 @@
   user-select: none;
 }
 
+.sortable:hover {
+  color: var(--text-primary);
+}
+
 .thActions {
   text-align: right;
   width: 220px;
 }
 
+/* ===== Cells ===== */
 .titleCell {
   font-weight: 600;
   color: var(--text-primary);
@@ -83,6 +97,7 @@
 .dateCell {
   color: var(--text-secondary);
   font-size: 13px;
+  font-family: var(--font-admin);
 }
 
 .orderCell {
@@ -90,35 +105,42 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ===== Status badges — §10 semantic ===== */
 .status {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 2px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   font-size: 12px;
   font-weight: 600;
-  font-family: var(--font-body);
+  font-family: var(--font-admin);
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
-.statusActive {
-  background: var(--color-success-bg);
-  color: var(--color-success);
-}
-
+/* "Đang hiển thị" — đang được public lấy theo displayOrder thấp nhất.
+ * Dùng gold-like để nổi bật: anchor info (cool blue) để không xung đột
+ * với brand-primary. */
 .statusActiveGold {
-  background: var(--brand-accent-light, #FBF3D9);
-  color: var(--brand-accent-hover, #B6942C);
-  border: 1px solid var(--brand-accent, #D4AF37);
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
 }
 
+/* "Đã xuất bản" — published nhưng không phải bản active */
+.statusActive {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+/* "Đã ẩn" */
 .statusHidden {
   background: var(--bg-surface-alt);
   color: var(--text-secondary);
 }
 
+/* ===== Actions ===== */
 .actions {
   display: inline-flex;
   gap: var(--space-2);
@@ -129,12 +151,14 @@
   background: transparent;
   border: 1px solid var(--border-default);
   padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-body);
+  border-radius: var(--admin-radius-input);
+  font-family: var(--font-admin);
   font-size: 13px;
   color: var(--text-primary);
   cursor: pointer;
-  transition: background 150ms ease;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
 }
 
 .actionBtn:hover {
@@ -143,25 +167,33 @@
 }
 
 .actionBtn:focus-visible {
-  outline: 2px solid var(--brand-primary);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
+/* "Xem trước" — primary CTA tone để admin thấy rõ */
 .previewBtn {
   background: transparent;
-  border: 1px solid var(--brand-accent, #D4AF37);
-  color: var(--brand-accent-hover, #B6942C);
+  border: 1px solid var(--brand-primary);
+  color: var(--brand-primary);
   padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-body);
+  border-radius: var(--admin-radius-input);
+  font-family: var(--font-admin);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 150ms ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .previewBtn:hover {
-  background: var(--brand-accent-light, #FBF3D9);
+  background: var(--brand-primary-light);
+}
+
+.previewBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 .deleteBtn {
@@ -173,6 +205,12 @@
   background: var(--color-error-bg);
 }
 
+.deleteBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
+}
+
+/* ===== Skeleton loading ===== */
 .skeletonRow td {
   padding: 0;
 }
@@ -180,7 +218,7 @@
 .skeleton {
   height: 48px;
   background: var(--bg-surface-alt);
-  animation: shimmer 1.4s infinite;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
 
 @keyframes shimmer {
@@ -189,14 +227,39 @@
   100% { opacity: 0.6; }
 }
 
+/* ===== Empty state ===== */
 .empty {
   text-align: center;
   padding: var(--space-8) var(--space-4);
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
+/* ===== Pagination ===== */
 .pagination {
   display: flex;
   justify-content: center;
   padding-top: var(--space-2);
+  font-family: var(--font-admin);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 767px) {
+  .table {
+    font-size: 13px;
+  }
+
+  .table th,
+  .table td {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .thActions {
+    width: auto;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
 }
