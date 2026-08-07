@@ -45,3 +45,6 @@ Thumbs.db
 
 # Hallmark skill analyze (file nội bộ, không commit lên repo)
 .hallmark/
+
+# Plan nội bộ (file thảo luận/lập kế hoạch với AI, không commit lên repo)
+PLAN_*.md
