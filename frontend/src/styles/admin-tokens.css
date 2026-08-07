@@ -1,0 +1,63 @@
+/* Admin Dashboard tokens — supplement tokens.css (DESIGN.md §10).
+ *
+ * Scope: chỉ áp dụng cho AdminLayout + Sidebar + Header + Footer + mọi trang
+ * con bên trong /admin shell. Public marketing vẫn dùng tokens gốc (DESIGN.md §1)
+ * + editorial tokens §9 không bị ảnh hưởng.
+ *
+ * Tailoring: brand colors (đỏ #C8102E + vàng #D4AF37) giữ nguyên §1 — chỉ
+ * bổ sung Admin-specific density + depth + font tokens để phục vụ mật độ
+ * dữ liệu cao + thao tác nhanh.
+ */
+
+:root {
+  /* ===== Admin font — ép Be Vietnam Pro cho toàn shell =====
+   * Public marketing dùng font-mix (Source Serif 4 + Be Vietnam Pro) theo §9.
+   * Admin đơn nhất Be Vietnam Pro để dễ đọc ở cỡ nhỏ (12–13px table cell)
+   * + không lệch tông khi user nhảy qua lại giữa các trang admin. */
+  --font-admin: "Be Vietnam Pro", "Inter", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* ===== Admin letter-spacing (chống tách dấu tiếng Việt) =====
+   * Heading đậm hơi âm để compact, body/label = 0 (an toàn Vietnamese subset). */
+  --admin-track-display: -0.02em;
+  --admin-track-heading: -0.01em;
+  --admin-track-flat: 0;
+
+  /* ===== Admin radius (siết nhỏ hơn §1 để phù hợp data density) =====
+   * §1: sm 8 / md 12 / lg 20. Admin: input 6, control 8 — bo vừa đủ để
+   * phân tách form/button khỏi nền, không "pill" SaaS quá đà. */
+  --admin-radius-input: 6px;
+  --admin-radius-control: 8px;
+  --admin-radius-pill: 999px;
+
+  /* ===== Admin shadow (depth tokens cho control/card/elevated) =====
+   * §1: sm 0.04 / card 0.06 / modal 0.16. Admin bổ sung:
+   *   - control: input/button focus + hover (rõ hơn §1 --shadow-sm)
+   *   - elevated: dropdown/menu/tooltip (giữa --shadow-sm và --shadow-card) */
+  --admin-shadow-control: 0 1px 2px rgba(20, 20, 30, 0.08);
+  --admin-shadow-elevated: 0 4px 16px rgba(20, 20, 30, 0.10);
+  --admin-focus-ring: 0 0 0 3px rgba(200, 16, 46, 0.18);
+
+  /* ===== Admin sidebar geometry (data-density friendly) =====
+   * Sidebar desktop 256px (rộng hơn §1 240px) — đủ chứa label tiếng Việt
+   * dài + icon 20px. Collapsed 72px (rộng hơn §1 64px) — vẫn giữ icon-only. */
+  --admin-sidebar-width: 256px;
+  --admin-sidebar-width-collapsed: 72px;
+
+  /* ===== Admin header geometry ===== */
+  --admin-header-height: 64px;
+  --admin-footer-height: 44px;
+
+  /* ===== Admin content padding ===== */
+  --admin-content-padding-desktop: var(--space-6);
+  --admin-content-padding-mobile: var(--space-4);
+
+  /* ===== Admin typography scale (compact, scan-friendly) =====
+   * H1 page title 24–26px (nhỏ hơn §9 Public H1 để scan nhanh).
+   * Body 14px, table cell 13px, label 12px uppercase 0.08em. */
+  --admin-text-page-title: 24px;
+  --admin-text-section-title: 18px;
+  --admin-text-body: 14px;
+  --admin-text-table-cell: 13px;
+  --admin-text-label-uppercase: 12px;
+}

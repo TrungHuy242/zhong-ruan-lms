@@ -6,6 +6,7 @@ import App from "./App";
 import { AppProviders } from "./app/providers/AppProviders";
 import "./styles/reset.css";
 import "./styles/tokens.css";
+import "./styles/admin-tokens.css";
 
 // Self-host fonts with Vietnamese subset.
 // Google Fonts URL KHÔNG serve Vietnamese subset theo mặc định — khiến
