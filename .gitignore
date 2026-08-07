@@ -42,3 +42,6 @@ Thumbs.db
 .idea/
 *.swp
 .commit_msg.txt
+
+# Hallmark skill analyze (file nội bộ, không commit lên repo)
+.hallmark/
