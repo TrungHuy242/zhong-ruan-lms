@@ -1,16 +1,23 @@
+/* Hallmark · admin-shell: Header
+ * macrostructure: AppShell · sticky top bar (64px) với bell + user dropdown
+ * theme: Admin Operations · differs from Public on display style axis
+ */
+
 .header {
   position: sticky;
   top: 0;
   z-index: 50;
-  height: 64px;
+  height: var(--admin-header-height);
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-default);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-6);
+  padding: 0 var(--admin-content-padding-desktop);
   gap: var(--space-3);
+  font-family: var(--font-admin);
 }
 
+/* Hamburger — only visible on mobile/tablet */
 .hamburger {
   display: none;
   align-items: center;
@@ -18,16 +25,21 @@
   width: 36px;
   height: 36px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-control);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
 .hamburger:hover {
   background-color: var(--bg-surface-alt);
   color: var(--text-primary);
+}
+
+.hamburger:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 @media (max-width: 1023px) {
@@ -49,16 +61,21 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
   border: none;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color 120ms ease;
 }
 
 .userBtn:hover {
   background-color: var(--bg-surface-alt);
+}
+
+.userBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 .avatar {
@@ -69,17 +86,22 @@
   height: 32px;
   background-color: var(--brand-primary);
   color: var(--text-on-primary);
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   font-size: 12px;
   font-weight: 700;
+  font-family: var(--font-admin);
+  letter-spacing: var(--admin-track-flat);
   flex-shrink: 0;
 }
 
 .userName {
-  font-size: 14px;
+  font-size: var(--admin-text-body);
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 480px) {
@@ -88,7 +110,7 @@
   }
 }
 
-/* ===== Dropdown ===== */
+/* ===== Dropdown (user menu) ===== */
 .dropdown {
   position: absolute;
   top: calc(100% + var(--space-2));
@@ -96,10 +118,11 @@
   min-width: 220px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-modal);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-elevated);
   overflow: hidden;
-  animation: dropdownFadeIn 0.15s ease;
+  animation: dropdownFadeIn 120ms ease;
+  z-index: 60;
 }
 
 @keyframes dropdownFadeIn {
@@ -113,22 +136,35 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .dropdown {
+    animation: none;
+  }
+}
+
 .dropdownHeader {
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 2px;
+  background-color: var(--bg-surface-alt);
 }
 
 .dropdownName {
-  font-size: 14px;
+  font-size: var(--admin-text-body);
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdownEmail {
   font-size: 12px;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdownDivider {
@@ -145,18 +181,24 @@
   border: none;
   background: transparent;
   color: var(--color-error);
-  font-size: 14px;
+  font-size: var(--admin-text-body);
   font-weight: 500;
+  font-family: var(--font-admin);
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.15s ease;
+  transition: background-color 120ms ease;
 }
 
 .dropdownItem:hover {
   background-color: var(--color-error-bg);
 }
 
-/* ===== Bell + dropdown ===== */
+.dropdownItem:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring) inset;
+}
+
+/* ===== Bell area + button ===== */
 .bellArea {
   position: relative;
   margin-right: var(--space-2);
@@ -171,20 +213,20 @@
   height: 40px;
   border: 0;
   background-color: transparent;
-  color: var(--brand-accent-hover);
-  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  border-radius: var(--admin-radius-pill);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
 .bellBtn:hover {
-  background-color: var(--brand-accent-light);
-  color: var(--brand-accent-hover);
+  background-color: var(--bg-surface-alt);
+  color: var(--text-primary);
 }
 
 .bellBtn:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 .bellBadge {
@@ -194,7 +236,7 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: var(--color-error);
   color: var(--text-on-primary);
   font-size: 11px;
@@ -203,8 +245,10 @@
   text-align: center;
   box-shadow: 0 0 0 2px var(--bg-surface);
   pointer-events: none;
+  font-family: var(--font-admin);
 }
 
+/* ===== Bell dropdown (notifications) ===== */
 .bellDropdown {
   position: absolute;
   top: calc(100% + var(--space-2));
@@ -213,10 +257,10 @@
   max-width: calc(100vw - var(--space-6));
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-modal);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-elevated);
   overflow: hidden;
-  animation: dropdownFadeIn 0.15s ease;
+  animation: dropdownFadeIn 120ms ease;
   z-index: 60;
 }
 
@@ -226,10 +270,12 @@
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-default);
+  background-color: var(--bg-surface-alt);
+  gap: var(--space-2);
 }
 
 .bellDropdownTitle {
-  font-size: 14px;
+  font-size: var(--admin-text-body);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -241,10 +287,20 @@
   border: 0;
   cursor: pointer;
   padding: 0;
+  font-family: var(--font-admin);
+  font-weight: 500;
+  transition: color 120ms ease;
 }
 
 .bellDropdownLink:hover {
+  color: var(--brand-primary-hover);
   text-decoration: underline;
+}
+
+.bellDropdownLink:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
+  border-radius: var(--admin-radius-input);
 }
 
 .bellDropdownList {
@@ -263,7 +319,8 @@
   text-align: left;
   cursor: pointer;
   border-bottom: 1px solid var(--border-default);
-  transition: background-color 0.1s ease;
+  transition: background-color 100ms ease;
+  font-family: var(--font-admin);
 }
 
 .bellItem:last-child {
@@ -276,14 +333,14 @@
 
 .bellItem:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring) inset;
+  box-shadow: var(--admin-focus-ring) inset;
 }
 
 .bellItemDot {
   width: 8px;
   height: 8px;
   margin-top: 6px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: transparent;
   flex-shrink: 0;
 }
@@ -301,7 +358,7 @@
 }
 
 .bellItemTitle {
-  font-size: 14px;
+  font-size: var(--admin-text-body);
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
@@ -326,4 +383,11 @@
   text-align: center;
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+/* Mobile: header padding thu lại */
+@media (max-width: 767px) {
+  .header {
+    padding: 0 var(--admin-content-padding-mobile);
+  }
 }

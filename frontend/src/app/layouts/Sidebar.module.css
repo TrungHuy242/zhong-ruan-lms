@@ -1,61 +1,71 @@
+/* Hallmark · admin-shell: Sidebar
+ * macrostructure: AppShell · nav-archetype: N1b canonical extended (sidebar-left
+ * + Dashboard item + 3 accordion groups + collapsed icon-rail + mobile drawer)
+ * theme: Admin Operations · differs from Public Editorial on display style axis
+ */
+
+/* ===== Sidebar container ===== */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
-  width: 240px;
+  width: var(--admin-sidebar-width);
   background-color: var(--bg-surface);
   border-right: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
-  transition: width 200ms ease;
+  transition: width 200ms cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 100;
   overflow: hidden;
+  font-family: var(--font-admin);
 }
 
 .sidebar.collapsed {
-  width: 64px;
+  width: var(--admin-sidebar-width-collapsed);
 }
 
-/* ===== Header ===== */
+/* ===== Header (logo + toggle) ===== */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-3) var(--space-3);
   border-bottom: 1px solid var(--border-default);
-  min-height: 64px;
+  min-height: var(--admin-header-height);
   gap: var(--space-2);
+  background-color: var(--bg-surface);
 }
 
 .logoMark {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   overflow: hidden;
   flex: 1;
   min-width: 0;
 }
 
 .logoImg {
-  height: 40px;
+  height: 32px;
   width: auto;
   display: block;
   flex-shrink: 0;
 }
 
 .logoText {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--admin-track-heading);
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Collapsed: thu logo nhỏ lại, đủ nhận diện */
 .collapsed .logoImg {
-  height: 32px;
+  height: 28px;
 }
 
 .toggleBtn {
@@ -65,17 +75,22 @@
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-control);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
 .toggleBtn:hover {
   background-color: var(--bg-surface-alt);
   color: var(--text-primary);
+}
+
+.toggleBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 .collapsed .toggleBtn {
@@ -84,26 +99,44 @@
 
 .collapsed .header {
   justify-content: center;
-  padding: var(--space-4) var(--space-2);
+  padding: var(--space-3) var(--space-2);
 }
 
-/* ===== Nav container ===== */
+/* ===== Nav container (scrollable) ===== */
 .nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 2px;
   padding: var(--space-3) var(--space-2);
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  /* Firefox custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* Webkit custom scrollbar (subtle) */
+.nav::-webkit-scrollbar {
+  width: 6px;
+}
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.nav::-webkit-scrollbar-thumb {
+  background-color: var(--border-default);
+  border-radius: var(--admin-radius-pill);
+}
+.nav::-webkit-scrollbar-thumb:hover {
+  background-color: var(--border-strong);
 }
 
 /* ===== Accordion group ===== */
 .group {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  margin-top: var(--space-2);
+  gap: 2px;
+  margin-top: var(--space-3);
 }
 
 .group:first-child {
@@ -120,19 +153,24 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  font-family: inherit;
-  font-size: 12px;
+  font-family: var(--font-admin);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-secondary);
-  border-radius: var(--radius-sm);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  border-radius: var(--admin-radius-control);
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
 .groupHeader:hover {
   background-color: var(--bg-surface-alt);
   color: var(--text-primary);
+}
+
+.groupHeader:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 .groupHeaderActive {
@@ -154,7 +192,7 @@
 .groupChevron {
   flex-shrink: 0;
   color: var(--text-secondary);
-  transition: transform 200ms ease;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .groupHeaderActive .groupChevron {
@@ -171,7 +209,7 @@
   gap: 2px;
   overflow: hidden;
   max-height: 1000px;
-  transition: max-height 220ms ease, opacity 200ms ease;
+  transition: max-height 200ms ease, opacity 180ms ease;
   opacity: 1;
 }
 
@@ -181,18 +219,23 @@
   pointer-events: none;
 }
 
-/* ===== Nav item (dùng cho cả Dashboard lẫn item trong group) ===== */
+/* ===== Nav item (Dashboard + group items) =====
+ * Active state: nền brand-primary-light + 3px left bar brand-primary
+ * (visual anchor bên trái thay vì pill — pattern Stripe/Linear dashboard) */
 .navItem {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-control);
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: 14px;
+  font-family: var(--font-admin);
+  font-size: var(--admin-text-body);
   font-weight: 500;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  letter-spacing: var(--admin-track-flat);
+  transition: background-color 120ms ease, color 120ms ease;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -202,7 +245,30 @@
   color: var(--text-primary);
 }
 
+.navItem:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
+}
+
 .navItem.active {
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+.navItem.active::before {
+  /* 3px left bar — anchor visual cho active state (không pill SaaS) */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background-color: var(--brand-primary);
+  border-radius: 0 var(--admin-radius-input) var(--admin-radius-input) 0;
+}
+
+.navItem.active:hover {
   background-color: var(--brand-primary-light);
   color: var(--brand-primary);
 }
@@ -212,18 +278,20 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
+  color: inherit;
 }
 
 .navLabel {
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /* ===== Collapsed state: ẩn accordion header + label, chỉ hiện icon ===== */
 .collapsed .group {
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
 }
 
 .collapsed .groupHeader {
@@ -234,12 +302,23 @@
   max-height: none;
   opacity: 1;
   pointer-events: auto;
-  gap: var(--space-1);
+  gap: 2px;
 }
 
 .collapsed .navItem {
   justify-content: center;
   padding: var(--space-2);
+}
+
+.collapsed .navItem.active::before {
+  /* Collapsed: top bar thay vì left bar (vì sidebar quá hẹp) */
+  top: 0;
+  bottom: auto;
+  left: 8px;
+  right: 8px;
+  width: auto;
+  height: 3px;
+  border-radius: 0 0 var(--admin-radius-input) var(--admin-radius-input);
 }
 
 .collapsed .navLabel {
@@ -251,7 +330,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 260px;
+  width: var(--admin-sidebar-width);
   height: 100vh;
   box-shadow: var(--shadow-modal);
   z-index: 200;
@@ -259,13 +338,13 @@
 
 .drawer.collapsed {
   /* Collapsed drawer makes no sense — force open in drawer mode */
-  width: 260px;
+  width: var(--admin-sidebar-width);
 }
 
 .backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(20, 20, 30, 0.45);
   z-index: 199;
 }
 
@@ -273,10 +352,22 @@
 @media (max-width: 1023px) {
   .sidebar {
     transform: translateX(-100%);
-    transition: transform 200ms ease, width 200ms ease;
+    transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+      width 200ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .sidebar.drawer {
     transform: translateX(0);
+  }
+}
+
+/* ===== Reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .main,
+  .groupChevron,
+  .groupPanel,
+  .navItem {
+    transition-duration: 0.01ms !important;
   }
 }

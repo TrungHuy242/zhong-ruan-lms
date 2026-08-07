@@ -1,36 +1,45 @@
-/* AdminLayout: sidebar (left) + main area (right) */
+/* Hallmark · admin-shell: AdminLayout
+ * macrostructure: AppShell (Sidebar-left + StickyHeader + ContentArea)
+ * theme: Admin Operations (custom-tuned · modern-minimal · warm-red accent)
+ * axis: light-paper / geometric-sans Be Vietnam Pro / warm accent
+ * differs from Public Editorial on display style axis (sans vs serif)
+ */
 .shell {
   display: flex;
   min-height: 100vh;
   background-color: var(--bg-page);
+  font-family: var(--font-admin);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Main area fills remaining width */
+/* Main area fills remaining width, offset for desktop sidebar */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  /* Offset for desktop sidebar */
-  margin-left: 240px;
-  transition: margin-left 200ms ease;
+  margin-left: var(--admin-sidebar-width);
+  transition: margin-left 200ms var(--admin-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
-/* When sidebar is collapsed on desktop */
 .shell.sidebarCollapsed .main {
-  margin-left: 64px;
+  margin-left: var(--admin-sidebar-width-collapsed);
 }
 
-/* Content area */
+/* Content area — nền page, padding chuẩn desktop, mobile thu lại */
 .content {
   flex: 1;
-  padding: var(--space-6);
+  padding: var(--admin-content-padding-desktop);
   background-color: var(--bg-page);
 }
 
+/* Mobile: sidebar ẩn, main full-width */
 @media (max-width: 1023px) {
   .main {
     margin-left: 0;
+    transition: none;
   }
   .shell.sidebarCollapsed .main {
     margin-left: 0;
@@ -39,6 +48,6 @@
 
 @media (max-width: 767px) {
   .content {
-    padding: var(--space-4);
+    padding: var(--admin-content-padding-mobile);
   }
 }
