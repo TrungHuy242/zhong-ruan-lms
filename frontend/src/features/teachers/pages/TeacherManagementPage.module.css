@@ -1,11 +1,18 @@
-/* TeacherManagementPage — Admin trang quản lý giảng viên. */
+/* Hallmark · admin-page: TeacherManagementPage · §10 tokens
+ * macrostructure: Table-Led (CRUD toolbar -> table -> pagination)
+ * theme: Admin Operations (§10 · light · warm-red · geometric-sans)
+ */
 
+/* ===== Page root ===== */
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  font-family: var(--font-admin);
+  color: var(--text-primary);
 }
 
+/* ===== Header ===== */
 .header {
   display: flex;
   align-items: flex-start;
@@ -15,21 +22,20 @@
 }
 
 .title {
-  font-size: 28px;
+  font-size: var(--admin-text-page-title);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 var(--space-2);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--admin-track-heading);
+  line-height: 1.25;
+  font-family: var(--font-admin);
 }
 
-.subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
+/* ===== Table card ===== */
 .tableCard {
-  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-control);
   overflow: hidden;
 }
 
@@ -56,6 +62,7 @@
   flex-wrap: wrap;
 }
 
+/* Filter toggle button */
 .filterToggleBtn {
   display: inline-flex;
   align-items: center;
@@ -67,18 +74,23 @@
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  font-family: var(--font-admin);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
 }
 
 .filterToggleBtn:hover {
   background-color: var(--bg-surface-alt);
+  border-color: var(--border-strong);
 }
 
 .filterToggleBtn:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 .filterToggleBtnActive {
@@ -91,15 +103,17 @@
   color: var(--brand-primary);
 }
 
+/* Chevron animation */
 .chevron {
   color: var(--text-secondary);
-  transition: transform 0.2s ease;
+  transition: transform 120ms ease;
 }
 
 .chevronOpen {
   transform: rotate(180deg);
 }
 
+/* ===== Column visibility menu ===== */
 .columnToggleWrap {
   position: relative;
 }
@@ -111,8 +125,8 @@
   min-width: 220px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-card);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-control);
   z-index: 50;
   padding: var(--space-1);
   display: flex;
@@ -124,11 +138,12 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   cursor: pointer;
   font-size: 14px;
   color: var(--text-primary);
-  transition: background-color 0.1s ease;
+  font-family: var(--font-admin);
+  transition: background-color 120ms ease;
 }
 
 .columnItem:hover {
@@ -160,6 +175,7 @@
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border-default);
   margin-bottom: var(--space-1);
+  font-family: var(--font-admin);
 }
 
 /* ===== Table footer ===== */
@@ -176,6 +192,7 @@
 .totalLabel {
   font-size: 13px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
 /* ===== Empty / error state ===== */
@@ -197,12 +214,14 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  font-family: var(--font-admin);
 }
 
 .emptyHint {
   margin: 0;
   font-size: 13px;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
 .errorWrap {
@@ -219,16 +238,17 @@
   align-items: center;
   gap: 4px;
   padding: 2px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
   line-height: 1.6;
+  font-family: var(--font-admin);
 }
 
 .badgeFeatured {
-  background-color: var(--brand-accent-light);
-  color: var(--brand-accent-hover);
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary);
 }
 
 .badgeActive {
@@ -262,7 +282,7 @@
 .avatar {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   object-fit: cover;
   background-color: var(--bg-surface-alt);
   border: 1px solid var(--border-default);
@@ -275,7 +295,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: var(--brand-primary-light);
   color: var(--brand-primary);
   border: 1px solid var(--border-default);
@@ -305,10 +325,11 @@
   padding: 2px 8px;
   background-color: var(--color-info-bg);
   color: var(--color-info);
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
+  font-family: var(--font-admin);
 }
 
 .tagMore {
@@ -317,9 +338,10 @@
   padding: 2px 6px;
   background-color: var(--bg-surface-alt);
   color: var(--text-secondary);
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   font-size: 11px;
   font-weight: 600;
+  font-family: var(--font-admin);
 }
 
 /* ===== Row deleted ===== */
@@ -350,12 +372,14 @@
   border: 1px solid var(--border-default);
   background-color: transparent;
   color: var(--text-secondary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   cursor: pointer;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 1px;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .actionTrigger:hover {
@@ -365,7 +389,7 @@
 
 .actionTrigger:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 .actionMenu {
@@ -375,8 +399,8 @@
   min-width: 180px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-card);
+  border-radius: var(--admin-radius-control);
+  box-shadow: var(--admin-shadow-control);
   z-index: 50;
   padding: var(--space-1);
   display: flex;
@@ -392,11 +416,12 @@
   border: 0;
   background-color: transparent;
   color: var(--text-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   font-size: 14px;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.1s ease;
+  font-family: var(--font-admin);
+  transition: background-color 120ms ease;
 }
 
 .actionItem:hover {
@@ -405,7 +430,7 @@
 
 .actionItem:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 .actionItemDanger {
@@ -416,18 +441,22 @@
   background-color: var(--color-error-bg);
 }
 
-@media (max-width: 640px) {
+/* ===== Responsive ===== */
+@media (max-width: 767px) {
   .toolbar {
     flex-direction: column;
     align-items: stretch;
   }
+
   .searchWrap,
   .toolbarActions {
     width: 100%;
   }
+
   .fullNameCell {
     min-width: 0;
   }
+
   .fullName {
     max-width: 140px;
   }
