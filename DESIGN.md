@@ -600,3 +600,149 @@ Slop-test sentinel (mọi trang phải pass):
 - 1 single reveal primitive (opacity only)
 ```
 
+---
+
+## 10. Admin Dashboard System — Hallmark (khác Public §9)
+
+> **Scope**: Lớp vỏ (shell) của 13 trang admin — `AdminLayout` + `Sidebar` +
+> `Header` + `Footer` (`frontend/src/app/layouts/*`). Tất cả trang con bên
+> trong `/dashboard`, `/users`, `/teachers`, `/files`, ... đều nằm trong
+> shell này. Khi redesign từng trang con, **BẮT BUỘC dùng token + component
+> chuẩn §10** để đồng bộ.
+>
+> **Kế thừa**: Brand anchor (đỏ `#C8102E` + gold `#D4AF37`) + neutral + semantic
+> colors từ §1. **KHÔNG kế thừa** ivory paper / 0-radius / 0-shadow / Source Serif 4
+> từ §9 Public — Admin cần depth + density riêng.
+>
+> **Audience**: Admin/nhân viên nội bộ, dùng hàng ngày, cần thao tác nhanh,
+> quét bảng dữ liệu nhiều — KHÔNG phải khách hàng cần thuyết phục.
+
+### 10.1 Page-scope tokens (chỉ dùng cho Admin shell)
+
+File: `frontend/src/styles/admin-tokens.css` — import sau `tokens.css` trong `main.tsx`.
+
+```css
+:root {
+  /* ===== Font — ép Be Vietnam Pro cho toàn shell =====
+   * (Public dùng Source Serif 4 + Be Vietnam Pro mix theo §9;
+   * Admin đơn nhất Be Vietnam Pro để dễ đọc ở cỡ nhỏ 12-13px table cell) */
+  --font-admin: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+
+  /* ===== Letter-spacing (chống tách dấu tiếng Việt) ===== */
+  --admin-track-display: -0.02em;
+  --admin-track-heading: -0.01em;
+  --admin-track-flat: 0;
+
+  /* ===== Radius (siết nhỏ hơn §1 để phù hợp data density) =====
+   * §1: sm 8 / md 12 / lg 20. Admin: input 6 / control 8 — bo vừa đủ
+   * để phân tách form/button khỏi nền, KHÔNG "pill" SaaS quá đà. */
+  --admin-radius-input: 6px;
+  --admin-radius-control: 8px;
+  --admin-radius-pill: 999px;
+
+  /* ===== Shadow (depth tokens cho control/card/elevated) ===== */
+  --admin-shadow-control: 0 1px 2px rgba(20, 20, 30, 0.08);
+  --admin-shadow-elevated: 0 4px 16px rgba(20, 20, 30, 0.10);
+  --admin-focus-ring: 0 0 0 3px rgba(200, 16, 46, 0.18);
+
+  /* ===== Sidebar geometry (data-density friendly) ===== */
+  --admin-sidebar-width: 256px;
+  --admin-sidebar-width-collapsed: 72px;
+
+  /* ===== Header / Footer geometry ===== */
+  --admin-header-height: 64px;
+  --admin-footer-height: 44px;
+
+  /* ===== Content padding ===== */
+  --admin-content-padding-desktop: var(--space-6);  /* 24px */
+  --admin-content-padding-mobile: var(--space-4);   /* 16px */
+
+  /* ===== Typography scale (compact, scan-friendly) =====
+   * H1 page title 24px (nhỏ hơn §9 Public H1 để scan nhanh).
+   * Body 14px, table cell 13px, label 12px uppercase 0.08em. */
+  --admin-text-page-title: 24px;
+  --admin-text-section-title: 18px;
+  --admin-text-body: 14px;
+  --admin-text-table-cell: 13px;
+  --admin-text-label-uppercase: 12px;
+}
+```
+
+### 10.2 Shape language (KHÁC Public §9 — đây là Admin riêng)
+
+| Tell | Admin (KHÔNG dùng §9) | Public §9 (KHÔNG dùng cho Admin) |
+|------|----------------------|--------------------------------|
+| `border-radius` | `var(--admin-radius-input)` 6px, `var(--admin-radius-control)` 8px | 0 (hairline) |
+| `box-shadow` | `var(--admin-shadow-control)` + `var(--admin-shadow-elevated)` | none |
+| Active nav | Nền `--brand-primary-light` + **3px left bar** `--brand-primary` | Tag-left / heading-right |
+| Hover card | `border-color` shift + `--admin-shadow-control` lift | Border-color shift only |
+| Font | **Be Vietnam Pro only** (geometric-sans) | Source Serif 4 + Be Vietnam Pro (high-contrast-serif + sans) |
+| Italic heading | **KHÔNG** | **KHÔNG** (cả 2 system đều ban) |
+| Gradient | **KHÔNG** (Admin đơn sắc) | `--hero-gradient` ở CTA banner |
+| Tag-left pattern | **KHÔNG** | **KHÔNG** |
+| Motion | **Motion-cut** — hover 120ms, sidebar 200ms cubic-bezier(0.16, 1, 0.3, 1) | Single opacity reveal 1200ms |
+
+### 10.3 Component contracts cho Admin shell
+
+#### 10.3.1 Sidebar (nav)
+- **Container**: `width: var(--admin-sidebar-width)`, fixed-left, nền `--bg-surface`, border-right 1px `--border-default`.
+- **Active nav item**: `background-color: var(--brand-primary-light)` + `::before` 3px left bar `var(--brand-primary)`.
+- **Collapsed mode**: width 72px, ẩn accordion header + label, icon-only. Active = top bar 3px (thay left bar vì sidebar quá hẹp).
+- **Scrollbar**: custom 6px width, color `--border-default` thumb, `--border-strong` hover.
+
+#### 10.3.2 Header (top bar)
+- **Sticky top**, height 64px, nền `--bg-surface`, border-bottom 1px `--border-default`.
+- **Hamburger**: chỉ hiện ≤1023px (mobile drawer trigger).
+- **Bell button**: 40×40, color `--text-secondary` (KHÔNG dùng gold — để giảm noise màu). Badge count `--color-error` với outline `--bg-surface` 2px.
+- **User avatar**: 32×32, nền `--brand-primary`, chữ trắng, font-weight 700. Pill button ở desktop, icon-only ≤480px.
+
+#### 10.3.3 Dropdown (bell + user)
+- **Container**: 360px (bell) / 220px (user), nền `--bg-surface`, border 1px `--border-default`, `box-shadow: var(--admin-shadow-elevated)` (KHÔNG dùng `--shadow-modal` 48px blur — quá mạnh).
+- **Animation**: `dropdownFadeIn` 120ms (`opacity` + `translateY(-4px → 0)`). Tắt khi `prefers-reduced-motion`.
+- **Bell item unread**: dot 8×8 `--brand-primary` + title `font-weight: 600`.
+
+#### 10.3.4 Footer
+- **Height**: 44px (down từ §1 48px), split trái–phải:
+  - **Trái**: copyright (12px, `--text-secondary`).
+  - **Phải**: system status (green dot 6×6 `--color-success` + text) + version (VD: `v1.0.0`).
+
+### 10.4 Rules cho redesign trang con (13 trang admin)
+
+1. **Đọc §10.1–10.3** trước khi tạo component.
+2. **Import `admin-tokens.css`** (đã có sẵn trong `main.tsx`). KHÔNG tự định nghĩa hex/radius mới.
+3. **Sử dụng token** `--admin-*` cho mọi geometry/typography/radius/shadow. KHÔNG dùng `--radius-lg`, `--shadow-card` (đó là Public marketing pattern).
+4. **Active state** dùng pattern `--brand-primary-light` bg + 3px left bar (Section 10.3.1).
+5. **Focus-visible** luôn dùng `box-shadow: var(--admin-focus-ring)` 3px (Section 10.1).
+6. **Transition** dùng `cubic-bezier(0.16, 1, 0.3, 1)` cho chevron/sidebar; `120ms ease` cho hover đơn giản.
+7. **Reduced motion** — tắt transition cho sidebar/main/chevron, bỏ `dropdownFadeIn`.
+8. **Slop test** — gate quan trọng nhất:
+   - **38a italic headers** — KHÔNG dùng italic cho heading.
+   - **49 two-line clickable** — nav item, button, breadcrumb, footer link phải 1 dòng.
+   - **51 overflow-wrap** — heading `overflow-wrap: anywhere; min-width: 0` cho label tiếng Việt dài.
+   - **53 radio-tab scroll-jump** — không áp dụng cho sidebar accordion.
+
+### 10.5 Locked fingerprint (dùng cho audit tự động)
+
+```
+Audience visual fingerprint:
+- Paper: #F7F7F9 (page), #FFFFFF (surface), #FAFAFB (surface-alt)
+- Ink: #1A1A1E primary, #6B7280 secondary
+- Brand: #C8102E primary, #D4AF37 accent, #A50C24 hover
+- Display + Body: Be Vietnam Pro (geometric-sans, single-font cho shell)
+- Shape: radius-input 6px / radius-control 8px / radius-pill 999px
+- Depth: shadow-control 0.08 + shadow-elevated 0.10 (nhẹ hơn --shadow-card)
+- Focus: 3px ring brand-primary 18%
+- Motion: motion-cut; 120ms hover; 200ms sidebar cubic-bezier(0.16, 1, 0.3, 1)
+- Active: brand-primary-light bg + 3px left bar
+- Footer: 1 row split (copyright | status dot + version)
+
+Slop-test sentinel (mọi trang admin phải pass):
+- KHÔNG dùng --radius-lg, --shadow-card, --shadow-modal
+- KHÔNG dùng Source Serif 4
+- KHÔNG dùng ivory/charcoal từ §9 Public
+- KHÔNG dùng --hero-gradient
+- KHÔNG dùng tag-left pattern (eyebrow trái, heading phải)
+- KHÔNG transform: scale / translateY trên hover
+- 0 italic trên heading
+- Shell dùng font-family: var(--font-admin) mọi nơi
+```
