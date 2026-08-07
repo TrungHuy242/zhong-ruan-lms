@@ -93,6 +93,9 @@ export function FileDetailModal({
     );
   }
 
+  // TODO: khi BE bổ sung static file serving, đổi thành true
+  // và thay previewUrl bằng endpoint serve file vật lý
+  const hasStaticServing = false;
   const kind: FileKind = getFileKind(file.originalName || file.mimeType);
   const previewKind = getPreviewKind(file.mimeType);
   const previewUrl = `/api/files/${file.id}/preview`;
@@ -117,52 +120,84 @@ export function FileDetailModal({
         <section className={styles.previewSection}>
           {previewKind === "image" && !imgError ? (
             <div className={styles.previewFrame}>
-              <img
-                src={previewUrl}
-                alt={file.originalName}
-                className={styles.previewImg}
-                onError={() => setImgError(true)}
-              />
+              {hasStaticServing ? (
+                <img
+                  src={previewUrl}
+                  alt={file.originalName}
+                  className={styles.previewImg}
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <div className={styles.previewNoServing}>
+                  <p className={styles.previewNoServingText}>
+                    Xem trước hiện chưa khả dụng — backend chưa serve file vật lý qua HTTP.
+                  </p>
+                </div>
+              )}
             </div>
           ) : null}
 
           {previewKind === "video" && !videoError ? (
             <div className={styles.previewFrame}>
-              <video
-                controls
-                className={styles.previewVideo}
-                preload="metadata"
-                onError={() => setVideoError(true)}
-              >
-                <source src={previewUrl} type={file.mimeType} />
-                Trình duyệt không hỗ trợ thẻ video.
-              </video>
+              {hasStaticServing ? (
+                <video
+                  controls
+                  className={styles.previewVideo}
+                  preload="metadata"
+                  onError={() => setVideoError(true)}
+                >
+                  <source src={previewUrl} type={file.mimeType} />
+                  Trình duyệt không hỗ trợ thẻ video.
+                </video>
+              ) : (
+                <div className={styles.previewNoServing}>
+                  <p className={styles.previewNoServingText}>
+                    Xem trước hiện chưa khả dụng — backend chưa serve file vật lý qua HTTP.
+                  </p>
+                </div>
+              )}
             </div>
           ) : null}
 
           {previewKind === "audio" && !audioError ? (
             <div className={styles.previewAudio}>
-              <audio
-                controls
-                className={styles.previewAudioEl}
-                preload="metadata"
-                onError={() => setAudioError(true)}
-              >
-                <source src={previewUrl} type={file.mimeType} />
-                Trình duyệt không hỗ trợ thẻ audio.
-              </audio>
+              {hasStaticServing ? (
+                <audio
+                  controls
+                  className={styles.previewAudioEl}
+                  preload="metadata"
+                  onError={() => setAudioError(true)}
+                >
+                  <source src={previewUrl} type={file.mimeType} />
+                  Trình duyệt không hỗ trợ thẻ audio.
+                </audio>
+              ) : (
+                <div className={styles.previewNoServing}>
+                  <p className={styles.previewNoServingText}>
+                    Xem trước hiện chưa khả dụng — backend chưa serve file vật lý qua HTTP.
+                  </p>
+                </div>
+              )}
               <p className={styles.previewAudioLabel}>{file.originalName}</p>
             </div>
           ) : null}
 
           {previewKind === "pdf" && !iframeError ? (
             <div className={styles.previewFrame}>
-              <iframe
-                src={previewUrl}
-                title={file.originalName}
-                className={styles.previewIframe}
-                onError={() => setIframeError(true)}
-              />
+              {hasStaticServing ? (
+                <iframe
+                  src={previewUrl}
+                  title={file.originalName}
+                  className={styles.previewIframe}
+                  onError={() => setIframeError(true)}
+                />
+              ) : (
+                <div className={styles.previewNoServing}>
+                  <p className={styles.previewNoServingText}>
+                    Xem trước hiện chưa khả dụng — backend chưa serve file vật lý qua HTTP.
+                  </p>
+                </div>
+              )}
             </div>
           ) : null}
 

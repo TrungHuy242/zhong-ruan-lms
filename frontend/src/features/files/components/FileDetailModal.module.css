@@ -107,6 +107,22 @@
   background-color: var(--bg-surface);
 }
 
+.previewNoServing {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.previewNoServingText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 360px;
+}
+
 .previewFallback {
   display: flex;
   flex-direction: column;
