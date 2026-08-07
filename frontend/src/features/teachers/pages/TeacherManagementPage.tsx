@@ -6,7 +6,7 @@
  *   - BulkActionBar (xoá nhiều)
  *   - Table với sort + filter + URL query sync
  *   - Pagination
- *   - Modal Form thêm/sửa (TeacherFormModal)
+ *   - Modal Form thêm/sửa (TeacherFormModal) — ĐÃ TÁCH THÀNH TeacherFormPage (route riêng)
  *   - ConfirmDialog cho xoá/khôi phục
  *   - Toggle publish nhanh trong action menu (không cần mở modal)
  *
@@ -36,7 +36,6 @@ import {
   type TableColumn,
 } from "../../../shared/components/ui";
 import { BulkActionBar } from "../../../shared/components/layout/BulkActionBar";
-import { TeacherFormModal } from "../components/TeacherFormModal";
 import { TeacherFilterPanel } from "../components/TeacherFilterPanel";
 import {
   deleteTeacher,
@@ -75,7 +74,7 @@ import {
   Trash2,
   X as XIcon,
 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./TeacherManagementPage.module.css";
 
 const SORTABLE_TEACHER_KEYS: TeacherSortBy[] = [
@@ -379,8 +378,21 @@ export function TeacherManagementPage() {
     setFilters((prev) => ({ ...prev, page }));
   }
 
-  const [formModalOpen, setFormModalOpen] = useState(false);
-  const [formTeacher, setFormTeacher] = useState<Teacher | null>(null);
+  // ===== Navigation (FormPage đã tách — navigate thay vì open modal) =====
+  const navigate = useNavigate();
+  function goCreate() {
+    navigate("/teachers/new");
+  }
+  function goEdit(t: Teacher) {
+    navigate(`/teachers/${t.id}/edit`);
+  }
+
+  // Refresh data khi quay lại từ TeacherFormPage (searchParams thay đổi)
+  // → effect phía dưới listen searchParams.
+  useEffect(() => {
+    loadTeachers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const [confirm, setConfirm] = useState<ConfirmState>({
     open: false,
@@ -401,14 +413,6 @@ export function TeacherManagementPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  function openCreate() {
-    setFormTeacher(null);
-    setFormModalOpen(true);
-  }
-  function openEdit(t: Teacher) {
-    setFormTeacher(t);
-    setFormModalOpen(true);
-  }
   function openDelete(t: Teacher) {
     setConfirm({ open: true, loading: false, teacher: t, mode: "delete" });
     setOpenActionId(null);
@@ -482,15 +486,8 @@ export function TeacherManagementPage() {
     }
   }
 
-  function handleTeacherSave(_saved: Teacher, mode: "create" | "update") {
-    setFormModalOpen(false);
-    toast.success(
-      mode === "create"
-        ? "Tạo giảng viên thành công"
-        : "Cập nhật giảng viên thành công",
-    );
-    loadTeachers();
-  }
+  // Note: TeacherFormPage tự navigate về /teachers sau khi save + toast success.
+  // Page này refresh data khi searchParams thay đổi (effect ở trên).
 
   async function handleConfirm() {
     if (!confirm.teacher) return;
@@ -675,7 +672,7 @@ export function TeacherManagementPage() {
                     role="menuitem"
                     className={styles.actionItem}
                     onClick={() => {
-                      openEdit(t);
+                      goEdit(t);
                       setOpenActionId(null);
                     }}
                   >
@@ -754,7 +751,7 @@ export function TeacherManagementPage() {
           variant="primary"
           size="md"
           leftIcon={<Plus size={16} />}
-          onClick={openCreate}
+          onClick={goCreate}
         >
           Thêm giảng viên
         </Button>
@@ -779,7 +776,7 @@ export function TeacherManagementPage() {
             variant="primary"
             size="md"
             leftIcon={<Plus size={16} />}
-            onClick={openCreate}
+            onClick={goCreate}
           >
             Thêm giảng viên
           </Button>
@@ -977,13 +974,6 @@ export function TeacherManagementPage() {
           </>
         )}
       </Card>
-
-      <TeacherFormModal
-        open={formModalOpen}
-        teacher={formTeacher}
-        onClose={() => setFormModalOpen(false)}
-        onSuccess={handleTeacherSave}
-      />
 
       <ConfirmDialog
         open={confirm.open}
