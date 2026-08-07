@@ -182,3 +182,12 @@ Báo cáo đầy đủ: `qa-final-report.md` ở root repo.
 - Nếu cài Hallmark skill cho Claude Code, dùng
   `npx skills add nutlope/hallmark` — xác nhận vị trí cài đúng theo cách
   Claude Code đọc skill (khác Cursor).
+- **Preview file trong File Manager TẮT tạm thời** (2026-08-07): FE
+  `FileDetailModal.tsx` dùng `hasStaticServing = false` để không gọi
+  `/api/files/:id/preview` (vì endpoint chưa tồn tại, gây 401). UI hiện
+  placeholder "chưa khả dụng". Cần làm khi nào: thêm route serve file
+  thật ở Backend (BE có thể dùng Express static hoặc route riêng có kiểm
+  tra quyền truy cập), rồi đổi `hasStaticServing = true` + cập nhật
+  `previewUrl` trong `FileDetailModal.tsx`. Backend route cần check:
+  (a) user đã đăng nhập, (b) file chưa bị soft-delete, (c) trả đúng
+  MIME type + Content-Disposition.
