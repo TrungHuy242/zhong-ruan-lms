@@ -5,7 +5,7 @@
  *   - Toolbar: search + bộ lọc nâng cao + columns toggle
  *   - Table với sort + filter + URL query sync
  *   - Pagination
- *   - Modal Form thêm/sửa (PricingFormModal)
+ *   - Modal Form thêm/sửa (PricingFormModal) — ĐÃ TÁCH THÀNH PricingFormPage (route riêng)
  *   - ConfirmDialog cho xoá
  *   - Toggle publish nhanh trong action menu
  *
@@ -34,7 +34,6 @@ import {
   type SortConfig,
   type TableColumn,
 } from "../../../shared/components/ui";
-import { PricingFormModal } from "../components/PricingFormModal";
 import {
   deletePricingPlan,
   listPricingPlans,
@@ -58,7 +57,7 @@ import {
   Trash2,
   X as XIcon,
 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatVND } from "../services/pricingApi";
 import styles from "./PricingManagementPage.module.css";
 
@@ -296,8 +295,20 @@ export function PricingManagementPage() {
     setFilters((prev) => ({ ...prev, page }));
   }
 
-  const [formModalOpen, setFormModalOpen] = useState(false);
-  const [formPlan, setFormPlan] = useState<PricingPlan | null>(null);
+    // ===== Navigation (FormPage đã tách — navigate thay vì open modal) =====
+  const navigate = useNavigate();
+  function goCreate() {
+    navigate("/pricing-plans/new");
+  }
+  function goEdit(p: PricingPlan) {
+    navigate(`/pricing-plans/${p.id}/edit`);
+  }
+
+  // Refresh data khi quay lại từ PricingFormPage (searchParams thay đổi)
+  useEffect(() => {
+    loadPlans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const [confirm, setConfirm] = useState<ConfirmState>({
     open: false,
@@ -317,28 +328,12 @@ export function PricingManagementPage() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  function openCreate() {
-    setFormPlan(null);
-    setFormModalOpen(true);
-  }
-  function openEdit(p: PricingPlan) {
-    setFormPlan(p);
-    setFormModalOpen(true);
-  }
   function openDelete(p: PricingPlan) {
     setConfirm({ open: true, loading: false, plan: p });
     setOpenActionId(null);
   }
 
-  function handlePlanSave(_saved: PricingPlan, mode: "create" | "update") {
-    setFormModalOpen(false);
-    toast.success(
-      mode === "create"
-        ? "Tạo bảng giá thành công"
-        : "Cập nhật bảng giá thành công",
-    );
-    loadPlans();
-  }
+  // Note: PricingFormPage tự navigate về /pricing-plans sau khi save + toast success.
 
   async function handleConfirm() {
     if (!confirm.plan) return;
@@ -493,7 +488,7 @@ export function PricingManagementPage() {
                     role="menuitem"
                     className={styles.actionItem}
                     onClick={() => {
-                      openEdit(p);
+                      goEdit(p);
                       setOpenActionId(null);
                     }}
                   >
@@ -557,7 +552,7 @@ export function PricingManagementPage() {
           variant="primary"
           size="md"
           leftIcon={<Plus size={16} />}
-          onClick={openCreate}
+          onClick={goCreate}
         >
           Thêm bảng giá
         </Button>
@@ -581,7 +576,7 @@ export function PricingManagementPage() {
             variant="primary"
             size="md"
             leftIcon={<Plus size={16} />}
-            onClick={openCreate}
+            onClick={goCreate}
           >
             Thêm bảng giá
           </Button>
@@ -739,14 +734,6 @@ export function PricingManagementPage() {
           </>
         )}
       </Card>
-
-      <PricingFormModal
-        open={formModalOpen}
-        plan={formPlan}
-        onClose={() => setFormModalOpen(false)}
-        onSuccess={handlePlanSave}
-        currentFeaturedCount={plans.filter((p) => p.isFeatured).length}
-      />
 
       <ConfirmDialog
         open={confirm.open}

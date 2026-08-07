@@ -1,0 +1,300 @@
+/* PricingFormPage — Admin create/edit pricing plan page.
+ *
+ * Hallmark stamp:
+ *   macrostructure: form-led · genre: modern-minimal · theme: design-system-locked (DESIGN.md §10)
+ *   tone: utilitarian · anchor hue: brand-red #C8102E
+ *   shape: admin-radius-input 6px / control 8px · shadow: admin-control 0.08
+ *   font: Be Vietnam Pro only (single-font admin shell)
+ *   diversification: 5 form pages share 1 macrostructure (DEFER to §10)
+ *
+ * Layout: 2-col grid cho field ngắn, 1-col full cho description + tag input + toggles.
+ */
+
+.page {
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--font-admin);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-admin);
+  font-size: var(--admin-text-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.required {
+  color: var(--color-error);
+  margin-left: 2px;
+}
+
+.textareaShort {
+  width: 100%;
+  padding: var(--space-3);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-input);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--admin-text-body);
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 48px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.textareaShort:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.textareaShort:focus-visible {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--admin-focus-ring);
+}
+
+.textareaShort:disabled {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.select {
+  display: block;
+  width: 100%;
+  height: 40px;
+  padding: 0 36px 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-surface);
+  border-radius: var(--admin-radius-input);
+  font-family: inherit;
+  font-size: var(--admin-text-body);
+  color: var(--text-primary);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.select:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.select:focus-visible {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--admin-focus-ring);
+}
+
+.select:disabled {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+/* ===== Tag input (benefits) ===== */
+.tagInputWrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 40px;
+  padding: var(--space-2);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-input);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.tagInputWrap:focus-within {
+  border-color: var(--brand-primary);
+  box-shadow: var(--admin-focus-ring);
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px var(--space-2);
+  background-color: var(--brand-primary-light);
+  color: var(--brand-primary-active);
+  border-radius: var(--admin-radius-pill);
+  font-size: var(--admin-text-table-cell);
+  font-weight: 500;
+}
+
+.tagChipRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--brand-primary-active);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.tagChipRemove:hover:not(:disabled) {
+  background-color: var(--brand-primary);
+  color: var(--text-on-primary);
+}
+
+.tagInputField {
+  flex: 1;
+  min-width: 120px;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: var(--admin-text-body);
+  color: var(--text-primary);
+  padding: 4px var(--space-1);
+}
+
+.tagInputField:disabled {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  font-family: monospace;
+  font-size: 12px;
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+.fieldError {
+  font-size: var(--admin-text-table-cell);
+  color: var(--color-error);
+  line-height: 1.4;
+}
+
+.hint {
+  font-size: var(--admin-text-table-cell);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ===== Toggle row (isFeatured / isPublished) ===== */
+.toggleRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-control);
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.toggle:hover {
+  border-color: var(--brand-primary);
+  background-color: var(--brand-primary-lighter);
+}
+
+.toggle:focus-within {
+  border-color: var(--brand-primary);
+  box-shadow: var(--admin-focus-ring);
+}
+
+.toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--brand-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggleLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggleLabel strong {
+  font-size: var(--admin-text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.toggleHint {
+  font-size: var(--admin-text-table-cell);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ===== Error/404 actions row ===== */
+.actionsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .grid2,
+  .toggleRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .form {
+    gap: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .textareaShort,
+  .select,
+  .tagInputWrap,
+  .toggle,
+  .tagChipRemove {
+    transition: none;
+  }
+}
