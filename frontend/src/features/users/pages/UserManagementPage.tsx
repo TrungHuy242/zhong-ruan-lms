@@ -18,7 +18,6 @@ import {
   type TableColumn,
 } from "../../../shared/components/ui";
 import { useToast } from "../../../shared/contexts/ToastContext";
-import { UserFormModal } from "../../../shared/components/modals/UserFormModal";
 import { UserDetailModal } from "../components/UserDetailModal";
 import {
   UserFilterPanel,
@@ -55,7 +54,7 @@ import {
   Users as UsersIcon,
   X as XIcon,
 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./UserManagementPage.module.css";
 
 type RoleFilter = "ALL" | UserRole;
@@ -405,10 +404,7 @@ export function UserManagementPage() {
     filters.page,
   ]);
 
-  // ===== Modal state =====
-  const [formModalOpen, setFormModalOpen] = useState(false);
-  const [formUser, setFormUser] = useState<User | null>(null);
-
+  // ===== Detail modal (Xem chi tiết — giữ modal vì chỉ xem) =====
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailId, setDetailId] = useState<number | string | null>(null);
 
@@ -442,14 +438,13 @@ export function UserManagementPage() {
 
   // ===== Toast (success/error) — dùng useToast() thay cho inline banner =====
   const toast = useToast();
+  const navigate = useNavigate();
 
-  function openCreate() {
-    setFormUser(null);
-    setFormModalOpen(true);
+  function goCreate() {
+    navigate("/users/new");
   }
-  function openEdit(u: User) {
-    setFormUser(u);
-    setFormModalOpen(true);
+  function goEdit(u: User) {
+    navigate(`/users/${u.id}/edit`);
   }
   function openDetail(u: User) {
     setDetailId(u.id);
@@ -464,13 +459,13 @@ export function UserManagementPage() {
     setOpenActionId(null);
   }
 
-  function handleUserSave(_saved: User, mode: "create" | "update") {
-    setFormModalOpen(false);
-    toast.success(
-      mode === "create" ? "Tạo người dùng thành công" : "Cập nhật người dùng thành công",
-    );
+  // Khi user quay lại từ UserFormPage (đã save xong) → refresh data.
+  // React Router remount page khi location.key thay đổi với cùng pathname —
+  // nhưng trong cùng 1 page instance, ta listen searchParams hoặc dùng key trick.
+  useEffect(() => {
     loadUsers();
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   async function handleConfirm() {
     if (!confirm.user) return;
@@ -645,7 +640,7 @@ export function UserManagementPage() {
                       role="menuitem"
                       className={styles.actionItem}
                       onClick={() => {
-                        openEdit(u);
+                        goEdit(u);
                         setOpenActionId(null);
                       }}
                     >
@@ -707,7 +702,7 @@ export function UserManagementPage() {
           : "Bắt đầu bằng cách thêm người dùng đầu tiên."}
       </p>
       {canManage && !isFiltered ? (
-        <Button variant="primary" size="md" leftIcon={<Plus size={16} />} onClick={openCreate}>
+        <Button variant="primary" size="md" leftIcon={<Plus size={16} />} onClick={goCreate}>
           Thêm người dùng
         </Button>
       ) : null}
@@ -735,7 +730,7 @@ export function UserManagementPage() {
             variant="primary"
             size="md"
             leftIcon={<Plus size={16} />}
-            onClick={openCreate}
+            onClick={goCreate}
           >
             Thêm người dùng
           </Button>
@@ -967,13 +962,6 @@ export function UserManagementPage() {
         onCancel={() =>
           setBulkConfirm((p) => ({ ...p, open: false }))
         }
-      />
-
-      <UserFormModal
-        open={formModalOpen}
-        user={formUser}
-        onClose={() => setFormModalOpen(false)}
-        onSuccess={handleUserSave}
       />
 
       <UserDetailModal

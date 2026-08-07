@@ -1,7 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserPlus, Bell, UploadCloud, Settings } from "lucide-react";
-import { UserFormModal } from "../../../shared/components/modals/UserFormModal";
 import { NotificationFormModal } from "../../../shared/components/modals/NotificationFormModal";
 import { uploadFile } from "../../files/services/fileApi";
 import { useNotifications } from "../../../shared/contexts/NotificationContext";
@@ -55,17 +54,12 @@ export function QuickActions({ onChanged }: QuickActionsProps) {
   const navigate = useNavigate();
   const { refresh } = useNotifications();
 
-  // State cho 3 modal
-  const [userModalOpen, setUserModalOpen] = useState(false);
+  // State cho 2 modal (NotificationFormModal + UploadZone overlay).
+  // UserForm đã migrate sang page riêng — navigate thẳng /users/new.
   const [notifModalOpen, setNotifModalOpen] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-
-  const handleUserSuccess = useCallback(() => {
-    setUserModalOpen(false);
-    onChanged("user");
-  }, [onChanged]);
 
   const handleNotifSuccess = useCallback(async () => {
     setNotifModalOpen(false);
@@ -93,13 +87,30 @@ export function QuickActions({ onChanged }: QuickActionsProps) {
     [onChanged]
   );
 
+  // Khi UserFormPage save → dispatch custom event → refresh KPI.
+  useEffect(() => {
+    function onUserCreated() {
+      onChanged("user");
+    }
+    function onUserUpdated() {
+      onChanged("user");
+    }
+    window.addEventListener("lms:user-created", onUserCreated);
+    window.addEventListener("lms:user-updated", onUserUpdated);
+    return () => {
+      window.removeEventListener("lms:user-created", onUserCreated);
+      window.removeEventListener("lms:user-updated", onUserUpdated);
+    };
+  }, [onChanged]);
+
   function handleAction(key: (typeof ACTIONS)[number]["key"]) {
     if (key === "settings") {
       navigate("/settings");
       return;
     }
     if (key === "user") {
-      setUserModalOpen(true);
+      // Navigate đến trang tạo user mới — thay vì mở modal (đã migrate sang page).
+      navigate("/users/new");
       return;
     }
     if (key === "notification") {
@@ -138,13 +149,6 @@ export function QuickActions({ onChanged }: QuickActionsProps) {
           );
         })}
       </ul>
-
-      <UserFormModal
-        open={userModalOpen}
-        user={null}
-        onClose={() => setUserModalOpen(false)}
-        onSuccess={(_user, _mode) => handleUserSuccess()}
-      />
 
       <NotificationFormModal
         open={notifModalOpen}
