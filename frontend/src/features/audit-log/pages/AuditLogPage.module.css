@@ -1,11 +1,20 @@
-/* AuditLogPage — Audit Center layout (nâng cấp). */
+/* Hallmark · admin-page: AuditLogPage · §10 tokens
+ * macrostructure: Table-Led (header -> filter bar -> active chips -> table -> pagination)
+ * theme: Admin Operations (§10 · light · warm-red · geometric-sans)
+ * Note: Timeline view (.viewToggle / .viewBtn2) ĐÃ ẨN theo audit 2026-08,
+ * giữ CSS stand-by để dễ enable lại khi cần.
+ */
 
+/* ===== Page root ===== */
 .page {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  font-family: var(--font-admin);
+  color: var(--text-primary);
 }
 
+/* ===== Header ===== */
 .header {
   display: flex;
   align-items: flex-start;
@@ -15,17 +24,20 @@
 }
 
 .title {
-  font-size: 28px;
+  font-size: var(--admin-text-page-title);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 var(--space-2);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--admin-track-heading);
+  line-height: 1.25;
+  font-family: var(--font-admin);
 }
 
 .subtitle {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
+  font-family: var(--font-admin);
 }
 
 .headerActions {
@@ -35,7 +47,7 @@
   flex-wrap: wrap;
 }
 
-/* ===== View toggle (Bảng | Timeline) ===== */
+/* ===== View toggle (Bảng | Timeline) — ĐÃ ẨN, giữ stand-by ===== */
 .viewToggle {
   display: inline-flex;
   align-items: center;
@@ -43,8 +55,8 @@
   padding: 3px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--admin-radius-input);
+  box-shadow: var(--admin-shadow-control);
 }
 
 .viewBtn2 {
@@ -57,10 +69,12 @@
   color: var(--text-secondary);
   background-color: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-  font-family: inherit;
+  font-family: var(--font-admin);
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .viewBtn2:hover {
@@ -77,7 +91,7 @@
 
 .viewBtn2:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 /* ===== Export menu ===== */
@@ -87,15 +101,13 @@
 
 /* ===== Table card ===== */
 .tableCard {
-  /* Card component đã có padding + shadow + radius — không cần thêm. */
   display: flex;
   flex-direction: column;
   gap: 0;
-  /* Override default padding để toolbar/table không bị padding đè lên nhau. */
   padding: 0 !important;
 }
 
-/* Active filter chips */
+/* ===== Active filter chips ===== */
 .activeFilters {
   display: flex;
   align-items: center;
@@ -113,6 +125,7 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
+  font-family: var(--font-admin);
 }
 
 .chip {
@@ -121,11 +134,12 @@
   gap: 4px;
   padding: 3px 8px 3px 10px;
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: var(--bg-surface-alt);
   color: var(--text-primary);
   font-size: 12px;
   font-weight: 500;
+  font-family: var(--font-admin);
 }
 
 .chipClose {
@@ -134,18 +148,26 @@
   justify-content: center;
   width: 16px;
   height: 16px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: transparent;
   border: 0;
   color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
   margin-left: 2px;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .chipClose:hover {
   background-color: var(--border-default);
   color: var(--text-primary);
+}
+
+.chipClose:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
 }
 
 /* ===== Footer ===== */
@@ -166,6 +188,7 @@
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
+  font-family: var(--font-admin);
 }
 
 .viewHint {
@@ -204,6 +227,7 @@
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
+  font-family: var(--font-admin);
 }
 
 .emptyHint {
@@ -212,6 +236,7 @@
   color: var(--text-secondary);
   text-align: center;
   max-width: 480px;
+  font-family: var(--font-admin);
 }
 
 /* ===== Actor cell ===== */
@@ -227,12 +252,13 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-full);
+  border-radius: var(--admin-radius-pill);
   background-color: var(--brand-primary);
   color: var(--text-on-primary);
   font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
+  font-family: var(--font-admin);
 }
 
 .actorInfo {
@@ -250,6 +276,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
+  font-family: var(--font-admin);
 }
 
 .actorEmail {
@@ -259,6 +286,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
+  font-family: var(--font-admin);
 }
 
 /* ===== Action cell ===== */
@@ -272,12 +300,14 @@
 .actionLabel {
   font-size: 13px;
   color: var(--text-primary);
+  font-family: var(--font-admin);
 }
 
 .targetCell {
   font-size: 13px;
   color: var(--text-primary);
   word-break: break-word;
+  font-family: var(--font-admin);
 }
 
 .timeCell {
@@ -285,6 +315,7 @@
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  font-family: var(--font-admin);
 }
 
 .dim {
@@ -297,14 +328,16 @@
   justify-content: center;
   padding: 6px var(--space-3);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
+  border-radius: var(--admin-radius-input);
   background-color: transparent;
   color: var(--brand-primary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-  font-family: inherit;
+  font-family: var(--font-admin);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
 }
 
 .viewBtn:hover {
@@ -314,22 +347,38 @@
 
 .viewBtn:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus-ring);
+  box-shadow: var(--admin-focus-ring);
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .header {
     align-items: stretch;
   }
+
   .headerActions {
     width: 100%;
   }
+
   .viewToggle {
     flex: 1;
   }
+
   .viewBtn2 {
     flex: 1;
     justify-content: center;
+  }
+
+  .actorCell {
+    gap: var(--space-2);
+  }
+
+  .actorName,
+  .actorEmail {
+    max-width: 140px;
+  }
+
+  .actionCell {
+    min-width: 0;
   }
 }
