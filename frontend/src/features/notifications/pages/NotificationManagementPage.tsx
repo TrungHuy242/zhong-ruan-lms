@@ -36,7 +36,7 @@ import {
   X as XIcon,
   Bell as BellIcon,
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "../../../shared/contexts/ToastContext";
 import styles from "./NotificationManagementPage.module.css";
 
@@ -187,8 +187,11 @@ export function NotificationManagementPage() {
 
   // ===== Navigation (FormPage đã tách — navigate thay vì open modal) =====
   const navigate = useNavigate();
+  const location = useLocation();
   function goCreate() {
-    navigate("/notifications/new");
+    navigate("/notifications/new", {
+      state: { returnTo: location.pathname + location.search },
+    });
   }
 
   // Refresh data khi quay lại từ NotificationFormPage (searchParams thay đổi)

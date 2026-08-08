@@ -23,7 +23,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, X as XIcon } from "lucide-react";
 import {
   Button,
@@ -94,6 +94,11 @@ function validatePassword(value: string): string | undefined {
 export function UserFormPage() {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  // returnTo: URL của list page (kèm search params) do list page truyền qua
+  // navigate state. Fallback về "/users" nếu user vào thẳng URL này.
+  const returnTo =
+    (location.state as { returnTo?: string } | null)?.returnTo || "/users";
   const isEdit = Boolean(id);
   const toast = useToast();
 
@@ -158,7 +163,7 @@ export function UserFormPage() {
   function handleBack() {
     // Khi đã submit thì không confirm (đã navigate tới đây từ save xong)
     if (isSubmitting) return;
-    navigate("/users");
+    navigate(returnTo);
   }
 
   function validateAll(): boolean {
@@ -226,7 +231,7 @@ export function UserFormPage() {
         // Notify other parts of app
         window.dispatchEvent(new CustomEvent("lms:user-created"));
       }
-      navigate("/users");
+      navigate(returnTo);
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -272,7 +277,7 @@ export function UserFormPage() {
           <Button
             variant="primary"
             leftIcon={<ArrowLeft size={16} />}
-            onClick={() => navigate("/users")}
+            onClick={() => navigate(returnTo)}
           >
             Về danh sách
           </Button>
@@ -294,7 +299,7 @@ export function UserFormPage() {
           <Button
             variant="secondary"
             leftIcon={<ArrowLeft size={16} />}
-            onClick={() => navigate("/users")}
+            onClick={() => navigate(returnTo)}
           >
             Về danh sách
           </Button>

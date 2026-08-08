@@ -54,7 +54,7 @@ import {
   Users as UsersIcon,
   X as XIcon,
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./UserManagementPage.module.css";
 
 type RoleFilter = "ALL" | UserRole;
@@ -439,12 +439,17 @@ export function UserManagementPage() {
   // ===== Toast (success/error) — dùng useToast() thay cho inline banner =====
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   function goCreate() {
-    navigate("/users/new");
+    navigate("/users/new", {
+      state: { returnTo: location.pathname + location.search },
+    });
   }
   function goEdit(u: User) {
-    navigate(`/users/${u.id}/edit`);
+    navigate(`/users/${u.id}/edit`, {
+      state: { returnTo: location.pathname + location.search },
+    });
   }
   function openDetail(u: User) {
     setDetailId(u.id);

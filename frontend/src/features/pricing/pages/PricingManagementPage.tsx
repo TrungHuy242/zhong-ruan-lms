@@ -57,7 +57,7 @@ import {
   Trash2,
   X as XIcon,
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { formatVND } from "../services/pricingApi";
 import styles from "./PricingManagementPage.module.css";
 
@@ -297,11 +297,16 @@ export function PricingManagementPage() {
 
     // ===== Navigation (FormPage đã tách — navigate thay vì open modal) =====
   const navigate = useNavigate();
+  const location = useLocation();
   function goCreate() {
-    navigate("/pricing-plans/new");
+    navigate("/pricing-plans/new", {
+      state: { returnTo: location.pathname + location.search },
+    });
   }
   function goEdit(p: PricingPlan) {
-    navigate(`/pricing-plans/${p.id}/edit`);
+    navigate(`/pricing-plans/${p.id}/edit`, {
+      state: { returnTo: location.pathname + location.search },
+    });
   }
 
   // Refresh data khi quay lại từ PricingFormPage (searchParams thay đổi)

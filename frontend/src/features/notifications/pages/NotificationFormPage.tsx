@@ -20,7 +20,7 @@
  */
 
 import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import {
   Alert,
@@ -75,6 +75,12 @@ function validateMessage(value: string): string | undefined {
 
 export function NotificationFormPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // returnTo: URL của list page (kèm search params) do list page truyền qua
+  // navigate state. Fallback về "/notifications" nếu user vào thẳng URL này.
+  const returnTo =
+    (location.state as { returnTo?: string } | null)?.returnTo ||
+    "/notifications";
   const toast = useToast();
 
   // ===== Form state =====
@@ -95,7 +101,7 @@ export function NotificationFormPage() {
 
   function handleBack() {
     if (isSubmitting) return;
-    navigate("/notifications");
+    navigate(returnTo);
   }
 
   function validateAll(): boolean {
@@ -177,7 +183,7 @@ export function NotificationFormPage() {
       } else {
         toast.success(`Đã gửi ${created.length} thông báo`);
         window.dispatchEvent(new CustomEvent("lms:notification-created"));
-        navigate("/notifications");
+        navigate(returnTo);
       }
     } catch (err) {
       const message =

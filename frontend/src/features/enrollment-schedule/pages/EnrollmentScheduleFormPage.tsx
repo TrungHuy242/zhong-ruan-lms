@@ -28,7 +28,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, X as XIcon } from "lucide-react";
 import {
   Alert,
@@ -140,8 +140,14 @@ function validateDisplayOrder(value: number): string | undefined {
 export function EnrollmentScheduleFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
   const isEdit = Boolean(id);
+  // returnTo: URL của list page (kèm search params) do list page truyền qua
+  // navigate state. Fallback về "/enrollment-schedule" nếu user vào thẳng URL này.
+  const returnTo =
+    (location.state as { returnTo?: string } | null)?.returnTo ||
+    "/enrollment-schedule";
 
   const [loading, setLoading] = useState(isEdit);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -250,7 +256,7 @@ export function EnrollmentScheduleFormPage() {
 
   function handleBack() {
     if (submitting) return;
-    navigate("/enrollment-schedule?refresh=1");
+    navigate(`${returnTo}${returnTo.includes("?") ? "&" : "?"}refresh=1`);
   }
 
   function validateAll(): boolean {
@@ -328,7 +334,7 @@ export function EnrollmentScheduleFormPage() {
         toast.success("Tạo lịch khai giảng thành công");
         window.dispatchEvent(new CustomEvent("lms:enrollment-created"));
       }
-      navigate("/enrollment-schedule?refresh=1");
+      navigate(`${returnTo}${returnTo.includes("?") ? "&" : "?"}refresh=1`);
     } catch (err) {
       toast.error(
         err instanceof ApiError ? err.message : "Lỗi không xác định"

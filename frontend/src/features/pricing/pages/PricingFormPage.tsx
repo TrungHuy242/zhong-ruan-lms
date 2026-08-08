@@ -29,7 +29,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Link2, Save, X as XIcon } from "lucide-react";
 import {
   Alert,
@@ -116,6 +116,12 @@ function formatPriceInput(value: string): string {
 export function PricingFormPage() {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  // returnTo: URL của list page (kèm search params) do list page truyền qua
+  // navigate state. Fallback về "/pricing-plans" nếu user vào thẳng URL này.
+  const returnTo =
+    (location.state as { returnTo?: string } | null)?.returnTo ||
+    "/pricing-plans";
   const isEdit = Boolean(id);
   const toast = useToast();
 
@@ -218,7 +224,7 @@ export function PricingFormPage() {
 
   function handleBack() {
     if (isSubmitting) return;
-    navigate("/pricing-plans");
+    navigate(returnTo);
   }
 
   function validateAll(): boolean {
@@ -298,7 +304,7 @@ export function PricingFormPage() {
         toast.success("Đã tạo bảng giá");
         window.dispatchEvent(new CustomEvent("lms:pricing-created"));
       }
-      navigate("/pricing-plans");
+      navigate(returnTo);
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -335,7 +341,7 @@ export function PricingFormPage() {
           <Button
             variant="primary"
             leftIcon={<ArrowLeft size={16} />}
-            onClick={() => navigate("/pricing-plans")}
+            onClick={() => navigate(returnTo)}
           >
             Về danh sách
           </Button>
@@ -357,7 +363,7 @@ export function PricingFormPage() {
           <Button
             variant="secondary"
             leftIcon={<ArrowLeft size={16} />}
-            onClick={() => navigate("/pricing-plans")}
+            onClick={() => navigate(returnTo)}
           >
             Về danh sách
           </Button>

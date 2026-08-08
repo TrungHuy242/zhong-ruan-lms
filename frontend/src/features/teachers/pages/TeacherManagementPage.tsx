@@ -74,7 +74,7 @@ import {
   Trash2,
   X as XIcon,
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./TeacherManagementPage.module.css";
 
 const SORTABLE_TEACHER_KEYS: TeacherSortBy[] = [
@@ -380,11 +380,16 @@ export function TeacherManagementPage() {
 
   // ===== Navigation (FormPage đã tách — navigate thay vì open modal) =====
   const navigate = useNavigate();
+  const location = useLocation();
   function goCreate() {
-    navigate("/teachers/new");
+    navigate("/teachers/new", {
+      state: { returnTo: location.pathname + location.search },
+    });
   }
   function goEdit(t: Teacher) {
-    navigate(`/teachers/${t.id}/edit`);
+    navigate(`/teachers/${t.id}/edit`, {
+      state: { returnTo: location.pathname + location.search },
+    });
   }
 
   // Refresh data khi quay lại từ TeacherFormPage (searchParams thay đổi)

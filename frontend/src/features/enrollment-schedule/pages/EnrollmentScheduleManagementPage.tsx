@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Modal } from "../../../shared/components/ui";
 import { PreviewScheduleBanner } from "../components/PreviewScheduleBanner";
 import {
@@ -107,6 +107,7 @@ export function EnrollmentScheduleManagementPage() {
   });
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
@@ -185,11 +186,15 @@ export function EnrollmentScheduleManagementPage() {
   };
 
   const openAdd = () => {
-    navigate("/enrollment-schedule/new");
+    navigate("/enrollment-schedule/new", {
+      state: { returnTo: location.pathname + location.search },
+    });
   };
 
   const openEdit = (s: EnrollmentSchedule) => {
-    navigate(`/enrollment-schedule/${s.id}/edit`);
+    navigate(`/enrollment-schedule/${s.id}/edit`, {
+      state: { returnTo: location.pathname + location.search },
+    });
   };
 
   const openDelete = (s: EnrollmentSchedule) =>

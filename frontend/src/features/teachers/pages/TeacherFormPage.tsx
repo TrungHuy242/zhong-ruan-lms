@@ -25,7 +25,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Link2,
@@ -141,6 +141,11 @@ function parseSpecialtiesInput(raw: string): string[] {
 export function TeacherFormPage() {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  // returnTo: URL của list page (kèm search params) do list page truyền qua
+  // navigate state. Fallback về "/teachers" nếu user vào thẳng URL này.
+  const returnTo =
+    (location.state as { returnTo?: string } | null)?.returnTo || "/teachers";
   const isEdit = Boolean(id);
   const toast = useToast();
 
@@ -251,7 +256,7 @@ export function TeacherFormPage() {
   // ===== Navigation =====
   function handleBack() {
     if (isSubmitting) return;
-    navigate("/teachers");
+    navigate(returnTo);
   }
 
   function validateAll(): boolean {
@@ -358,7 +363,7 @@ export function TeacherFormPage() {
         toast.success("Đã tạo giảng viên");
         window.dispatchEvent(new CustomEvent("lms:teacher-created"));
       }
-      navigate("/teachers");
+      navigate(returnTo);
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -399,7 +404,7 @@ export function TeacherFormPage() {
           <Button
             variant="primary"
             leftIcon={<ArrowLeft size={16} />}
-            onClick={() => navigate("/teachers")}
+            onClick={() => navigate(returnTo)}
           >
             Về danh sách
           </Button>
@@ -421,7 +426,7 @@ export function TeacherFormPage() {
           <Button
             variant="secondary"
             leftIcon={<ArrowLeft size={16} />}
-            onClick={() => navigate("/teachers")}
+            onClick={() => navigate(returnTo)}
           >
             Về danh sách
           </Button>
