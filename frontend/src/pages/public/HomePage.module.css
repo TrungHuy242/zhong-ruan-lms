@@ -806,6 +806,182 @@
   color: var(--zr-brand);
 }
 
+/* ----- Person row: avatar + name + course + rating + source ----- */
+
+.testimonialPerson {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.4vw, 18px);
+  flex-wrap: wrap;
+}
+
+.testimonialAvatar {
+  width: clamp(40px, 3.6vw, 52px);
+  height: clamp(40px, 3.6vw, 52px);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--zr-rule);
+  flex-shrink: 0;
+}
+
+.testimonialAvatarPlaceholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(40px, 3.6vw, 52px);
+  height: clamp(40px, 3.6vw, 52px);
+  border-radius: 50%;
+  background: var(--zr-gold-soft);
+  color: var(--zr-ink);
+  font-family: var(--zr-font-serif);
+  font-weight: 600;
+  font-size: clamp(14px, 1.1vw, 16px);
+  border: 1px solid var(--zr-rule);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.testimonialPersonMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.testimonialMetaRow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.testimonialDot {
+  color: var(--zr-ink-muted);
+  font-size: 11px;
+}
+
+.testimonialRating {
+  font-family: var(--zr-font-body);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--zr-gold);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.testimonialSource {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--zr-ink-muted);
+  letter-spacing: 0;
+}
+
+/* ----- Quote block (DESIGN.md §9 carve-out: italic OK cho testimonial body) ----- */
+
+.testimonialQuoteBlock {
+  margin: 0;
+  border-top: 1px solid var(--zr-rule);
+  padding-top: clamp(12px, 1.4vw, 18px);
+}
+
+/* ----- Loading skeleton ----- */
+
+.testimonialSkeleton {
+  pointer-events: none;
+}
+
+.testimonialSkeleton .testimonialBody {
+  gap: clamp(10px, 1.2vw, 14px);
+}
+
+.skeletonText,
+.skeletonTextShort,
+.skeletonMeta {
+  background: linear-gradient(
+    90deg,
+    var(--zr-rule) 0%,
+    var(--zr-paper) 50%,
+    var(--zr-rule) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1400ms linear infinite;
+  border-radius: 2px;
+  height: 14px;
+}
+
+.skeletonText {
+  width: 96%;
+}
+
+.skeletonTextShort {
+  width: 68%;
+}
+
+.skeletonMeta {
+  width: 40%;
+  height: 12px;
+  margin-top: 4px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonText,
+  .skeletonTextShort,
+  .skeletonMeta {
+    animation: none;
+  }
+}
+
+/* ----- Inline error (khi đã có data cũ + lỗi refresh) ----- */
+
+.testimonialError {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(10px, 1.2vw, 14px) clamp(14px, 1.6vw, 20px);
+  border: 1px solid var(--color-error);
+  border-left-width: 3px;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  font-family: var(--zr-font-body);
+  font-size: 13px;
+  margin-bottom: clamp(16px, 2vw, 24px);
+}
+
+.testimonialRetry {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+  padding: 4px 12px;
+  font-family: var(--zr-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 180ms var(--zr-ease), color 180ms var(--zr-ease);
+}
+
+.testimonialRetry:hover {
+  background: var(--color-error);
+  color: #ffffff;
+}
+
+.testimonialRetry:focus-visible {
+  outline: 2px solid var(--color-error);
+  outline-offset: 2px;
+}
+
 /* ============================================================================
  * SECTION 7 — FAQ
  * Accordion. No card chrome. Generous padding. Plus icon toggles.

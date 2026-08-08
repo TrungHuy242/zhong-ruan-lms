@@ -5,13 +5,16 @@
  *
  * Ràng buộc BẮT BUỘC — tuân thủ đầy đủ:
  * 1. Sections theo thứ tự: Hero → Stats → USP → EnrollmentSchedule → Courses
- *    → Teachers → Testimonials → FAQ → CTA Banner.
- * 2. GIỮ NGUYÊN homeContent.ts — dùng trực tiếp, không viết lại data.
- * 3. Brand anchor: --brand-primary (#C8102E) và --brand-accent (#D4AF37)
+ *    → Teachers → Testimonials → FAQ → SocialProof → CTA Banner.
+ * 2. Testimonials fetch động từ GET /api/public/testimonials?limit=3.
+ *    Ẩn hoàn toàn section nếu BE trả rỗng (Admin ẩn hết).
+ * 3. GIỮ NGUYÊN phần còn lại của homeContent.ts — testimonial placeholder đã
+ *    xóa (round 10).
+ * 4. Brand anchor: --brand-primary (#C8102E) và --brand-accent (#D4AF37)
  *    từ DESIGN.md là màu chủ đạo, không đổi.
- * 4. GIỮ NGUYÊN <SEO> và heading hierarchy (1 <h1>).
- * 5. GIỮ NGUYÊN logic React — useReveal, useCountUp, ImagePlaceholder.
- * 6. Responsive + prerender tương thích.
+ * 5. GIỮ NGUYÊN <SEO> và heading hierarchy (1 <h1>).
+ * 6. GIỮ NGUYÊN logic React — useReveal, useCountUp, ImagePlaceholder.
+ * 7. Responsive + prerender tương thích.
  *
  * Design brief:
  * Tone: nghiêm túc, chuyên nghiệp, đáng tin cậy — chuẩn giáo dục/
@@ -19,7 +22,7 @@
  * Palette: đỏ (#C8102E) + vàng gold (#D4AF37) anchor, nền sáng,
  * dark charcoal text. Editorial typography.
  *
- * 9 sections — aesthetic bên trong mỗi section:
+ * 10 sections — aesthetic bên trong mỗi section:
  *  1. Hero       — N6 masthead + asymmetric 5fr/4fr grid: headline left,
  *                    2-CTA stack right. Brand-red accent on CTA.
  *  2. Stats      — 4-col definition list: big serif numerals + small caps
@@ -31,10 +34,13 @@
  *  5. Teachers   — 4-col horizontal: narrow portrait + name stacked.
  *                    Alternating top-align. Left-aligned.
  *  6. Testimonials — 3-row stacked, alternating indent. Large opening quote.
+ *                    DATA FETCH ĐỘNG từ API. Loading/empty/error states.
  *  7. FAQ        — Accordion, full-width, generous padding, editorial.
- *  8. CTA Banner — Full-width dark charcoal, single centered h2 + inline
+ *  8. SocialProof — 2 thumbnail nhỏ, hairline border, hover overlay.
+ *                    Điểm nhấn phụ — không kéo dài trang.
+ *  9. CTA Banner — Full-width dark charcoal, single centered h2 + inline
  *                    form below. Red submit.
- *  9. Enrollment Schedule (singleton) — Banner lịch khai giảng render
+ *  10. Enrollment Schedule (singleton) — Banner lịch khai giảng render
  *                    giữa USP và Courses; tự ẩn nếu BE trả null (không
  *                    để khoảng trắng).
  *
@@ -42,16 +48,19 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { AlertCircle } from "lucide-react";
 import { SEO } from "../../shared/components/SEO";
 import { ImagePlaceholder } from "../../features/public/components/ImagePlaceholder";
 import { EnrollmentScheduleBanner } from "../../features/public/components/EnrollmentScheduleBanner";
+import { SocialProofStrip } from "../../features/public/components/SocialProofStrip";
+import { getPublicTestimonials } from "../../features/public/services/publicTestimonialApi";
+import type { Testimonial } from "../../features/testimonials/types/testimonial.types";
 import {
   heroContent,
   statsContent,
   uspContent,
   featuredCoursesContent,
   teachersContent,
-  testimonialsContent,
   faqContent,
   ctaBannerContent,
 } from "../../features/public/data/homeContent";
@@ -355,13 +364,48 @@ function TeachersSection() {
 }
 
 // ============================================================================
-// SECTION 6 — TESTIMONIALS
+// SECTION 6 — TESTIMONIALS (dynamic fetch từ BE)
 // 3 stacked rows, alternating left/right indent.
 // Large opening-quote mark in brand-red, italic attribution, body text.
+//
+// Fetch: GET /api/public/testimonials?limit=3
+//   - Loading: 3 skeleton rows trong cùng layout.
+//   - Empty (Admin ẩn hết): return null — section biến mất hoàn toàn.
+//   - Error: inline alert nhỏ + nút "Thử lại" — vẫn render layout card.
 // ============================================================================
+
+const SKELETON_KEYS = ["s1", "s2", "s3"] as const;
 
 function TestimonialsSection() {
   const reveal = useReveal<HTMLElement>();
+  const [testimonials, setTestimonials] = useState<Testimonial[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = () => {
+    setError(null);
+    setTestimonials(null);
+    getPublicTestimonials(3)
+      .then((list) => {
+        setTestimonials(list.slice(0, 3));
+      })
+      .catch((e) => {
+        setError(e?.message || "Không tải được đánh giá");
+        setTestimonials([]); // mark as loaded-but-empty so error block can show
+      });
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  // Empty thật sự (BE trả []) → ẩn hoàn toàn section để không khoảng trắng xấu.
+  if (testimonials && testimonials.length === 0 && !error) {
+    return null;
+  }
+  // Lỗi nhưng không có data → vẫn ẩn section (không hiện alert lỗi trống).
+  if (error && (!testimonials || testimonials.length === 0)) {
+    return null;
+  }
 
   return (
     <section
@@ -380,29 +424,109 @@ function TestimonialsSection() {
           </h2>
         </header>
 
-        <ul className={styles.testimonialsList}>
-          {testimonialsContent.map((t, i) => (
-            <li
-              key={t.id}
-              className={styles.testimonialItem}
-              data-even={i % 2 === 0}
-            >
-              <span className={styles.testimonialQuote} aria-hidden="true">
-                &ldquo;
-              </span>
-              <blockquote className={styles.testimonialBody}>
-                <p className={styles.testimonialText}>{t.content}</p>
-                <footer className={styles.testimonialMeta}>
-                  <span className={styles.testimonialName}>{t.name}</span>
-                  <span className={styles.testimonialLevel}>{t.level}</span>
-                </footer>
-              </blockquote>
-            </li>
-          ))}
-        </ul>
+        {/* Loading skeleton — 3 rows placeholder */}
+        {testimonials === null && !error && (
+          <ul className={styles.testimonialsList} aria-busy="true" aria-label="Đang tải đánh giá">
+            {SKELETON_KEYS.map((k) => (
+              <li key={k} className={`${styles.testimonialItem} ${styles.testimonialSkeleton}`} aria-hidden="true">
+                <span className={styles.testimonialQuote}>&ldquo;</span>
+                <div className={styles.testimonialBody}>
+                  <div className={styles.skeletonText} />
+                  <div className={styles.skeletonTextShort} />
+                  <div className={styles.skeletonMeta} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Error inline — compact, vẫn giữ layout */}
+        {error && testimonials && testimonials.length > 0 && (
+          <div className={styles.testimonialError} role="alert">
+            <AlertCircle size={16} aria-hidden="true" />
+            <span>{error}</span>
+            <button type="button" className={styles.testimonialRetry} onClick={load}>
+              Thử lại
+            </button>
+          </div>
+        )}
+
+        {/* Data */}
+        {testimonials && testimonials.length > 0 && (
+          <ul className={styles.testimonialsList}>
+            {testimonials.map((t, i) => (
+              <li
+                key={t.id}
+                className={styles.testimonialItem}
+                data-even={i % 2 === 0}
+              >
+                <span className={styles.testimonialQuote} aria-hidden="true">
+                  &ldquo;
+                </span>
+                <div className={styles.testimonialBody}>
+                  {/* Avatar + name + course + source row */}
+                  <div className={styles.testimonialPerson}>
+                    {t.avatarUrl ? (
+                      <img
+                        src={t.avatarUrl}
+                        alt={`Ảnh đại diện của ${t.studentName}`}
+                        className={styles.testimonialAvatar}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span
+                        className={styles.testimonialAvatarPlaceholder}
+                        aria-hidden="true"
+                        title={`Ảnh đại diện ${t.studentName}`}
+                      >
+                        {getInitials(t.studentName)}
+                      </span>
+                    )}
+                    <div className={styles.testimonialPersonMeta}>
+                      <span className={styles.testimonialName}>{t.studentName}</span>
+                      <span className={styles.testimonialMetaRow}>
+                        {t.courseInfo && (
+                          <>
+                            <span className={styles.testimonialLevel}>{t.courseInfo}</span>
+                            <span className={styles.testimonialDot} aria-hidden="true">·</span>
+                          </>
+                        )}
+                        <span className={styles.testimonialRating} aria-label={`Đánh giá ${t.rating} trên 5 sao`}>
+                          {renderStars(t.rating)}
+                        </span>
+                      </span>
+                      {t.source && (
+                        <span className={styles.testimonialSource}>{t.source}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quote text — italic cho testimonial body (DESIGN.md §9 carve-out) */}
+                  <blockquote className={styles.testimonialQuoteBlock}>
+                    <p className={styles.testimonialText}>{t.content}</p>
+                  </blockquote>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   );
+}
+
+// Helper: lấy chữ cái đầu của tên — fallback cho avatar khi BE trả null.
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// Helper: render 5 sao (filled/empty) dựa trên rating 1-5.
+function renderStars(rating: number): string {
+  const safe = Math.max(0, Math.min(5, Math.round(rating)));
+  return "★".repeat(safe) + "☆".repeat(5 - safe);
 }
 
 // ============================================================================
@@ -550,6 +674,7 @@ export function HomePage() {
       <TeachersSection />
       <TestimonialsSection />
       <FaqSection />
+      <SocialProofStrip />
       <CtaBanner />
     </>
   );

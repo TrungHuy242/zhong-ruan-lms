@@ -1,0 +1,186 @@
+/**
+ * SocialProofStrip.module.css — điểm nhấn phụ, không kéo dài trang.
+ *
+ * Locked tokens (DESIGN.md §9):
+ *   - bg surface (trắng) — tạo nhịp 2-tone giữa FAQ (paper) và CTA (paper-dark)
+ *   - 0 radius · 1px hairline border · 0 shadow
+ *   - H2 Source Serif 4 (nhỏ hơn section chính — 22-28px để không lấn át)
+ *   - thumbnail max-width 280-320px desktop, xếp dọc mobile
+ *   - hover: opacity overlay shift, KHÔNG scale/translate
+ */
+
+/* ============================================================
+   SECTION — compact, không lấn át nhịp trang
+   ============================================================ */
+
+.strip {
+  background: var(--zr-surface);
+  /* padding nhỏ hơn section chính (24-48px thay vì 72-120px) — điểm nhấn phụ */
+  padding: clamp(40px, 5vw, 64px) clamp(24px, 5vw, 80px);
+  border-top: 1px solid var(--zr-rule);
+}
+
+.inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   HEADER — H2 nhỏ hơn section chính, không lấn át
+   ============================================================ */
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* left-aligned — khớp rhythm các section khác */
+  gap: clamp(8px, 1vw, 12px);
+  margin-bottom: clamp(24px, 3vw, 40px);
+  text-align: left;
+  max-width: 720px;
+}
+
+.eyebrow {
+  font-family: var(--zr-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zr-brand);
+  font-style: normal;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.eyebrowDash {
+  color: var(--zr-rule);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--zr-font-serif);
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(20px, 2.2vw, 28px);
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--zr-ink);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.sub {
+  margin: 0;
+  font-family: var(--zr-font-body);
+  font-size: clamp(13px, 1vw, 15px);
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--zr-ink-soft);
+}
+
+/* ============================================================
+   THUMBS GRID — 2 cột desktop, xếp dọc mobile
+   minmax(0, 1fr) để image không phá grid (gate 50)
+   ============================================================ */
+
+.thumbs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(12px, 1.6vw, 20px);
+  max-width: 720px; /* giữ cụm 2 ảnh nhỏ gọn, không kéo dài toàn viewport */
+}
+
+.thumbItem {
+  display: block;
+}
+
+.thumbLink {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--zr-rule);
+  border-radius: 0;
+  background: var(--zr-paper);
+  /* hover: chỉ đổi border-color sang brand-red (gate — không scale) */
+  transition: border-color 220ms var(--zr-ease);
+  text-decoration: none;
+}
+
+.thumbLink:hover,
+.thumbLink:focus-visible {
+  border-color: var(--zr-brand);
+}
+
+.thumbLink:focus-visible {
+  outline: 2px solid var(--zr-brand);
+  outline-offset: 2px;
+}
+
+/* Ảnh — max-width theo grid track (~280-320px mỗi ảnh ở desktop) */
+.thumbImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 320px;
+  aspect-ratio: 1 / 1; /* thumbnail vuông — đồng nhất 2 ảnh */
+  object-fit: cover;
+}
+
+/* ============================================================
+   OVERLAY — hover state
+   background shift + icon fade-in (KHÔNG transform translateY/scale)
+   ============================================================ */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 26, 30, 0); /* mặc định trong suốt */
+  color: #ffffff;
+  opacity: 0;
+  transition: background 220ms var(--zr-ease), opacity 220ms var(--zr-ease);
+  pointer-events: none; /* không chặn click vào link */
+}
+
+.thumbLink:hover .overlay,
+.thumbLink:focus-visible .overlay {
+  background: rgba(26, 26, 30, 0.55);
+  opacity: 1;
+}
+
+.overlayIcon {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* ============================================================
+   REDUCED MOTION — tắt transition overlay (DESIGN.md §9.6)
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .thumbLink,
+  .overlay {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ≤ 600px: xếp dọc, mỗi ảnh full width container
+   ============================================================ */
+
+@media (max-width: 600px) {
+  .thumbs {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+  }
+}

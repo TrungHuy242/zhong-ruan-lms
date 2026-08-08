@@ -148,40 +148,12 @@ export const teachersContent = [
 ];
 
 // =============================================================================
-// TESTIMONIAL — PLACEHOLDER
+// TESTIMONIAL — LẤY ĐỘNG TỪ API (round 10)
 // =============================================================================
-
-// TODO: thay bằng review thật từ Facebook/Google Review
-// Mỗi placeholder ghi rõ "chờ cập nhật" để không nhầm với data thật
-export const testimonialsContent = [
-  {
-    id: 1,
-    name: "[Tên học viên — chờ cập nhật]",
-    level: "HSK 2",
-    avatarInitials: "?",
-    rating: 5,
-    content:
-      "[Placeholder — chờ cập nhật review thật từ học viên đã hoàn thành khóa học.]",
-  },
-  {
-    id: 2,
-    name: "[Tên học viên — chờ cập nhật]",
-    level: "HSK 4",
-    avatarInitials: "?",
-    rating: 5,
-    content:
-      "[Placeholder — chờ cập nhật review thật từ học viên đã hoàn thành khóa học.]",
-  },
-  {
-    id: 3,
-    name: "[Tên học viên — chờ cập nhật]",
-    level: "HSK 3",
-    avatarInitials: "?",
-    rating: 5,
-    content:
-      "[Placeholder — chờ cập nhật review thật từ học viên đã hoàn thành khóa học.]",
-  },
-];
+// Round 9 dùng placeholder; round 10 fetch GET /api/public/testimonials?limit=3
+// → trả 3 testimonial published có displayOrder thấp nhất (ưu tiên isFeatured).
+// Nếu Admin ẩn hết, HomePage ẨN SECTION (return null) — không hiện khoảng trống.
+// File này không còn export testimonialsContent nữa.
 
 // =============================================================================
 // FAQ
