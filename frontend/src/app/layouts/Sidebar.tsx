@@ -180,7 +180,9 @@ function resolveGroups(
 ): Record<string, boolean> {
   const resolved: Record<string, boolean> = {};
   for (const group of groups) {
-    const hasActive = group.items.some((it) => it.to === pathname);
+    const hasActive = group.items.some((it) =>
+      pathname === it.to || pathname.startsWith(`${it.to}/`)
+    );
     resolved[group.id] = hasActive || Boolean(stored[group.id]);
   }
   return resolved;
@@ -353,7 +355,9 @@ export function Sidebar({ collapsed, onToggle, onClose, isDrawer }: SidebarProps
                   aria-hidden={!isOpen && !collapsed}
                 >
                   {group.items.map(({ label, to, Icon }) => {
-                    const isActive = location.pathname === to;
+                    const isActive =
+                      location.pathname === to ||
+                      location.pathname.startsWith(`${to}/`);
                     return (
                       <NavLink
                         key={to}
