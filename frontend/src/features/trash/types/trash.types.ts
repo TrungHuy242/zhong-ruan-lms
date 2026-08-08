@@ -24,7 +24,8 @@ export type TrashModule =
   | "teachers"
   | "pricingplans"
   | "contactrequests"
-  | "enrollmentschedules";
+  | "enrollmentschedules"
+  | "testimonials";
 
 export type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR" | string;
 

@@ -21,6 +21,7 @@ export const TRASH_MODULES: TrashModule[] = [
   "pricingplans",
   "contactrequests",
   "enrollmentschedules",
+  "testimonials",
 ];
 
 /**
@@ -35,6 +36,7 @@ export const TRASH_MODULE_LABELS: Record<TrashModule, string> = {
   pricingplans: "Gói học phí",
   contactrequests: "Yêu cầu tư vấn",
   enrollmentschedules: "Lịch khai giảng",
+  testimonials: "Cảm nhận học viên",
 };
 
 export const TRASH_LARGE_PAGE_SIZE = 1000;

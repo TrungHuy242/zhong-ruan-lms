@@ -15,6 +15,7 @@ import {
   Tag,
   MessageSquare,
   CalendarClock,
+  Quote,
   type LucideIcon,
 } from "lucide-react";
 import { authStorage } from "../../shared/storage/authStorage";
@@ -89,6 +90,12 @@ const MENU_GROUPS: MenuGroup[] = [
         label: "Lịch khai giảng",
         to: "/enrollment-schedule",
         Icon: CalendarClock,
+        allowedRoles: ["ADMIN"],
+      },
+      {
+        label: "Cảm nhận học viên",
+        to: "/testimonials",
+        Icon: Quote,
         allowedRoles: ["ADMIN"],
       },
     ],

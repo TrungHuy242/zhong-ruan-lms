@@ -89,6 +89,7 @@ import {
   Filter as FilterIcon,
   Inbox,
   MessageSquare,
+  Quote,
   RotateCcw,
   Search as SearchIcon,
   Settings as SettingsIcon,
@@ -134,6 +135,7 @@ const MODULE_TONE: Record<TrashModule, string> = {
   pricingplans: "badgePricingPlan",
   contactrequests: "badgeContactRequest",
   enrollmentschedules: "badgeEnrollmentSchedule",
+  testimonials: "badgeTestimonial",
 };
 
 const MODULE_ICON: Record<TrashModule, React.ReactNode> = {
@@ -145,6 +147,7 @@ const MODULE_ICON: Record<TrashModule, React.ReactNode> = {
   pricingplans: <Tag size={14} aria-hidden="true" />,
   contactrequests: <MessageSquare size={14} aria-hidden="true" />,
   enrollmentschedules: <CalendarClock size={14} aria-hidden="true" />,
+  testimonials: <Quote size={14} aria-hidden="true" />,
 };
 
 const DEBOUNCE_MS = 450;

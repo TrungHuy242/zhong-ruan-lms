@@ -289,6 +289,13 @@
   border-color: rgba(219, 39, 119, 0.2);
 }
 
+/* 9. testimonials — gold/amber (hue 45°, nhấn mạnh testimonial là feedback đáng tin cậy) */
+.badgeTestimonial {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: rgb(245, 158, 11);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
 /* ===== Cell helpers ===== */
 .nameCell {
   display: flex;

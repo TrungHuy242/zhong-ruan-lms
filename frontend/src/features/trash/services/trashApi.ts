@@ -221,6 +221,7 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
         pricingplans: 0,
         contactrequests: 0,
         enrollmentschedules: 0,
+        testimonials: 0,
       },
     };
   }
@@ -238,6 +239,7 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
         pricingplans: 0,
         contactrequests: 0,
         enrollmentschedules: 0,
+        testimonials: 0,
       },
     };
   }
@@ -255,6 +257,7 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
         pricingplans: 0,
         contactrequests: 0,
         enrollmentschedules: 0,
+        testimonials: 0,
       },
     };
   }
@@ -281,6 +284,7 @@ export async function loadTrash(params: LoadTrashParams = {}): Promise<LoadTrash
       pricingplans: 0,
       contactrequests: 0,
       enrollmentschedules: 0,
+      testimonials: 0,
     },
   };
 }

@@ -16,6 +16,7 @@ import {
   Clock,
   FileText,
   MessageSquare,
+  Quote,
   Settings as SettingsIcon,
   Tag,
   Trash2,
@@ -36,6 +37,7 @@ const MODULE_ICONS: Record<TrashModule, React.ReactNode> = {
   pricingplans: <Tag size={20} aria-hidden="true" />,
   contactrequests: <MessageSquare size={20} aria-hidden="true" />,
   enrollmentschedules: <CalendarClock size={20} aria-hidden="true" />,
+  testimonials: <Quote size={20} aria-hidden="true" />,
 };
 
 // Tone cho từng module — giữ mapping riêng để không phụ thuộc vào StatCard mặc định.
@@ -49,6 +51,7 @@ const MODULE_TONE: Record<TrashModule, React.ComponentProps<typeof StatCard>["to
   pricingplans: "primary",
   contactrequests: "info",
   enrollmentschedules: "warning",
+  testimonials: "accent",
 };
 
 export interface TrashStatsProps {
