@@ -198,26 +198,29 @@ async function main() {
         // HomePage có TestimonialsSection fetch /api/public/testimonials.
         // Đợi cho đến khi ul.testimonialsList có ≥1 <li> chứa tên học viên
         // (data thật) — HOẶC section ẩn hẳn (empty state, không còn heading).
+        // Cấu trúc DOM: <section><div><header><h2 id="testimonials-heading"/></header>
+        //                          <ul class="testimonialsList"><li>...</li></ul></div></section>
+        // → Li elements là ANH của header, không phải con của heading.
         try {
           await page.waitForFunction(
             () => {
               const heading = document.getElementById("testimonials-heading");
               if (!heading) return true; // section ẩn (empty state OK)
-              const items = heading.parentElement?.querySelectorAll("li");
-              if (!items || items.length === 0) return false;
-              // Phải có ≥1 li có chứa tên học viên thật (không phải skeleton)
-              // Skeleton không có class chứa "testimonialName" mà chỉ có
-              // skeletonText/Skeleton. Real items có testimonialName.
-              for (const li of items) {
-                if (li.querySelector("[class*='testimonialName']")) return true;
-              }
-              return false;
+              // Tìm ul.testimonialsList (anh của header chứa heading)
+              const innerDiv = heading.parentElement?.parentElement;
+              const ul = innerDiv?.querySelector("ul");
+              if (!ul) return false; // vẫn đang loading (chưa có ul)
+              // Real items có testimonialName class
+              const realItems = ul.querySelectorAll(
+                "li [class*='testimonialName']"
+              );
+              return realItems.length > 0;
             },
-            { timeout: 12000 }
+            { timeout: 15000 }
           );
         } catch {
           console.warn(
-            `[prerender] ⚠ Testimonials không load data thật trong 12s — tiếp tục với loading state.`
+            `[prerender] ⚠ Testimonials không load data thật trong 15s — tiếp tục với loading state.`
           );
         }
       }
