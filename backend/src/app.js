@@ -21,6 +21,8 @@ const contactRequestAdminRoutes = require("./modules/contact-requests/contact-re
 const contactRequestPublicRoutes = require("./modules/contact-requests/contact-request.public.routes");
 const enrollmentScheduleAdminRoutes = require("./modules/enrollment-schedule/enrollment-schedule.routes");
 const enrollmentSchedulePublicRoutes = require("./modules/enrollment-schedule/enrollment-schedule.public.routes");
+const testimonialAdminRoutes = require("./modules/testimonials/testimonial.routes");
+const testimonialPublicRoutes = require("./modules/testimonials/testimonial.public.routes");
 
 const notFoundHandler = require("./middlewares/notFound.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -113,6 +115,7 @@ app.use("/api/public/teachers", teacherPublicRoutes);
 app.use("/api/public/pricing-plans", pricingPlanPublicRoutes);
 app.use("/api/public/contact-requests", contactRequestPublicRoutes);
 app.use("/api/public/enrollment-schedule", enrollmentSchedulePublicRoutes);
+app.use("/api/public/testimonials", testimonialPublicRoutes);
 // ⚠️ CẢNH BÁO: mọi route PUBLIC mới (không cần auth) PHẢI mount TRƯỚC dòng này.
 // uploadRoutes dùng router.use(authenticate) ở đầu + path tổng quát '/api'
 // sẽ match và chặn (401) bất kỳ route public nào mount SAU nó, kể cả path
@@ -127,6 +130,7 @@ app.use("/api/admin/teachers", teacherAdminRoutes);
 app.use("/api/admin/pricing-plans", pricingPlanAdminRoutes);
 app.use("/api/admin/contact-requests", contactRequestAdminRoutes);
 app.use("/api/admin/enrollment-schedule", enrollmentScheduleAdminRoutes);
+app.use("/api/admin/testimonials", testimonialAdminRoutes);
 
 // 5. 404 — after routes, before error handler
 app.use(notFoundHandler);

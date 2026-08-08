@@ -38,6 +38,7 @@ model User {
   deletedTeachers       Teacher[]      @relation("TeacherDeletedBy")
   deletedPricingPlans   PricingPlan[]  @relation("PricingPlanDeletedBy")
   deletedEnrollmentSchedules EnrollmentSchedule[] @relation("EnrollmentScheduleDeletedBy")
+  deletedTestimonials     Testimonial[]    @relation("TestimonialDeletedBy")
   linkedTeachers        Teacher[]      @relation("TeacherLinkedUser")
 
   @@index([avatarFileId])
@@ -329,4 +330,43 @@ model EnrollmentSchedule {
   @@index([deletedAt])
   @@index([deletedById])
   @@map("enrollment_schedules")
+}
+
+/// Testimonial — feedback từ học viên, hiển thị ở Trang chủ + trang khóa học
+/// để tăng độ tin cậy. CRUD qua Admin, public chỉ đọc các bản published.
+///
+/// Pattern giống EnrollmentSchedule: soft-delete qua deletedAt + deletedById,
+/// sort theo displayOrder ASC + isFeatured DESC cho mặc định hiện ở Trang chủ.
+model Testimonial {
+  id            String   @id @default(uuid())
+  /// Họ tên đầy đủ học viên, VD "Nguyễn Hồ Nguyệt Như".
+  studentName   String
+  /// Lớp/khóa học tương ứng, VD "TC1", "HSSV" — optional.
+  courseInfo    String?
+  /// Trích dẫn feedback — text dài, dùng @db.Text.
+  content       String   @db.Text
+  /// Đánh giá 1-5 sao, mặc định 5.
+  rating        Int      @default(5)
+  /// URL ảnh đại diện, optional. Nếu null thì FE dùng ImagePlaceholder.
+  avatarUrl     String?
+  /// Nguồn feedback, VD "Facebook Messenger" — optional, FE hiện nhỏ cho tăng độ tin cậy.
+  source        String?
+  /// Ưu tiên hiện trước (cùng displayOrder).
+  isFeatured    Boolean  @default(false)
+  /// Ẩn tạm mà không cần xoá.
+  isPublished   Boolean  @default(true)
+  /// Thứ tự ưu tiên hiển thị public — sort ASC.
+  displayOrder  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+  deletedById   Int?
+  deletedBy     User?    @relation("TestimonialDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([displayOrder])
+  @@index([deletedAt])
+  @@index([deletedById])
+  @@map("testimonials")
 }

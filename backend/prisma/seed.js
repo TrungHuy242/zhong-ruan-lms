@@ -52,6 +52,7 @@ async function main() {
 
   await seedPricingPlans();
   await seedEnrollmentSchedules();
+  await seedTestimonials();
 }
 
 /**
@@ -191,6 +192,117 @@ async function seedEnrollmentSchedules() {
   }
 
   console.log(`Seeded 1 enrollment schedule`);
+}
+
+/**
+ * Seed cho Testimonial — feedback học viên hiển thị ở Trang chủ.
+ *
+ * 8 feedback thật (giữ nguyên văn trích dẫn, đầy đủ họ tên theo xác nhận đã có đồng ý).
+ * 3 cái đầu tiên isFeatured: true (dùng làm mặc định hiện ở Trang chủ).
+ *
+ * ⚠️  Data đã có xác nhận đồng ý từ học viên — KHÔNG tự ý thêm/sửa nội dung
+ *     hoặc đổi tên. Nếu cần cập nhật → phải hỏi lại.
+ */
+async function seedTestimonials() {
+  const testimonials = [
+    {
+      studentName: "Minh HSSV",
+      courseInfo: null,
+      content: "Cô dễ thương, dạy chậm, nhiệt tình và dễ hiểu",
+      rating: 5,
+      source: "Facebook Messenger",
+      isFeatured: true,
+      isPublished: true,
+      displayOrder: 1,
+    },
+    {
+      studentName: "Mai Nga",
+      courseInfo: "TC1",
+      content: "Giảng dạy nhiệt tình, luôn giải đáp thắc mắc cho học sinh. Ngoài bài học còn được biết thêm nhiều từ mới khác. Về làm đề HSK thì đã thành thạo, làm khá tốt",
+      rating: 5,
+      source: "Facebook Messenger",
+      isFeatured: true,
+      isPublished: true,
+      displayOrder: 2,
+    },
+    {
+      studentName: "Nguyễn Trọng Hân",
+      courseInfo: null,
+      content: "Sau khóa học trình độ Hán ngữ được nâng cao hơn. Từ vựng và ngữ pháp cũng tốt hơn nhiều. Phương pháp dạy của giáo viên khá ổn, trung tâm theo sát lớp và học viên",
+      rating: 5,
+      source: "Facebook Messenger",
+      isFeatured: true,
+      isPublished: true,
+      displayOrder: 3,
+    },
+    {
+      studentName: "Nguyễn Ngọc Như Phương",
+      courseInfo: null,
+      content: "Cô dạy rất dễ hiểu và tốc độ phù hợp. Khi hỏi về các từ ngoài bài học cô đều trả lời tận tình và giải thích dễ hiểu",
+      rating: 5,
+      source: "Facebook Messenger",
+      isFeatured: false,
+      isPublished: true,
+      displayOrder: 4,
+    },
+    {
+      studentName: "Nguyễn Thanh Thảo",
+      courseInfo: null,
+      content: "Hài lòng về cách dạy của cô, tuy học tiếng Trung đã lâu nhưng phát âm còn nhiều chỗ sai, cô chỉnh lại rất tận tình, giải thích rất chi tiết",
+      rating: 5,
+      source: "Facebook Messenger",
+      isFeatured: false,
+      isPublished: true,
+      displayOrder: 5,
+    },
+    {
+      studentName: "Nguyễn Hồ Nguyệt Như",
+      courseInfo: null,
+      content: "Cô dạy rất nhiệt tình và vui vẻ. Cô chỉnh phát âm rất kỹ và dạy thêm vốn từ mở rộng, liên kết với các tình huống thực tiễn để áp dụng trong giao tiếp và đi làm",
+      rating: 5,
+      source: "Facebook Messenger",
+      isFeatured: false,
+      isPublished: true,
+      displayOrder: 6,
+    },
+    {
+      studentName: "Nguyệt Hằng",
+      courseInfo: null,
+      content: "Sau khóa học kỹ năng phản xạ nói tiếng Trung nhanh và tốt hơn rồi. Cô dạy xen kẽ cả 2 giáo trình nên vừa được luyện nói vừa luyện được ngữ pháp, nhớ nhanh hơn",
+      rating: 5,
+      source: "Facebook Messenger",
+      isFeatured: false,
+      isPublished: true,
+      displayOrder: 7,
+    },
+    {
+      studentName: "Nguyễn Ngọc Thu Ngân",
+      courseInfo: null,
+      content: "Cô giáo nhiệt tình lắm, lúc học hay sau khi học xong đều quan tâm tới học sinh từng xíu. Sau khi học cải thiện được giao tiếp rất nhiều so với ban đầu",
+      rating: 5,
+      source: "Facebook Messenger",
+      isFeatured: false,
+      isPublished: true,
+      displayOrder: 8,
+    },
+  ];
+
+  for (const t of testimonials) {
+    // Upsert theo studentName (đủ unique cho demo).
+    const existing = await prisma.testimonial.findFirst({
+      where: { studentName: t.studentName, deletedAt: null },
+      select: { id: true },
+    });
+    if (existing) {
+      await prisma.testimonial.update({
+        where: { id: existing.id },
+        data: t,
+      });
+    } else {
+      await prisma.testimonial.create({ data: t });
+    }
+  }
+  console.log(`Seeded ${testimonials.length} testimonials`);
 }
 
 main()

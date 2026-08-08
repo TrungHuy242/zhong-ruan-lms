@@ -40,7 +40,7 @@ const {
 } = require("../../utils/softDelete");
 
 // ===== Module whitelist =====
-const MODULES = ["users", "notifications", "files", "settings", "teachers", "pricingplans", "contactrequests", "enrollmentschedules"];
+const MODULES = ["users", "notifications", "files", "settings", "teachers", "pricingplans", "contactrequests", "enrollmentschedules", "testimonials"];
 const MODULE_TO_LABEL = {
   users: "User",
   notifications: "Notification",
@@ -50,6 +50,7 @@ const MODULE_TO_LABEL = {
   pricingplans: "PricingPlan",
   contactrequests: "ContactRequest",
   enrollmentschedules: "EnrollmentSchedule",
+  testimonials: "Testimonial",
 };
 const MODULE_TO_PRISMA = {
   users: "user",
@@ -60,6 +61,7 @@ const MODULE_TO_PRISMA = {
   pricingplans: "pricingPlan",
   contactrequests: "contactRequest",
   enrollmentschedules: "enrollmentSchedule",
+  testimonials: "testimonial",
 };
 
 // ===== Error helpers =====
@@ -248,6 +250,14 @@ function buildModuleWhere(mod, keyword) {
           { tagline: { contains: q, mode: "insensitive" } },
         ],
       };
+    case "testimonials":
+      return {
+        OR: [
+          { studentName: { contains: q, mode: "insensitive" } },
+          { content: { contains: q, mode: "insensitive" } },
+          { courseInfo: { contains: q, mode: "insensitive" } },
+        ],
+      };
     default:
       return {};
   }
@@ -325,6 +335,8 @@ function pickLabel(mod, row) {
       return row.fullName || row.email || `#${row.id}`;
     case "enrollmentschedules":
       return row.title || `#${row.id}`;
+    case "testimonials":
+      return row.studentName || row.courseInfo || `#${row.id}`;
     default:
       return `#${row.id}`;
   }
@@ -359,8 +371,8 @@ async function restoreOne(mod, idOrKey, currentUserId, req = null) {
     };
   }
 
-  // pricingplans, teachers, contactrequests, enrollmentschedules dùng String (UUID)
-  const isStringIdModule = ["pricingplans", "teachers", "contactrequests", "enrollmentschedules"].includes(mod);
+  // pricingplans, teachers, contactrequests, enrollmentschedules, testimonials dùng String (UUID)
+  const isStringIdModule = ["pricingplans", "teachers", "contactrequests", "enrollmentschedules", "testimonials"].includes(mod);
   const numericId = Number(idOrKey);
 
   if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {
@@ -408,8 +420,8 @@ async function forceDeleteOne(mod, idOrKey, currentUserId, req = null) {
     };
   }
 
-  // pricingplans, teachers, contactrequests, enrollmentschedules dùng String (UUID)
-  const isStringIdModule = ["pricingplans", "teachers", "contactrequests", "enrollmentschedules"].includes(mod);
+  // pricingplans, teachers, contactrequests, enrollmentschedules, testimonials dùng String (UUID)
+  const isStringIdModule = ["pricingplans", "teachers", "contactrequests", "enrollmentschedules", "testimonials"].includes(mod);
   const numericId = Number(idOrKey);
 
   if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {
@@ -656,8 +668,8 @@ async function getTrashDetail(mod, idOrKey) {
   if (mod === "settings") {
     row = await delegate.findUnique({ where: { key: String(idOrKey) } });
   } else {
-    // pricingplans, teachers, contactrequests dùng String (UUID), còn lại dùng Number (Int)
-    const isStringIdModule = mod === "pricingplans" || mod === "teachers" || mod === "contactrequests" || mod === "enrollmentschedules";
+    // pricingplans, teachers, contactrequests, enrollmentschedules, testimonials dùng String (UUID), còn lại dùng Number (Int)
+    const isStringIdModule = mod === "pricingplans" || mod === "teachers" || mod === "contactrequests" || mod === "enrollmentschedules" || mod === "testimonials";
     const numericId = Number(idOrKey);
 
     if (!isStringIdModule && (!Number.isFinite(numericId) || numericId <= 0)) {
