@@ -1,0 +1,359 @@
+/* TestimonialFormPage — Admin create/edit testimonial.
+ *
+ * Hallmark stamp:
+ *   macrostructure: form-led · genre: modern-minimal · theme: design-system-locked (DESIGN.md §10)
+ *   tone: utilitarian · anchor hue: brand-red #C8102E
+ *   shape: admin-radius-input 6px / control 8px · shadow: admin-control 0.08
+ *   font: Be Vietnam Pro only (single-font admin shell)
+ *
+ * Layout: 2-col cho field ngắn, 1-col cho textarea + UploadZone + toggles.
+ */
+
+.page {
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--font-admin);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-bottom: var(--space-8);
+}
+
+/* ===== Field groups ===== */
+.grid2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  width: 100%;
+  align-items: end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-admin);
+  font-size: var(--admin-text-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.required {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.fieldError {
+  font-size: var(--admin-text-table-cell);
+  color: var(--color-error);
+  line-height: 1.4;
+}
+
+.hint {
+  font-size: var(--admin-text-table-cell);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ===== Textarea (full width) ===== */
+.textarea {
+  width: 100%;
+  padding: var(--space-3);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-input);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--admin-text-body);
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.textarea:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: var(--admin-focus-ring);
+}
+
+.textarea:disabled {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.textarea[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+/* ===== Star picker ===== */
+.starPicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-control);
+  width: fit-content;
+}
+
+.starBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--admin-radius-input);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+.starBtn:hover {
+  transform: scale(1.15);
+}
+
+.starBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
+}
+
+.starBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.starBtnActive {
+  /* used as marker; the icon color below drives visual feedback */
+}
+
+.starIcon {
+  color: var(--border-strong);
+  fill: var(--bg-surface);
+  transition: color 120ms ease, fill 120ms ease;
+}
+
+.starIconActive {
+  color: var(--brand-accent);
+  fill: var(--brand-accent);
+  transition: color 120ms ease, fill 120ms ease;
+}
+
+.ratingValue {
+  font-family: var(--font-admin);
+  font-size: var(--admin-text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-left: var(--space-2);
+  min-width: 56px;
+}
+
+/* ===== Avatar row (preview + upload) ===== */
+.avatarRow {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+.avatarPreview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-pill);
+  background-color: var(--bg-surface-alt);
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarEmpty {
+  font-family: var(--font-admin);
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0 var(--space-2);
+  line-height: 1.3;
+}
+
+.avatarClearBtn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--admin-radius-pill);
+  background-color: rgba(0, 0, 0, 0.55);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.avatarClearBtn:hover {
+  background-color: var(--color-error);
+}
+
+.avatarClearBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--admin-focus-ring);
+}
+
+.avatarClearBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.avatarUploadWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* ===== Toggle fields (checkboxes with rich labels) ===== */
+.toggleField {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-radius: var(--admin-radius-control);
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+  min-width: 0;
+}
+
+.toggleField:hover {
+  border-color: var(--brand-primary);
+  background-color: var(--brand-primary-lighter);
+}
+
+.toggleField:focus-within {
+  border-color: var(--brand-primary);
+  box-shadow: var(--admin-focus-ring);
+}
+
+.toggleField input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--brand-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggleLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.toggleLabel strong {
+  font-family: var(--font-admin);
+  font-size: var(--admin-text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggleLabel small {
+  font-family: var(--font-admin);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ===== Loading/Error action row ===== */
+.actionsRow {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .grid3 {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .grid3 > :nth-child(3) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 700px) {
+  .grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .grid3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .grid3 > :nth-child(3) {
+    grid-column: auto;
+  }
+  .avatarRow {
+    grid-template-columns: 1fr;
+  }
+  .avatarPreview {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form {
+    gap: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .textarea,
+  .starBtn,
+  .starIcon,
+  .starIconActive,
+  .toggleField,
+  .avatarClearBtn {
+    transition: none;
+  }
+}

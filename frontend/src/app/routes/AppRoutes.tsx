@@ -35,6 +35,8 @@ import { TrashManagerPage } from "../../features/trash/pages/TrashManagerPage";
 import { ContactRequestManagementPage } from "../../features/contact-requests/pages/ContactRequestManagementPage";
 import { EnrollmentScheduleManagementPage } from "../../features/enrollment-schedule/pages/EnrollmentScheduleManagementPage";
 import { EnrollmentScheduleFormPage } from "../../features/enrollment-schedule/pages/EnrollmentScheduleFormPage";
+import { TestimonialManagementPage } from "../../features/testimonials/pages/TestimonialManagementPage";
+import { TestimonialFormPage } from "../../features/testimonials/pages/TestimonialFormPage";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { ProtectedRoute } from "../guards/ProtectedRoute";
 import { PublicLayout } from "../../layouts/PublicLayout";
@@ -102,6 +104,12 @@ export function AppRoutes() {
         <Route
           path="/enrollment-schedule/:id/edit"
           element={<EnrollmentScheduleFormPage />}
+        />
+        <Route path="/testimonials" element={<TestimonialManagementPage />} />
+        <Route path="/testimonials/new" element={<TestimonialFormPage />} />
+        <Route
+          path="/testimonials/:id/edit"
+          element={<TestimonialFormPage />}
         />
       </Route>
 
