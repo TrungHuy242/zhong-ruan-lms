@@ -165,12 +165,63 @@ async function main() {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 800 });
 
+    // ===== Intercept /api/* requests và forward thẳng tới backend =====
+    // Vite preview KHÔNG có proxy (chỉ dev server mới có) → relative /api
+    // sẽ fail. Ở prerender time, mọi /api/* phải đi thẳng localhost:5000.
+    // Match mọi localhost port (vite preview có thể fallback 4174/4175).
+    await page.setRequestInterception(true);
+    const backendOrigin = (BACKEND_API_BASE || "http://localhost:5000/api")
+      .replace(/\/api\/?$/, "");
+    const apiProxyRegex = /^http:\/\/localhost:(\d+)(\/api\/.*)$/;
+    page.on("request", (req) => {
+      const url = req.url();
+      const m = url.match(apiProxyRegex);
+      if (m) {
+        const target = backendOrigin + m[2];
+        req.continue({ url: target });
+      } else {
+        req.continue();
+      }
+    });
+
     for (const { path: routePath, file } of ROUTES) {
       const url = `${SERVER_URL}${routePath}`;
       console.log(`[prerender] ${url}`);
       await page.goto(url, { waitUntil: "networkidle0", timeout: 30000 });
       // Đợi helmet apply xong (thường tức thì nhưng chờ 1 nhịp)
       await new Promise((r) => setTimeout(r, 500));
+
+      // Chờ thêm cho các data async (VD testimonials fetch từ BE)
+      // trước khi snapshot HTML — tránh trường hợp networkidle0 fires
+      // sớm hơn BE trả data (đặc biệt khi BE chậm).
+      if (routePath === "/") {
+        // HomePage có TestimonialsSection fetch /api/public/testimonials.
+        // Đợi cho đến khi ul.testimonialsList có ≥1 <li> chứa tên học viên
+        // (data thật) — HOẶC section ẩn hẳn (empty state, không còn heading).
+        try {
+          await page.waitForFunction(
+            () => {
+              const heading = document.getElementById("testimonials-heading");
+              if (!heading) return true; // section ẩn (empty state OK)
+              const items = heading.parentElement?.querySelectorAll("li");
+              if (!items || items.length === 0) return false;
+              // Phải có ≥1 li có chứa tên học viên thật (không phải skeleton)
+              // Skeleton không có class chứa "testimonialName" mà chỉ có
+              // skeletonText/Skeleton. Real items có testimonialName.
+              for (const li of items) {
+                if (li.querySelector("[class*='testimonialName']")) return true;
+              }
+              return false;
+            },
+            { timeout: 12000 }
+          );
+        } catch {
+          console.warn(
+            `[prerender] ⚠ Testimonials không load data thật trong 12s — tiếp tục với loading state.`
+          );
+        }
+      }
+
       const html = await page.content();
       await fs.mkdir(path.dirname(file), { recursive: true });
       await fs.writeFile(file, html, "utf-8");
