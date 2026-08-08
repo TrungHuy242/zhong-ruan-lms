@@ -30,6 +30,8 @@ const TESTIMONIAL_SELECT = {
 
 /**
  * Serialize row → API response shape (chuẩn hoá Date → ISO string).
+ * Phải trả cả `deletedAt` để FE biết row đã soft-delete (hiển thị badge "Đã xoá")
+ * — cùng pattern với các module khác (Teacher, PricingPlan, ContactRequest, ...).
  */
 function serialize(row) {
   if (!row) return null;
@@ -46,6 +48,8 @@ function serialize(row) {
     displayOrder: row.displayOrder,
     createdAt: row.createdAt ? row.createdAt.toISOString() : null,
     updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null,
+    deletedAt: row.deletedAt ? row.deletedAt.toISOString() : null,
+    deletedById: row.deletedById ?? null,
   };
 }
 
